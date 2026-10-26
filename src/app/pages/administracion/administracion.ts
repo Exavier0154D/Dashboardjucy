@@ -3,6 +3,7 @@ import { DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { DataService } from '../../core/data.service';
+import { TIPOS_EMPAQUE } from '../../models/empaque.model';
 import {
   CatalogoAdminService, CatalogoAdmin, EmpaqueDB, FilaFormula, HistorialDB,
   MateriaDB, PresentacionDB, ProductoDB, validarFilas, versionSku
@@ -60,7 +61,7 @@ export class Administracion implements OnInit, OnDestroy {
   readonly editando = signal<Pestana | null>(null);
   readonly categorias = ['Agua de Coco', 'Bebida', 'Jugos y Zumo', 'Lacteos', 'Limonada', 'Naranja', 'Nectar', 'P. Temporales y Salsa'];
   readonly tecnologias = ['HPP', 'HTST', 'UHT'];
-  readonly tiposEmpaque = ['Botella', 'Tap', 'Etiqueta'] as const;
+  readonly tiposEmpaque = TIPOS_EMPAQUE;
   readonly tablasHistorial = ['producto', 'materia_prima', 'presentacion', 'formula_ingrediente', 'presentacion_item', 'empaque', 'precio_historico', 'costo_mano_obra'];
   readonly materiasPorId = computed(() => new Map(this.materias().map(m => [m.id, m])));
   readonly productosPorId = computed(() => new Map(this.productos().map(p => [p.id, p])));

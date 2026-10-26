@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
+import { TipoEmpaque } from '../models/empaque.model';
 
 export interface MateriaDB {
   id: number; nombre: string; unidad: string; costo_kg: number;
@@ -22,7 +23,7 @@ export interface ItemDB {
   costo_original: number | null;
 }
 export interface EmpaqueDB {
-  id: number; presentacion_id: number; tipo: 'Botella' | 'Tap' | 'Etiqueta';
+  id: number; presentacion_id: number; tipo: TipoEmpaque;
   costo: number; estado: 'referencia_producto' | 'sin_dato' | 'confirmado';
   producto_origen_id: string | null;
 }

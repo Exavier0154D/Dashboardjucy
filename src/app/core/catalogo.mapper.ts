@@ -2,7 +2,7 @@ import {
   CATEGORIAS_PRODUCTO, CategoriaCatalogo, EstadoFormulacion, Ingrediente,
   ItemPresentacion, MateriaPrima, Presentacion, Producto, TecnologiaProducto
 } from '../models/producto.model';
-import { Empaque, EstadoEmpaque, TipoEmpaque } from '../models/empaque.model';
+import { Empaque, EstadoEmpaque, TipoEmpaque, TIPOS_EMPAQUE } from '../models/empaque.model';
 
 type Numero = number | string;
 export interface MateriaPrimaDb {
@@ -141,7 +141,7 @@ export function mapearCatalogo(tablas: TablasCatalogo): Catalogo {
     const sku = skusVisibles.get(presentacionId);
     if (!sku) continue;
     empaques.push({ id: id(e.id), presentacionId, productoId: sku.productoId,
-      tipo: unico<TipoEmpaque>(e.tipo, ['Botella', 'Tap', 'Etiqueta'], 'Tipo de empaque'),
+      tipo: unico<TipoEmpaque>(e.tipo, TIPOS_EMPAQUE, 'Tipo de empaque'),
       costo: numero(e.costo, 'costo de empaque'), unidad: 'Unidad', litros: sku.litros,
       tecnologia: sku.tecnologia, estado: unico<EstadoEmpaque>(e.estado,
         ['referencia_producto', 'sin_dato', 'confirmado'], 'Estado de empaque'),

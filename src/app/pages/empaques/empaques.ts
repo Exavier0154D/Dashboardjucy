@@ -4,7 +4,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData } from 'chart.js';
 import { DataService } from '../../core/data.service';
 import { Presentacion } from '../../models/producto.model';
-import { EstadoEmpaque, TipoEmpaque } from '../../models/empaque.model';
+import { EstadoEmpaque, TipoEmpaque, TIPOS_EMPAQUE, tiposEmpaqueRequeridos } from '../../models/empaque.model';
 import { coincideBusqueda } from '../../core/busqueda-texto';
 
 @Component({ selector: 'app-empaques', imports: [DecimalPipe, BaseChartDirective],
@@ -16,7 +16,7 @@ export class Empaques {
   readonly cargando = this.data.cargando.asReadonly();
   readonly cargado = this.data.cargado.asReadonly();
   readonly errorCarga = this.data.error.asReadonly();
-  readonly tiposEmpaque: TipoEmpaque[] = ['Botella', 'Tap', 'Etiqueta'];
+  readonly tiposEmpaque = TIPOS_EMPAQUE;
   readonly busqueda = signal('');
   readonly soloIncompletos = signal(false);
   readonly presentacionDetalleId = signal<number | null>(null);
@@ -33,12 +33,16 @@ export class Empaques {
   readonly resumen = computed(() => this.productos().flatMap(producto => producto.presentaciones.map(presentacion => {
     const empaques = this.empaques().filter(e => e.presentacionId === presentacion.id);
     const valor = (tipo: TipoEmpaque): number => empaques.find(e => e.tipo === tipo)?.costo ?? 0;
-    const incompleto = this.tiposEmpaque.some(t => !empaques.some(e => e.tipo === t && e.estado !== 'sin_dato'));
+    const requiereCarton = tiposEmpaqueRequeridos(producto).includes('Cartón');
+    const incompleto = tiposEmpaqueRequeridos(producto).some(t => !empaques.some(e => e.tipo === t && e.estado !== 'sin_dato')) ||
+      empaques.some(e => e.estado === 'sin_dato');
     const referencia = empaques.some(e => e.estado === 'referencia_producto');
     const total = empaques.reduce((n, e) => n + e.costo, 0);
     const preliminar = presentacion.totalCosto === null ? null : presentacion.totalCosto + total;
     return { id: presentacion.id, producto, presentacion, nombre: producto.nombre, categoria: producto.categoria,
-      botella: valor('Botella'), tap: valor('Tap'), etiqueta: valor('Etiqueta'), total, incompleto, referencia,
+      botella: valor('Botella'), tap: valor('Tap'), etiqueta: valor('Etiqueta'), carton: valor('Cartón'),
+      cartonPendiente: requiereCarton && !empaques.some(e => e.tipo === 'Cartón' && e.estado !== 'sin_dato'),
+      tieneCarton: requiereCarton || empaques.some(e => e.tipo === 'Cartón'), total, incompleto, referencia,
       preliminar, pct: preliminar !== null && preliminar > 0 ? total / preliminar * 100 : null, empaques };
   })));
   readonly resumenFiltrado = computed(() => this.resumen().filter(r =>
@@ -59,7 +63,8 @@ export class Empaques {
     return { labels: top.map(r => `${r.nombre} · ${this.etiqueta(r.presentacion)}`), datasets: [
       { label: 'Botella', data: top.map(r => r.botella), backgroundColor: '#1d4ed8' },
       { label: 'Tap', data: top.map(r => r.tap), backgroundColor: '#16a34a' },
-      { label: 'Etiqueta', data: top.map(r => r.etiqueta), backgroundColor: '#f59e0b' }
+      { label: 'Etiqueta', data: top.map(r => r.etiqueta), backgroundColor: '#f59e0b' },
+      { label: 'Cartón', data: top.map(r => r.carton), backgroundColor: '#9333ea' }
     ] };
   });
   readonly barOptions: ChartConfiguration<'bar'>['options'] = {
@@ -67,7 +72,7 @@ export class Empaques {
     scales: { x: { stacked: true, beginAtZero: true }, y: { stacked: true } }
   };
   readonly doughnutType = 'doughnut' as const;
-  readonly doughnutData = computed<ChartData<'doughnut'>>(() => ({ labels: this.tiposEmpaque,
+  readonly doughnutData = computed<ChartData<'doughnut'>>(() => ({ labels: [...this.tiposEmpaque],
     datasets: [{ data: this.tiposEmpaque.map(tipo => this.empaques().filter(e => e.tipo === tipo).reduce((n, e) => n + e.costo, 0)),
-      backgroundColor: ['#1d4ed8', '#16a34a', '#f59e0b'] }] }));
+      backgroundColor: ['#1d4ed8', '#16a34a', '#f59e0b', '#9333ea'] }] }));
 }

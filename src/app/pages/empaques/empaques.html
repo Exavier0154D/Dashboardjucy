@@ -20,14 +20,16 @@
         <div class="filtros"><input type="search" aria-label="Buscar SKU" placeholder="Producto, marca, código o tecnología" #q [value]="busqueda()" (input)="buscar(q.value)">
           <label class="check"><input type="checkbox" [checked]="soloIncompletos()" (change)="toggleIncompletos()">Solo incompletos</label></div>
       </div>
-      <div class="tabla-contenedor"><table><thead><tr><th>Producto</th><th>Presentación</th><th>Botella</th><th>Tap</th><th>Etiqueta</th><th>Total unitario</th><th>Estado</th></tr></thead>
+      <div class="tabla-contenedor"><table><thead><tr><th>Producto</th><th>Presentación</th><th>Botella</th><th>Tap</th><th>Etiqueta</th><th>Cartón</th><th>Total unitario</th><th>Estado</th></tr></thead>
         <tbody>@for (r of resumenFiltrado(); track r.id) {
           <tr [class.seleccionado]="r.id === presentacionDetalleId()">
             <td><button class="sku-link" type="button" (click)="elegirPresentacion(r.id)">{{ r.nombre }}</button><small>{{ r.producto.marca }}</small></td>
-            <td>{{ etiqueta(r.presentacion) }}</td><td>${{ r.botella | number:'1.4-4' }}</td><td>${{ r.tap | number:'1.4-4' }}</td><td>${{ r.etiqueta | number:'1.4-4' }}</td><td><strong>${{ r.total | number:'1.4-4' }}</strong></td>
+            <td>{{ etiqueta(r.presentacion) }}</td><td>${{ r.botella | number:'1.4-4' }}</td><td>${{ r.tap | number:'1.4-4' }}</td><td>${{ r.etiqueta | number:'1.4-4' }}</td>
+            <td>@if (r.cartonPendiente) { Sin dato } @else if (r.tieneCarton) { ${{ r.carton | number:'1.4-4' }} } @else { No aplica }</td>
+            <td><strong>${{ r.total | number:'1.4-4' }}</strong></td>
             <td><span class="badge" [class.badge--warn]="r.incompleto || r.referencia">{{ r.incompleto ? 'Sin datos completos' : r.referencia ? 'Referencia' : 'Confirmado' }}</span></td>
           </tr>
-        } @empty { <tr><td colspan="7">No se encontraron SKU.</td></tr> }</tbody></table></div>
+        } @empty { <tr><td colspan="8">No se encontraron SKU.</td></tr> }</tbody></table></div>
     </div>
     @if (detalle(); as d) {
       <div class="card"><h2>{{ d.nombre }} · {{ etiqueta(d.presentacion) }}</h2><p class="card-sub">Código: {{ d.presentacion.codigoBarras || 'Sin código' }}</p>
@@ -36,6 +38,7 @@
         </tbody></table></div>
         <p>Materia prima: @if (d.presentacion.totalCosto !== null) { ${{ d.presentacion.totalCosto | number:'1.4-4' }} } @else { Sin fórmula }</p>
         <p>Empaque: ${{ d.total | number:'1.4-4' }}</p>
+        @if (d.cartonPendiente) { <p class="badge badge--warn">Falta registrar el costo de cartón de este SKU. El subtotal está incompleto.</p> }
         <p><strong>Subtotal materia prima + empaque: @if (d.preliminar !== null) { ${{ d.preliminar | number:'1.4-4' }} } @else { Sin fórmula }</strong></p>
         @if (d.pct !== null) { <p>Empaque sobre el subtotal: {{ d.pct | number:'1.1-1' }} %</p> }
         <p class="card-sub">No incluye mano de obra. Los costos de referencia requieren revisión para este tamaño y tecnología.</p>

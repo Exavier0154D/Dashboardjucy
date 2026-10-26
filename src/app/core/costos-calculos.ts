@@ -1,3 +1,5 @@
+import { TIPOS_EMPAQUE, TIPOS_EMPAQUE_BASE, TipoEmpaque } from '../models/empaque.model';
+
 export interface ManoObraMensual {
   mes: string;
   costo_unitario: number;
@@ -221,7 +223,8 @@ export interface ResumenEmpaque {
  */
 export function calcularEmpaque(
   filas: Record<string, unknown>[],
-  presentacionId: number
+  presentacionId: number,
+  requeridos: readonly TipoEmpaque[] = TIPOS_EMPAQUE_BASE
 ): ResumenEmpaque {
   if (
     !Number.isSafeInteger(presentacionId) ||
@@ -252,7 +255,7 @@ export function calcularEmpaque(
     const tipo = String(fila['tipo']);
 
     if (
-      !['Botella', 'Tap', 'Etiqueta'].includes(tipo) ||
+      !(TIPOS_EMPAQUE as readonly string[]).includes(tipo) ||
       tipos.has(tipo)
     ) {
       throw new Error(
@@ -299,6 +302,6 @@ export function calcularEmpaque(
     costo,
     porProducto: false,
     estimado,
-    sinDato: sinDato || tipos.size < 3
+    sinDato: sinDato || requeridos.some(tipo => !tipos.has(tipo))
   };
 }

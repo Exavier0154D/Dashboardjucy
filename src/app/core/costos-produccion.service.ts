@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
+import { tiposEmpaqueRequeridos } from '../models/empaque.model';
 import { calcularEmpaque, ManoObraMensual, mesesManoObra, resolverManoObra, mesActualEcuador } from './costos-calculos';
 import { GastoIndirectoMensual, leerGastosIndirectos } from './gastos-indirectos-calculos';
 
@@ -22,11 +23,15 @@ export class CostosProduccionService {
     if (!Number.isSafeInteger(presentacionId) || presentacionId <= 0) {
       throw new Error('ID de presentación inválido.');
     }
-    const [empaques, registros, indirectos] = await Promise.all([
+    const [empaques, registros, indirectos, presentacion] = await Promise.all([
       this.leer('empaque', 'id,presentacion_id,tipo,costo,estado', presentacionId),
       this.leer('costo_mano_obra', 'id,presentacion_id,mes,costo_unitario,estimado', presentacionId),
-      this.leer('gasto_indirecto', 'id,presentacion_id,mes,concepto,costo_unitario,estimado,observacion', presentacionId)
+      this.leer('gasto_indirecto', 'id,presentacion_id,mes,concepto,costo_unitario,estimado,observacion', presentacionId),
+      this.db.from('presentacion').select('producto:producto_id(categoria,variante)').eq('id', presentacionId).single()
     ]);
+    if (presentacion.error) throw new Error(`No se pudo consultar el producto del SKU: ${presentacion.error.message}`);
+    const producto = (presentacion.data as unknown as { producto: { categoria: string; variante: string } | null })?.producto;
+    if (!producto) throw new Error('No se encontró el producto del SKU seleccionado.');
     const manoObra: ManoObraMensual[] = registros.map(r => {
       if (Number(r['presentacion_id']) !== presentacionId || r['costo_unitario'] == null ||
           String(r['costo_unitario']).trim() === '' || typeof r['estimado'] !== 'boolean') {
@@ -38,7 +43,7 @@ export class CostosProduccionService {
     resolverManoObra(manoObra, `${actual}-01`);
     manoObra.sort((a, b) => a.mes.localeCompare(b.mes));
     const gastosIndirectos = leerGastosIndirectos(indirectos, presentacionId);
-    const empaque = calcularEmpaque(empaques, presentacionId);
+    const empaque = calcularEmpaque(empaques, presentacionId, tiposEmpaqueRequeridos(producto));
     const meses = [...new Set([
       ...mesesManoObra(manoObra, actual),
       ...gastosIndirectos.map(g => g.mes.slice(0, 7))
