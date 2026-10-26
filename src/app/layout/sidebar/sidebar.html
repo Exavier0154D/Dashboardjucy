@@ -1,52 +1,52 @@
 <aside class="sidebar">
-
-  <div class="brand">
-    <div class="brand-name">JUCY</div>
-    <div class="brand-subtitle">COSTOS</div>
-  </div>
-
-  <nav class="navigation">
-
+  <a
+    routerLink="/materia-prima"
+    (click)="abrirProductos()"
+    class="brand"
+    aria-label="Jucy Costos, inicio"
+    ><span class="brand-mark"><mat-icon>eco</mat-icon></span
+    ><span
+      ><strong>jucy<span>.</span></strong
+      ><small>Costos de producción</small></span
+    ></a
+  >
+  <div class="nav-label">ESPACIO DE TRABAJO</div>
+  <nav class="navigation" aria-label="Menú principal">
     <a
       routerLink="/materia-prima"
+      (click)="abrirProductos()"
       routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
+      ariaCurrentWhenActive="page"
       class="nav-item"
+      ><mat-icon>grid_view</mat-icon><span>Productos</span></a
     >
-      <span class="icon">▣</span>
-      <span>Productos</span>
-    </a>
-
-    <!-- EMPAQUES -->
+    <a routerLink="/insumos" routerLinkActive="active" ariaCurrentWhenActive="page" class="nav-item"
+      ><mat-icon>inventory_2</mat-icon><span>Materia prima</span></a
+    >
     <a
       routerLink="/empaques"
       routerLinkActive="active"
+      ariaCurrentWhenActive="page"
       class="nav-item"
+      ><mat-icon>view_in_ar</mat-icon><span>Costos de empaque</span></a
     >
-      <span class="icon">▤</span>
-      <span>Empaques</span>
-    </a>
-
-    <!-- COMPARATIVA -->
     <a
       routerLink="/comparativa"
       routerLinkActive="active"
+      ariaCurrentWhenActive="page"
       class="nav-item"
+      ><mat-icon>bar_chart</mat-icon><span>Comparar productos</span></a
     >
-      <span class="icon">⇄</span>
-      <span>Comparativa</span>
-    </a>
-
-    <!-- ADMINISTRACIÓN -->
     <a
       routerLink="/administracion"
       routerLinkActive="active"
+      ariaCurrentWhenActive="page"
       class="nav-item"
+      ><mat-icon>tune</mat-icon><span>Administración</span></a
     >
-      <span class="icon">⚙</span>
-      <span>Administración</span>
-    </a>
-
   </nav>
-
+  <div class="sidebar-footer">
+    <span class="footer-dot"></span>
+    <div><strong>Todo para tu producción</strong><small>Materiales, fórmulas y costos</small></div>
+  </div>
 </aside>

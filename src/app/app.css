@@ -1,6 +1,7 @@
 :host {
   display: block;
   height: 100vh;
+  background: #f5f7f3;
 }
 
 .app-layout {
@@ -20,4 +21,32 @@
   flex: 1;
   padding: 24px;
   overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+@media (min-width: 1400px) {
+  .content {
+    padding: 32px 40px;
+  }
+}
+@media (max-width: 900px) {
+  :host {
+    height: auto;
+    min-height: 100dvh;
+  }
+  .app-layout {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+    flex-direction: column;
+  }
+  .content {
+    padding: 22px 18px;
+    overflow: visible;
+  }
+}
+@media (max-width: 480px) {
+  .content {
+    padding: 20px 12px;
+  }
 }
