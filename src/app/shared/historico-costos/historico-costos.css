@@ -1,0 +1,20 @@
+:host{display:block;width:100%;color:#0f172a}
+.history-card{padding:24px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 4px 12px #0f172a0a}
+h3{margin:0;font-size:19px}header p,.note{font-size:13px;color:#64748b;line-height:1.5}header strong{display:block;margin-bottom:16px}
+.filters{display:flex;flex-wrap:wrap;gap:16px;margin:20px 0}label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600;flex:1;min-width:170px}
+input,select{box-sizing:border-box;width:100%;padding:11px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0f172a;font:inherit;min-height:44px}
+input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #1d4ed8;outline-offset:3px}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}.metrics div{padding:16px;background:#f8fafc;border-radius:10px}.metrics span{display:block;color:#64748b;font-size:12px}.metrics strong{display:block;margin-top:6px;font-size:20px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.chart{height:360px;position:relative;margin-top:20px}.error{color:#b91c1c}button{padding:10px 16px;background:#1d4ed8;border:0;border-radius:8px;color:white;cursor:pointer}details{margin-top:20px}summary{cursor:pointer;font-size:14px;color:#1d4ed8}.table-scroll{overflow:auto;margin-top:12px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:10px;text-align:left;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+@media(max-width:700px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.history-card{padding:16px}.chart{height:300px}}
+
+.material-filter{flex:2;min-width:240px}
+.material-search{width:100%}
+.material-search input[matInput]{padding:0;border:0;border-radius:0;min-height:0}
+.material-search button{background:transparent;color:#64748b;padding:0}
+.selector-count{margin:6px 0 0;font-size:12px}
+@media(max-width:600px){.material-filter{min-width:0;flex-basis:100%}}
+
+button:disabled{opacity:.6;cursor:default}header strong{overflow-wrap:anywhere}
+
+td small{display:block;color:#64748b;margin-top:3px}

@@ -1,0 +1,45 @@
+<div class="empaques-container" [attr.aria-busy]="cargando()">
+  <div class="encabezado"><h1>Empaques</h1><p>Costos por presentación y tecnología.</p>
+    <button class="btn btn-principal" type="button" [disabled]="cargando()" (click)="actualizarAhora()">Actualizar ahora</button>
+  </div>
+  <div class="card hint">Modo consulta pública. La edición de costos se realiza por ahora en SQL Editor; el acceso de editor se configurará por separado.</div>
+  @if (errorCarga()) { <p class="error" role="alert">{{ errorCarga() }}</p> }
+  @if (cargando() && !cargado()) { <p role="status">Cargando empaques…</p> }
+  @if (cargado()) {
+    <div class="kpi-grid">
+      <div class="card kpi"><span>Registros</span><strong>{{ totalRegistros() }}</strong></div>
+      @for (t of promedioPorTipo(); track t.tipo) { <div class="card kpi"><span>Promedio {{ t.tipo }}</span><strong>@if (t.promedio !== null) { ${{ t.promedio | number:'1.4-4' }} } @else { — }</strong><small>Incluye ceros registrados; excluye sin dato.</small></div> }
+      <div class="card kpi kpi--alerta"><span>SKU incompletos</span><strong>{{ sinCosto() }}</strong><small>Falta un tipo o está marcado sin dato.</small></div>
+    </div>
+    <div class="charts-grid">
+      <div class="card"><h2>Empaque por SKU</h2><p class="card-sub">Top 15 costos unitarios, desglosados por tipo.</p><div class="chart-box"><canvas baseChart [type]="barType" [data]="barData()" [options]="barOptions"></canvas></div></div>
+      <div class="card"><h2>Distribución por tipo</h2><p class="card-sub">Suma de valores unitarios del catálogo; no representa gasto de producción.</p><div class="chart-box"><canvas baseChart [type]="doughnutType" [data]="doughnutData()"></canvas></div></div>
+    </div>
+    <div class="card tabla-card">
+      <div class="tabla-header"><div><h2>Resumen por presentación</h2><p class="card-sub">{{ resumenFiltrado().length }} de {{ resumen().length }} SKU. Selecciona uno para ver el detalle.</p></div>
+        <div class="filtros"><input type="search" aria-label="Buscar SKU" placeholder="Producto, marca, código o tecnología" #q [value]="busqueda()" (input)="buscar(q.value)">
+          <label class="check"><input type="checkbox" [checked]="soloIncompletos()" (change)="toggleIncompletos()">Solo incompletos</label></div>
+      </div>
+      <div class="tabla-contenedor"><table><thead><tr><th>Producto</th><th>Presentación</th><th>Botella</th><th>Tap</th><th>Etiqueta</th><th>Total unitario</th><th>Estado</th></tr></thead>
+        <tbody>@for (r of resumenFiltrado(); track r.id) {
+          <tr [class.seleccionado]="r.id === presentacionDetalleId()">
+            <td><button class="sku-link" type="button" (click)="elegirPresentacion(r.id)">{{ r.nombre }}</button><small>{{ r.producto.marca }}</small></td>
+            <td>{{ etiqueta(r.presentacion) }}</td><td>${{ r.botella | number:'1.4-4' }}</td><td>${{ r.tap | number:'1.4-4' }}</td><td>${{ r.etiqueta | number:'1.4-4' }}</td><td><strong>${{ r.total | number:'1.4-4' }}</strong></td>
+            <td><span class="badge" [class.badge--warn]="r.incompleto || r.referencia">{{ r.incompleto ? 'Sin datos completos' : r.referencia ? 'Referencia' : 'Confirmado' }}</span></td>
+          </tr>
+        } @empty { <tr><td colspan="7">No se encontraron SKU.</td></tr> }</tbody></table></div>
+    </div>
+    @if (detalle(); as d) {
+      <div class="card"><h2>{{ d.nombre }} · {{ etiqueta(d.presentacion) }}</h2><p class="card-sub">Código: {{ d.presentacion.codigoBarras || 'Sin código' }}</p>
+        <div class="tabla-contenedor"><table><thead><tr><th>Tipo</th><th>Costo unitario</th><th>Origen</th></tr></thead><tbody>
+          @for (e of d.empaques; track e.id) { <tr><td>{{ e.tipo }}</td><td>${{ e.costo | number:'1.4-4' }}</td><td>{{ nombreEstado(e.estado) }}</td></tr> }
+        </tbody></table></div>
+        <p>Materia prima: @if (d.presentacion.totalCosto !== null) { ${{ d.presentacion.totalCosto | number:'1.4-4' }} } @else { Sin fórmula }</p>
+        <p>Empaque: ${{ d.total | number:'1.4-4' }}</p>
+        <p><strong>Subtotal materia prima + empaque: @if (d.preliminar !== null) { ${{ d.preliminar | number:'1.4-4' }} } @else { Sin fórmula }</strong></p>
+        @if (d.pct !== null) { <p>Empaque sobre el subtotal: {{ d.pct | number:'1.1-1' }} %</p> }
+        <p class="card-sub">No incluye mano de obra. Los costos de referencia requieren revisión para este tamaño y tecnología.</p>
+      </div>
+    }
+  }
+</div>

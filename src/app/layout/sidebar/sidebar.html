@@ -1,0 +1,52 @@
+<aside class="sidebar">
+
+  <div class="brand">
+    <div class="brand-name">JUCY</div>
+    <div class="brand-subtitle">COSTOS</div>
+  </div>
+
+  <nav class="navigation">
+
+    <a
+      routerLink="/materia-prima"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="nav-item"
+    >
+      <span class="icon">▣</span>
+      <span>Productos</span>
+    </a>
+
+    <!-- EMPAQUES -->
+    <a
+      routerLink="/empaques"
+      routerLinkActive="active"
+      class="nav-item"
+    >
+      <span class="icon">▤</span>
+      <span>Empaques</span>
+    </a>
+
+    <!-- COMPARATIVA -->
+    <a
+      routerLink="/comparativa"
+      routerLinkActive="active"
+      class="nav-item"
+    >
+      <span class="icon">⇄</span>
+      <span>Comparativa</span>
+    </a>
+
+    <!-- ADMINISTRACIÓN -->
+    <a
+      routerLink="/administracion"
+      routerLinkActive="active"
+      class="nav-item"
+    >
+      <span class="icon">⚙</span>
+      <span>Administración</span>
+    </a>
+
+  </nav>
+
+</aside>

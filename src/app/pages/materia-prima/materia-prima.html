@@ -1,0 +1,282 @@
+<div class="page" [attr.aria-busy]="cargando()">
+  @if (errorCarga(); as error) {
+    <div class="status-banner status-banner--error" role="alert">
+      <div><strong>No se pudo actualizar el catálogo.</strong><p>{{ error }}</p>
+        @if (cargado()) { <p>Se muestran los últimos datos cargados.</p> }
+      </div>
+      <button mat-stroked-button type="button" [disabled]="cargando()" (click)="actualizarAhora()">Reintentar</button>
+    </div>
+  }
+  @if (cargando() && !cargado()) {
+    <div class="empty-state empty-state--large" role="status" aria-live="polite">
+      <mat-icon>cloud_download</mat-icon><h2>Cargando catálogo</h2><p>Consultando productos y materias primas.</p>
+    </div>
+  } @else if (cargado()) {
+    @if (!productoSeleccionado()) {
+      <header class="page-header">
+        <div class="page-header__text">
+          <h1>Productos y materias primas</h1><p>Estándares y costos de producción</p>
+        </div>
+        <div class="header-actions">
+          <button mat-stroked-button type="button" [disabled]="cargando()" (click)="actualizarAhora()">
+            <mat-icon>refresh</mat-icon>{{ cargando() ? 'Actualizando…' : 'Actualizar ahora' }}
+          </button>
+          <nav class="view-tabs" aria-label="Cambiar de vista">
+            <button type="button" class="view-tab" [class.active]="vista() === 'productos'"
+              [attr.aria-pressed]="vista() === 'productos'" (click)="cambiarVista('productos')">
+              <mat-icon>local_drink</mat-icon>Productos<span class="view-tab__count">{{ productos().length }}</span>
+            </button>
+            <button type="button" class="view-tab" [class.active]="vista() === 'materias'"
+              [attr.aria-pressed]="vista() === 'materias'" (click)="cambiarVista('materias')">
+              <mat-icon>inventory_2</mat-icon>Materias primas<span class="view-tab__count">{{ totalMateriasPrimas() }}</span>
+            </button>
+          </nav>
+        </div>
+      </header>
+      @if (vista() === 'productos') {
+        <section class="section">
+          <div class="section-header">
+            <div><h2>Catálogo de productos</h2><p>{{ productos().length }} productos · {{ totalSku() }} SKU. Elige una presentación para abrir su estándar.</p></div>
+            <span class="count-chip" role="status">{{ productosFiltrados().length }} de {{ productos().length }} productos · {{ skuFiltrados() }} SKU</span>
+          </div>
+          <div class="toolbar">
+            <mat-form-field appearance="outline" class="product-search" subscriptSizing="dynamic">
+              <mat-label>Buscar producto o SKU</mat-label><mat-icon matPrefix>search</mat-icon>
+              <input matInput placeholder="Nombre, marca, código de barras o tecnología" autocomplete="off"
+                #busquedaProducto [value]="textoBusquedaProducto()" (input)="buscarProducto(busquedaProducto.value)" />
+              @if (textoBusquedaProducto()) {
+                <button mat-icon-button matSuffix type="button" aria-label="Limpiar búsqueda de productos"
+                  (click)="buscarProducto(''); busquedaProducto.focus()"><mat-icon>close</mat-icon></button>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="catalog-filter" subscriptSizing="dynamic">
+              <mat-label>Marca</mat-label>
+              <select matNativeControl #marca [value]="marcaSeleccionada()" (change)="marcaSeleccionada.set(marca.value)">
+                <option value="Todas">Todas las marcas</option>
+                @for (nombre of marcas(); track nombre) { <option [value]="nombre">{{ nombre }}</option> }
+              </select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="catalog-filter" subscriptSizing="dynamic">
+              <mat-label>Tecnología</mat-label>
+              <select matNativeControl #tecnologia [value]="tecnologiaSeleccionada()" (change)="tecnologiaSeleccionada.set(tecnologia.value)">
+                <option value="Todas">Todas las tecnologías</option>
+                @for (nombre of tecnologias(); track nombre) { <option [value]="nombre">{{ nombre }}</option> }
+              </select>
+            </mat-form-field>
+          </div>
+          <div class="category-filters" role="group" aria-label="Filtrar por categoría">
+            @for (cat of categoriasConConteo(); track cat.nombre) {
+              <button type="button" class="category-button" [class.active]="categoriaSeleccionada() === cat.nombre"
+                [attr.aria-pressed]="categoriaSeleccionada() === cat.nombre" (click)="filtrarPorCategoria(cat.nombre)">
+                {{ cat.nombre }}<span class="category-button__count">{{ cat.total }}</span>
+              </button>
+            }
+          </div>
+          @if (productosFiltrados().length) {
+            <div class="products-grid">
+              @for (producto of productosFiltrados(); track producto.id) {
+                @let sku = presentacionTarjeta(producto);
+                <mat-card [class]="'product-card ' + claseCategoria(producto.categoria)" appearance="outlined">
+                  <div class="product-card__top">
+                    <div class="product-icon"><mat-icon>local_drink</mat-icon></div>
+                    <span class="product-category">{{ producto.categoria }}</span>
+                  </div>
+                  <div class="product-info">
+                    <span class="brand-label">{{ producto.marca }}</span><h3>{{ producto.nombre }}</h3>
+                    <p class="variant-label">Variante: {{ producto.variante }}</p>
+                    @if (producto.fechaRevision) {
+                      <div class="product-date"><mat-icon>event</mat-icon>Revisión de fórmula: {{ producto.fechaRevision | date:'dd/MM/yyyy':'UTC' }}</div>
+                    }
+                  </div>
+                  <div class="product-summary">
+                    <div class="summary-item"><mat-icon>format_list_bulleted</mat-icon>
+                      <span><strong>{{ sku ? sku.ingredientes.length : 0 }}</strong> ingredientes del SKU</span></div>
+                    <div class="summary-item"><mat-icon>local_bar</mat-icon>
+                      <span><strong>{{ producto.presentaciones.length }}</strong> SKU</span></div>
+                  </div>
+                  <div class="presentation-picker">
+                    <span class="presentation-picker__label">Presentación y tecnología</span>
+                    <div class="presentation-chips" role="group" [attr.aria-label]="'Presentaciones de ' + producto.nombre">
+                      @for (presentacion of presentacionesVisibles(producto); track presentacion.id) {
+                        <button type="button" class="presentation-chip" [class.active]="sku?.id === presentacion.id"
+                          [attr.aria-pressed]="sku?.id === presentacion.id" [title]="presentacion.nombreSku"
+                          (click)="elegirPresentacionTarjeta(producto, presentacion)">{{ etiquetaPresentacion(presentacion) }}</button>
+                      }
+                    </div>
+                    @if (sku) {
+                      <span class="barcode">Código: {{ sku.codigoBarras || 'Sin código' }}</span>
+                      @if (sku.estadoFormulacion === 'por_completar') { <span class="formula-note">Fórmula por completar</span> }
+                    } @else { <span class="formula-note">Sin presentaciones activas</span> }
+                  </div>
+                  <button type="button" class="product-button" [disabled]="!sku" (click)="seleccionarProducto(producto)">
+                    Ver estándar<mat-icon>arrow_forward</mat-icon>
+                  </button>
+                </mat-card>
+              }
+            </div>
+          } @else {
+            <div class="empty-state empty-state--large">
+              <mat-icon>search_off</mat-icon><h3>{{ productos().length ? 'No se encontraron productos' : 'No hay productos activos' }}</h3>
+              <p>{{ productos().length ? 'Prueba con otro nombre, marca o tecnología.' : 'El catálogo todavía no tiene productos activos para mostrar.' }}</p>
+              @if (productos().length) { <button type="button" class="link-button" (click)="limpiarFiltrosProducto()">Limpiar filtros</button> }
+            </div>
+          }
+        </section>
+      } @else {
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>Materias primas</h2>
+            <p>Resumen de costos por kilogramo y uso en los productos.</p>
+          </div>
+        </div>
+        <!-- KPIs -->
+        <div class="kpi-grid">
+          <mat-card class="kpi-card" appearance="outlined">
+            <div class="kpi-icon kpi-icon--blue"><mat-icon>inventory_2</mat-icon></div>
+            <div class="kpi-content">
+              <span class="kpi-label">Total materias primas</span>
+              <strong class="kpi-value">{{ totalMateriasPrimas() }}</strong>
+            </div>
+          </mat-card>
+          <mat-card class="kpi-card" appearance="outlined">
+            <div class="kpi-icon kpi-icon--green"><mat-icon>attach_money</mat-icon></div>
+            <div class="kpi-content">
+              <span class="kpi-label">Costo promedio</span>
+              <strong class="kpi-value">${{ costoPromedio() | number:'1.2-2' }}</strong>
+              <span class="kpi-detail">por kg</span>
+            </div>
+          </mat-card>
+          <mat-card class="kpi-card" appearance="outlined">
+            <div class="kpi-icon kpi-icon--red"><mat-icon>trending_up</mat-icon></div>
+            <div class="kpi-content">
+              <span class="kpi-label">Más cara</span>
+              @if (materiaPrimaMasCara(); as cara) {
+                <strong class="kpi-value kpi-value--text" [title]="cara.nombre">{{ cara.nombre }}</strong>
+                <span class="kpi-detail">${{ cara.costoKg | number:'1.2-4' }} / kg</span>
+              } @else {
+                <strong class="kpi-value">—</strong>
+              }
+            </div>
+          </mat-card>
+          <mat-card class="kpi-card" appearance="outlined">
+            <div class="kpi-icon kpi-icon--amber"><mat-icon>trending_down</mat-icon></div>
+            <div class="kpi-content">
+              <span class="kpi-label">Más barata</span>
+              @if (materiaPrimaMasBarata(); as barata) {
+                <strong class="kpi-value kpi-value--text" [title]="barata.nombre">{{ barata.nombre }}</strong>
+                <span class="kpi-detail">${{ barata.costoKg | number:'1.2-4' }} / kg</span>
+              } @else {
+                <strong class="kpi-value">—</strong>
+              }
+            </div>
+          </mat-card>
+        </div>
+        <app-historico-costos modo="materia"></app-historico-costos>
+      <!-- GRÁFICO + TABLA -->
+        <div class="content-grid">
+          <mat-card class="chart-card" appearance="outlined">
+            <div class="card-header">
+              <h3>Materias primas de mayor costo</h3>
+              <p>Top 15 por costo / kg</p>
+            </div>
+            <mat-card-content>
+              <div class="chart-container">
+                <canvas
+                  baseChart
+                  [type]="barChartType"
+                  [data]="barChartData()"
+                  [options]="barChartOptions"
+                ></canvas>
+              </div>
+            </mat-card-content>
+          </mat-card>
+          <mat-card class="table-card" appearance="outlined">
+            <div class="card-header">
+              <h3>Catálogo de materias primas</h3>
+              <p>{{ materiasPrimasFiltradas().length }} de {{ totalMateriasPrimas() }} resultados</p>
+            </div>
+            <mat-card-content>
+              <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+                <mat-label>Buscar materia prima</mat-label>
+                <mat-icon matPrefix>search</mat-icon>
+                <input
+                  matInput
+                  placeholder="Ej. azucar, limon, mora pulpa…"
+                  autocomplete="off"
+                  #busqueda
+                  [value]="textoBusqueda()"
+                  (input)="buscarMateriaPrima(busqueda.value)"
+                />
+                @if (textoBusqueda()) {
+                  <button mat-icon-button matSuffix type="button"
+                    aria-label="Limpiar búsqueda de materias primas"
+                    (click)="limpiarBusquedaMateriaPrima(); busqueda.focus()">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                }
+              </mat-form-field>
+              <div class="table-container">
+                <table mat-table [dataSource]="materiasPrimasFiltradas()" class="materials-table">
+                  <ng-container matColumnDef="nombre">
+                    <th mat-header-cell *matHeaderCellDef>Materia prima</th>
+                    <td mat-cell *matCellDef="let materia" class="cell-name">{{ materia.nombre }}</td>
+                  </ng-container>
+                  <ng-container matColumnDef="unidad">
+                    <th mat-header-cell *matHeaderCellDef>Unidad</th>
+                    <td mat-cell *matCellDef="let materia">
+                      <span class="unit-chip">{{ materia.unidad }}</span>
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="costoKg">
+                    <th mat-header-cell *matHeaderCellDef class="num">Costo / kg</th>
+                    <td mat-cell *matCellDef="let materia" class="num">
+                      <div class="cost-bar">
+                        <span class="cost-bar__value">${{ materia.costoKg | number:'1.4-4' }}</span>
+                        <div class="cost-bar__track">
+                          <div class="cost-bar__fill" [style.width.%]="porcentajeCosto(materia.costoKg)"></div>
+                        </div>
+                      </div>
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="productos">
+                    <th mat-header-cell *matHeaderCellDef>Se usa en</th>
+                    <td mat-cell *matCellDef="let materia" class="cell-products">
+                      @let usados = listaProductosMateriaPrima(materia.id);
+                      @if (usados.length === 0) {
+                        <span class="muted">—</span>
+                      } @else {
+                        <div class="product-chips" [title]="usados.join(', ')">
+                          @for (nombre of usados.slice(0, 2); track nombre) {
+                            <span class="product-chip">{{ nombre }}</span>
+                          }
+                          @if (usados.length > 2) {
+                            <span class="product-chip product-chip--more">+{{ usados.length - 2 }}</span>
+                          }
+                        </div>
+                      }
+                    </td>
+                  </ng-container>
+                  <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+                </table>
+                @if (materiasPrimasFiltradas().length === 0) {
+                  <div class="empty-state">
+                    <mat-icon>search_off</mat-icon>
+                    <p>No se encontraron materias primas.</p>
+                  </div>
+                }
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </section>
+      }
+    } @else if (productoSeleccionado(); as producto) {
+      <div class="standard-view">
+        <button type="button" class="back-button" (click)="volverProductos()"><mat-icon>arrow_back</mat-icon>Volver a productos</button>
+        <app-estandar></app-estandar>
+      </div>
+    }
+  }
+</div>
