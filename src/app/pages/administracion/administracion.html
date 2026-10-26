@@ -1,54 +1,200 @@
 <div class="admin">
   <header class="admin-header">
-    <div><h1>Administración de catálogo</h1><p>Productos, materias primas, fórmulas por SKU y empaques.</p></div>
-    <button class="btn" type="button" (click)="cargarTodo()" [disabled]="cargando() || guardando()"><mat-icon>refresh</mat-icon>Actualizar datos</button>
+    <div>
+      <h1>Administración de catálogo</h1>
+      <p>Productos, materias primas, fórmulas por SKU y empaques.</p>
+    </div>
+    <button class="btn" type="button" (click)="cargarTodo()" [disabled]="cargando() || guardando()">
+      <mat-icon>refresh</mat-icon>Actualizar datos
+    </button>
   </header>
 
   <section class="panel acceso" aria-label="Acceso de edición">
     @if (email()) {
       <div class="admin-header">
-        <div><strong>{{ email() }}</strong><p class="hint">{{ editor() ? 'Cuenta autorizada para editar el catálogo.' : 'Esta cuenta no tiene permiso de edición.' }}</p></div>
-        <button class="btn" type="button" (click)="cerrarSesion()" [disabled]="autenticando() || guardando()">Cerrar sesión</button>
+        <div>
+          <strong>{{ email() }}</strong>
+          <p class="hint">
+            {{
+              editor()
+                ? 'Cuenta autorizada para editar el catálogo.'
+                : 'Esta cuenta no tiene permiso de edición.'
+            }}
+          </p>
+        </div>
+        <button
+          class="btn"
+          type="button"
+          (click)="cerrarSesion()"
+          [disabled]="autenticando() || guardando()"
+        >
+          Cerrar sesión
+        </button>
       </div>
     } @else {
-      <div><strong>Acceso de editor</strong><p class="hint">Consulta el catálogo libremente. Para guardar cambios, inicia sesión con una cuenta autorizada.</p></div>
+      <div>
+        <strong>Acceso de editor</strong>
+        <p class="hint">
+          Consulta el catálogo libremente. Para guardar cambios, inicia sesión con una cuenta
+          autorizada.
+        </p>
+      </div>
       <form class="form-grid" [formGroup]="formLogin" (ngSubmit)="iniciarSesion()">
-        <label class="field"><span class="field__label">Correo</span><input type="email" formControlName="email" autocomplete="username" required /></label>
-        <label class="field"><span class="field__label">Contraseña</span><input type="password" formControlName="password" autocomplete="current-password" required /></label>
-        <button type="submit" class="btn btn--primary login-button" [disabled]="autenticando()">{{ autenticando() ? 'Ingresando…' : 'Iniciar sesión' }}</button>
+        <label class="field"
+          ><span class="field__label">Correo</span
+          ><input type="email" formControlName="email" autocomplete="username" required
+        /></label>
+        <label class="field"
+          ><span class="field__label">Contraseña</span
+          ><input
+            type="password"
+            formControlName="password"
+            autocomplete="current-password"
+            required
+        /></label>
+        <button type="submit" class="btn btn--primary login-button" [disabled]="autenticando()">
+          {{ autenticando() ? 'Ingresando…' : 'Iniciar sesión' }}
+        </button>
       </form>
     }
-    @if (errorSesion()) { <p class="alert alert--error" role="alert">{{ errorSesion() }}</p> }
+    @if (errorSesion()) {
+      <p class="alert alert--error" role="alert">{{ errorSesion() }}</p>
+    }
   </section>
 
   <nav class="tabs" aria-label="Secciones de administración">
-    <button type="button" class="tab" [class.active]="pestana() === 'productos'" (click)="cambiarPestana('productos')" [disabled]="guardando()"><mat-icon>local_drink</mat-icon>Productos <span class="tab__count">{{ productos().length }}</span></button>
-    <button type="button" class="tab" [class.active]="pestana() === 'materias'" (click)="cambiarPestana('materias')" [disabled]="guardando()"><mat-icon>inventory_2</mat-icon>Materias primas <span class="tab__count">{{ materias().length }}</span></button>
-    <button type="button" class="tab" [class.active]="pestana() === 'presentaciones'" (click)="cambiarPestana('presentaciones')" [disabled]="guardando()"><mat-icon>local_bar</mat-icon>SKU y fórmulas <span class="tab__count">{{ presentaciones().length }}</span></button>
-    <button type="button" class="tab" [class.active]="pestana() === 'empaques'" (click)="cambiarPestana('empaques')" [disabled]="guardando()"><mat-icon>inventory</mat-icon>Empaques <span class="tab__count">{{ empaques().length }}</span></button>
-    <button type="button" class="tab" [class.active]="pestana() === 'historial'" (click)="cambiarPestana('historial')" [disabled]="guardando()"><mat-icon>history</mat-icon>Historial</button>
+    <button
+      type="button"
+      class="tab"
+      [class.active]="pestana() === 'productos'"
+      (click)="cambiarPestana('productos')"
+      [disabled]="guardando()"
+    >
+      <mat-icon>local_drink</mat-icon>Productos
+      <span class="tab__count">{{ productos().length }}</span>
+    </button>
+    <button
+      type="button"
+      class="tab"
+      [class.active]="pestana() === 'materias'"
+      (click)="cambiarPestana('materias')"
+      [disabled]="guardando()"
+    >
+      <mat-icon>inventory_2</mat-icon>Materias primas
+      <span class="tab__count">{{ materias().length }}</span>
+    </button>
+    <button
+      type="button"
+      class="tab"
+      [class.active]="pestana() === 'presentaciones'"
+      (click)="cambiarPestana('presentaciones')"
+      [disabled]="guardando()"
+    >
+      <mat-icon>local_bar</mat-icon>SKU y fórmulas
+      <span class="tab__count">{{ presentaciones().length }}</span>
+    </button>
+    <button
+      type="button"
+      class="tab"
+      [class.active]="pestana() === 'empaques'"
+      (click)="cambiarPestana('empaques')"
+      [disabled]="guardando()"
+    >
+      <mat-icon>inventory</mat-icon>Empaques <span class="tab__count">{{ empaques().length }}</span>
+    </button>
+    <button
+      type="button"
+      class="tab"
+      [class.active]="pestana() === 'historial'"
+      (click)="cambiarPestana('historial')"
+      [disabled]="guardando()"
+    >
+      <mat-icon>history</mat-icon>Historial
+    </button>
   </nav>
-  @if (error()) { <div class="alert alert--error" role="alert"><mat-icon>error</mat-icon><span>{{ error() }}</span></div> }
-  @if (aviso()) { <div class="alert alert--ok" role="status"><mat-icon>check_circle</mat-icon><span>{{ aviso() }}</span></div> }
+  @if (error()) {
+    <div class="alert alert--error" role="alert">
+      <mat-icon>error</mat-icon><span>{{ error() }}</span>
+    </div>
+  }
+  @if (aviso()) {
+    <div class="alert alert--ok" role="status">
+      <mat-icon>check_circle</mat-icon><span>{{ aviso() }}</span>
+    </div>
+  }
 
   @if (cargando()) {
-    <div class="loading"><span class="spinner"></span><p>Cargando catálogo…</p></div>
+    <div class="loading">
+      <span class="spinner"></span>
+      <p>Cargando catálogo…</p>
+    </div>
   } @else {
     @if (pestana() !== 'historial') {
       <div class="toolbar">
-        <label class="search"><mat-icon>search</mat-icon><input type="search" aria-label="Buscar en esta sección" placeholder="Buscar nombre, marca, tecnología…" [value]="busqueda()" (input)="busqueda.set($any($event.target).value)" /></label>
+        <label class="search"
+          ><mat-icon>search</mat-icon
+          ><input
+            type="search"
+            aria-label="Buscar en esta sección"
+            placeholder="Buscar nombre, marca, tecnología…"
+            [value]="busqueda()"
+            (input)="busqueda.set($any($event.target).value)"
+        /></label>
         @if (pestana() === 'presentaciones' || pestana() === 'empaques') {
-          <select class="toolbar__select" aria-label="Filtrar por producto" [value]="filtroProducto()" (change)="filtroProducto.set($any($event.target).value)">
+          <select
+            class="toolbar__select"
+            aria-label="Filtrar por producto"
+            [value]="filtroProducto()"
+            (change)="filtroProducto.set($any($event.target).value)"
+          >
             <option value="">Todos los productos</option>
-            @for (p of productos(); track p.id) { <option [value]="p.id">{{ p.marca }} · {{ p.nombre }} · {{ p.variante }}</option> }
+            @for (p of productos(); track p.id) {
+              <option [value]="p.id">{{ p.marca }} · {{ p.nombre }} · {{ p.variante }}</option>
+            }
           </select>
         }
         @if (editor()) {
           @switch (pestana()) {
-            @case ('productos') { <button class="btn btn--primary toolbar__action" type="button" (click)="editarProducto()" [disabled]="guardando()">Nuevo producto</button> }
-            @case ('materias') { <button class="btn btn--primary toolbar__action" type="button" (click)="editarMateria()" [disabled]="guardando()">Nueva materia prima</button> }
-            @case ('presentaciones') { <button class="btn btn--primary toolbar__action" type="button" (click)="editarSku()" [disabled]="guardando()">Nuevo SKU</button> }
-            @case ('empaques') { <button class="btn btn--primary toolbar__action" type="button" (click)="editarEmpaque()" [disabled]="guardando()">Nuevo empaque</button> }
+            @case ('productos') {
+              <button
+                class="btn btn--primary toolbar__action"
+                type="button"
+                (click)="editarProducto()"
+                [disabled]="guardando()"
+              >
+                Nuevo producto
+              </button>
+            }
+            @case ('materias') {
+              <button
+                class="btn btn--primary toolbar__action"
+                type="button"
+                (click)="editarMateria()"
+                [disabled]="guardando()"
+              >
+                Nueva materia prima
+              </button>
+            }
+            @case ('presentaciones') {
+              <button
+                class="btn btn--primary toolbar__action"
+                type="button"
+                (click)="editarSku()"
+                [disabled]="guardando()"
+              >
+                Nuevo SKU
+              </button>
+            }
+            @case ('empaques') {
+              <button
+                class="btn btn--primary toolbar__action"
+                type="button"
+                (click)="editarEmpaque()"
+                [disabled]="guardando()"
+              >
+                Nuevo empaque
+              </button>
+            }
           }
         }
       </div>
@@ -60,130 +206,622 @@
           <form class="panel" [formGroup]="formProducto" (ngSubmit)="guardarProducto()">
             <h3>{{ formProducto.controls.id.value ? 'Editar producto' : 'Nuevo producto' }}</h3>
             <fieldset [disabled]="guardando()" class="form-grid">
-              <label class="field"><span class="field__label">Nombre</span><input formControlName="nombre" required /></label>
-              <label class="field"><span class="field__label">Marca</span><input formControlName="marca" required /></label>
-              <label class="field"><span class="field__label">Variante</span><input formControlName="variante" required /></label>
-              <label class="field"><span class="field__label">Categoría</span><select formControlName="categoria">@for (c of categorias; track c) { <option [value]="c">{{ c }}</option> }</select></label>
-              <label class="field"><span class="field__label">Fecha de revisión</span><input type="date" formControlName="fecha_revision" /></label>
-              <label class="check"><input type="checkbox" formControlName="activo" />Activo en el catálogo</label>
+              <label class="field"
+                ><span class="field__label">Nombre</span><input formControlName="nombre" required
+              /></label>
+              <label class="field"
+                ><span class="field__label">Marca</span><input formControlName="marca" required
+              /></label>
+              <label class="field"
+                ><span class="field__label">Variante</span
+                ><input formControlName="variante" required
+              /></label>
+              <label class="field"
+                ><span class="field__label">Categoría</span
+                ><select formControlName="categoria">
+                  @for (c of categorias; track c) {
+                    <option [value]="c">{{ c }}</option>
+                  }
+                </select></label
+              >
+              <label class="field"
+                ><span class="field__label">Fecha de revisión</span
+                ><input type="date" formControlName="fecha_revision"
+              /></label>
+              <label class="check"
+                ><input type="checkbox" formControlName="activo" />Activo en el catálogo</label
+              >
             </fieldset>
-            <p class="hint">La fórmula se edita en «SKU y fórmulas», para cada presentación y tecnología.</p>
-            <div class="panel__actions"><button type="button" class="btn" (click)="cancelar()" [disabled]="guardando()">Cancelar</button><button class="btn btn--primary" type="submit" [disabled]="guardando()">{{ guardando() ? 'Guardando…' : 'Guardar producto' }}</button></div>
+            <p class="hint">
+              La fórmula se edita en «SKU y fórmulas», para cada presentación y tecnología.
+            </p>
+            <div class="panel__actions">
+              <button type="button" class="btn" (click)="cancelar()" [disabled]="guardando()">
+                Cancelar</button
+              ><button class="btn btn--primary" type="submit" [disabled]="guardando()">
+                {{ guardando() ? 'Guardando…' : 'Guardar producto' }}
+              </button>
+            </div>
           </form>
         }
-        <span class="count-chip">{{ productosFiltrados().length }} de {{ productos().length }} productos</span>
-        <div class="table-card"><div class="table-wrap"><table class="data-table">
-          <thead><tr><th>Producto</th><th>Marca</th><th>Variante</th><th>Categoría</th><th>Revisión</th><th>Estado</th><th>Acciones</th></tr></thead>
-          <tbody>@for (p of productosFiltrados(); track p.id) {
-            <tr><td class="cell-name">{{ p.nombre }}</td><td>{{ p.marca }}</td><td>{{ p.variante }}</td><td>{{ p.categoria }}</td><td>{{ p.fecha_revision ?? '—' }}</td><td>{{ p.activo ? 'Activo' : 'Inactivo' }}</td><td><button class="btn btn--icon" type="button" (click)="editarProducto(p)" [disabled]="!editor() || guardando()" aria-label="Editar producto"><mat-icon>edit</mat-icon></button></td></tr>
-          } @empty { <tr><td colspan="7" class="empty">No hay productos para esta búsqueda.</td></tr> }</tbody>
-        </table></div></div>
+        <span class="count-chip"
+          >{{ productosFiltrados().length }} de {{ productos().length }} productos</span
+        >
+        <div class="table-card">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Marca</th>
+                  <th>Variante</th>
+                  <th>Categoría</th>
+                  <th>Revisión</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of productosFiltrados(); track p.id) {
+                  <tr>
+                    <td class="cell-name">{{ p.nombre }}</td>
+                    <td>{{ p.marca }}</td>
+                    <td>{{ p.variante }}</td>
+                    <td>{{ p.categoria }}</td>
+                    <td>{{ p.fecha_revision ?? '—' }}</td>
+                    <td>{{ p.activo ? 'Activo' : 'Inactivo' }}</td>
+                    <td>
+                      <button
+                        class="btn btn--icon"
+                        type="button"
+                        (click)="editarProducto(p)"
+                        [disabled]="!editor() || guardando()"
+                        aria-label="Editar producto"
+                      >
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="7" class="empty">No hay productos para esta búsqueda.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
       }
       @case ('materias') {
         @if (editando() === 'materias' && editor()) {
           <form class="panel" [formGroup]="formMateria" (ngSubmit)="guardarMateria()">
-            <h3>{{ formMateria.controls.id.value ? 'Editar materia prima' : 'Nueva materia prima' }}</h3>
+            <h3>
+              {{ formMateria.controls.id.value ? 'Editar materia prima' : 'Nueva materia prima' }}
+            </h3>
             <fieldset [disabled]="guardando()" class="form-grid">
-              <label class="field"><span class="field__label">Nombre</span><input formControlName="nombre" required /></label>
-              <label class="field"><span class="field__label">Unidad</span><input formControlName="unidad" required /></label>
-              <label class="field"><span class="field__label">Costo actual por unidad</span><input type="number" formControlName="costo_kg" min="0" step="any" required /></label>
-              <label class="check"><input type="checkbox" formControlName="activo" />Activa para nuevas fórmulas</label>
+              <label class="field"
+                ><span class="field__label">Nombre</span><input formControlName="nombre" required
+              /></label>
+              <label class="field"
+                ><span class="field__label">Unidad</span><input formControlName="unidad" required
+              /></label>
+              <label class="field"
+                ><span class="field__label">Costo actual por unidad</span
+                ><input type="number" formControlName="costo_kg" min="0" step="any" required
+              /></label>
+              <label class="check"
+                ><input type="checkbox" formControlName="activo" />Activa para nuevas
+                fórmulas</label
+              >
             </fieldset>
-            <p class="hint">Este costo actualiza los cálculos vigentes. Los precios históricos conservan sus fechas y valores; no se crea una compra histórica al guardar aquí.</p>
-            <div class="panel__actions"><button class="btn" type="button" (click)="cancelar()" [disabled]="guardando()">Cancelar</button><button class="btn btn--primary" type="submit" [disabled]="guardando()">{{ guardando() ? 'Guardando…' : 'Guardar materia prima' }}</button></div>
+            <p class="hint">
+              Este costo actualiza los cálculos vigentes. Los precios históricos conservan sus
+              fechas y valores; no se crea una compra histórica al guardar aquí.
+            </p>
+            <div class="panel__actions">
+              <button class="btn" type="button" (click)="cancelar()" [disabled]="guardando()">
+                Cancelar</button
+              ><button class="btn btn--primary" type="submit" [disabled]="guardando()">
+                {{ guardando() ? 'Guardando…' : 'Guardar materia prima' }}
+              </button>
+            </div>
           </form>
         }
-        <span class="count-chip">{{ materiasFiltradas().length }} de {{ materias().length }} materias primas</span>
-        <div class="table-card"><div class="table-wrap"><table class="data-table">
-          <thead><tr><th>Materia prima</th><th>Unidad</th><th class="num">Costo actual</th><th>Estado</th><th>Acciones</th></tr></thead>
-          <tbody>@for (m of materiasFiltradas(); track m.id) {
-            <tr><td class="cell-name">{{ m.nombre }}</td><td>{{ m.unidad }}</td><td class="num">$ {{ m.costo_kg | number:'1.2-6' }}</td><td>{{ m.activo ? 'Activa' : 'Inactiva' }}</td><td><button type="button" class="btn btn--icon" (click)="editarMateria(m)" [disabled]="!editor() || guardando()" aria-label="Editar materia prima"><mat-icon>edit</mat-icon></button></td></tr>
-          } @empty { <tr><td colspan="5" class="empty">No hay materias primas para esta búsqueda.</td></tr> }</tbody>
-        </table></div></div>
+        <span class="count-chip"
+          >{{ materiasFiltradas().length }} de {{ materias().length }} materias primas</span
+        >
+        <div class="table-card">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Materia prima</th>
+                  <th>Unidad</th>
+                  <th class="num">Costo actual</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (m of materiasFiltradas(); track m.id) {
+                  <tr>
+                    <td class="cell-name">{{ m.nombre }}</td>
+                    <td>{{ m.unidad }}</td>
+                    <td class="num">$ {{ m.costo_kg | number: '1.2-6' }}</td>
+                    <td>{{ m.activo ? 'Activa' : 'Inactiva' }}</td>
+                    <td>
+                      <button
+                        type="button"
+                        class="btn btn--icon"
+                        (click)="editarMateria(m)"
+                        [disabled]="!editor() || guardando()"
+                        aria-label="Editar materia prima"
+                      >
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="empty">No hay materias primas para esta búsqueda.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
       }
       @case ('presentaciones') {
         @if (editando() === 'presentaciones' && editor()) {
           <form class="panel" [formGroup]="formSku" (ngSubmit)="guardarSku()">
             <h3>{{ formSku.controls.id.value ? 'Editar SKU y fórmula' : 'Nuevo SKU' }}</h3>
             <fieldset [disabled]="guardando()" class="form-grid">
-              <label class="field"><span class="field__label">Producto</span><select formControlName="producto_id" required><option value="">Selecciona…</option>@for (p of productos(); track p.id) { <option [value]="p.id">{{ p.marca }} · {{ p.nombre }} · {{ p.variante }}{{ p.activo ? '' : ' (inactivo)' }}</option> }</select></label>
-              <label class="field"><span class="field__label">Nombre del SKU</span><input formControlName="nombre_sku" required /></label>
-              <label class="field"><span class="field__label">Clave única del SKU</span><input formControlName="clave_sku" required /></label>
-              <label class="field"><span class="field__label">Litros nominales</span><input type="number" formControlName="litros" min="0.000001" step="0.000001" required /></label>
-              <label class="field"><span class="field__label">Tecnología</span><select formControlName="tecnologia">@for (t of tecnologias; track t) { <option [value]="t">{{ t }}</option> }</select></label>
-              <label class="field"><span class="field__label">Código de barras</span><input formControlName="codigo_barras" inputmode="numeric" /></label>
-              <label class="field"><span class="field__label">Línea de producto</span><input formControlName="linea_producto" /></label>
-              <label class="field"><span class="field__label">Estado de formulación</span><select formControlName="estado_formulacion"><option value="copiada">Copiada / completa</option><option value="escalada">Escalada</option><option value="por_completar">Por completar</option></select></label>
-              <label class="check"><input type="checkbox" formControlName="activo" />SKU activo</label>
+              <label class="field"
+                ><span class="field__label">Producto</span
+                ><select formControlName="producto_id" required>
+                  <option value="">Selecciona…</option>
+                  @for (p of productos(); track p.id) {
+                    <option [value]="p.id">
+                      {{ p.marca }} · {{ p.nombre }} · {{ p.variante
+                      }}{{ p.activo ? '' : ' (inactivo)' }}
+                    </option>
+                  }
+                </select></label
+              >
+              <label class="field"
+                ><span class="field__label">Nombre del SKU</span
+                ><input formControlName="nombre_sku" required
+              /></label>
+              <label class="field"
+                ><span class="field__label">Clave única del SKU</span
+                ><input formControlName="clave_sku" required
+              /></label>
+              <label class="field"
+                ><span class="field__label">Litros nominales</span
+                ><input
+                  type="number"
+                  formControlName="litros"
+                  min="0.000001"
+                  step="0.000001"
+                  required
+              /></label>
+              <label class="field"
+                ><span class="field__label">Tecnología</span
+                ><select formControlName="tecnologia">
+                  @for (t of tecnologias; track t) {
+                    <option [value]="t">{{ t }}</option>
+                  }
+                </select></label
+              >
+              <label class="field"
+                ><span class="field__label">Código de barras</span
+                ><input formControlName="codigo_barras" inputmode="numeric"
+              /></label>
+              <label class="field"
+                ><span class="field__label">Línea de producto</span
+                ><input formControlName="linea_producto"
+              /></label>
+              <label class="field"
+                ><span class="field__label">Estado de formulación</span
+                ><select formControlName="estado_formulacion">
+                  <option value="copiada">Copiada / completa</option>
+                  <option value="escalada">Escalada</option>
+                  <option value="por_completar">Por completar</option>
+                </select></label
+              >
+              <label class="check"
+                ><input type="checkbox" formControlName="activo" />SKU activo</label
+              >
             </fieldset>
             <div class="formula">
-              <div class="formula__header"><h4>Fórmula de este SKU</h4><span class="formula__total" [class.formula__total--bad]="filasArray.length > 0 && (totalPorcentaje() < 99.99 || totalPorcentaje() > 100.01)">{{ totalPorcentaje() | number:'1.2-4' }} %</span></div>
-              <p class="hint">Los kg y litros corresponden a una unidad del SKU. Edita porcentajes y cantidades; no se recalculan automáticamente unos a partir de otros.</p>
-              <div class="formula-scroll"><div class="formula-grid-head"><span>Materia prima</span><span>%</span><span>kg</span><span>Litros</span><span>Costo original*</span><span></span></div>
+              <div class="formula__header">
+                <h4>Fórmula de este SKU</h4>
+                <span
+                  class="formula__total"
+                  [class.formula__total--bad]="
+                    filasArray.length > 0 &&
+                    (totalPorcentaje() < 99.99 || totalPorcentaje() > 100.01)
+                  "
+                  >{{ totalPorcentaje() | number: '1.2-4' }} %</span
+                >
+              </div>
+              <p class="hint">
+                Los kg y litros corresponden a una unidad del SKU. Edita porcentajes y cantidades;
+                no se recalculan automáticamente unos a partir de otros.
+              </p>
+              <div class="formula-scroll">
+                <div class="formula-grid-head">
+                  <span>Materia prima</span><span>%</span><span>kg</span><span>Litros</span
+                  ><span>Costo original*</span><span></span>
+                </div>
                 <div formArrayName="filas">
                   @for (f of filasArray.controls; track f; let i = $index) {
                     <fieldset class="formula-grid-row" [formGroupName]="i" [disabled]="guardando()">
-                      <select formControlName="materia_prima_id" aria-label="Materia prima" required><option [ngValue]="null">Selecciona…</option>@for (m of materias(); track m.id) { <option [ngValue]="m.id" [disabled]="!m.activo && f.controls.materia_prima_id.value !== m.id">{{ m.nombre }}{{ m.activo ? '' : ' (inactiva)' }}</option> }</select>
-                      <input type="number" formControlName="porcentaje" min="0" max="100" step="any" aria-label="Porcentaje" required />
-                      <input type="number" formControlName="kg" min="0" step="any" aria-label="Kilogramos por unidad" required />
-                      <input type="number" formControlName="litros" min="0" step="any" aria-label="Litros del ingrediente por unidad" required />
-                      <input type="number" formControlName="costo_original" min="0" step="any" aria-label="Costo original de referencia" />
-                      <button type="button" class="btn btn--icon btn--danger" (click)="quitarFila(i)" aria-label="Quitar ingrediente"><mat-icon>close</mat-icon></button>
+                      <select
+                        formControlName="materia_prima_id"
+                        aria-label="Materia prima"
+                        required
+                      >
+                        <option [ngValue]="null">Selecciona…</option>
+                        @for (m of materias(); track m.id) {
+                          <option
+                            [ngValue]="m.id"
+                            [disabled]="!m.activo && f.controls.materia_prima_id.value !== m.id"
+                          >
+                            {{ m.nombre }}{{ m.activo ? '' : ' (inactiva)' }}
+                          </option>
+                        }
+                      </select>
+                      <input
+                        type="number"
+                        formControlName="porcentaje"
+                        min="0"
+                        max="100"
+                        step="any"
+                        aria-label="Porcentaje"
+                        required
+                      />
+                      <input
+                        type="number"
+                        formControlName="kg"
+                        min="0"
+                        step="any"
+                        aria-label="Kilogramos por unidad"
+                        required
+                      />
+                      <input
+                        type="number"
+                        formControlName="litros"
+                        min="0"
+                        step="any"
+                        aria-label="Litros del ingrediente por unidad"
+                        required
+                      />
+                      <input
+                        type="number"
+                        formControlName="costo_original"
+                        min="0"
+                        step="any"
+                        aria-label="Costo original de referencia"
+                      />
+                      <button
+                        type="button"
+                        class="btn btn--icon btn--danger"
+                        (click)="quitarFila(i)"
+                        aria-label="Quitar ingrediente"
+                      >
+                        <mat-icon>close</mat-icon>
+                      </button>
                     </fieldset>
                   }
                 </div>
               </div>
-              <button type="button" class="btn btn--ghost" (click)="agregarFila()" [disabled]="guardando()"><mat-icon>add</mat-icon>Agregar ingrediente</button>
-              <p class="hint">* Costo original de referencia, opcional. El costo vigente se calcula con kg × precio actual.</p>
-              <p class="summary-pill">Materia prima por unidad: <strong>{{ costoFormula() === null ? 'Sin fórmula' : ('$ ' + (costoFormula() | number:'1.4-6')) }}</strong></p>
+              <button
+                type="button"
+                class="btn btn--ghost"
+                (click)="agregarFila()"
+                [disabled]="guardando()"
+              >
+                <mat-icon>add</mat-icon>Agregar ingrediente
+              </button>
+              <p class="hint">
+                * Costo original de referencia, opcional. El costo vigente se calcula con kg ×
+                precio actual.
+              </p>
+              <p class="summary-pill">
+                Materia prima por unidad:
+                <strong>{{
+                  costoFormula() === null
+                    ? 'Sin fórmula'
+                    : '$ ' + (costoFormula() | number: '1.4-6')
+                }}</strong>
+              </p>
             </div>
-            <p class="hint">Al crear un SKU se agregan Botella, Tap y Etiqueta en 0, con estado «Sin dato». Desactivar el SKU conserva su fórmula, empaques y mano de obra.</p>
-            <div class="panel__actions"><button type="button" class="btn" (click)="cancelar()" [disabled]="guardando()">Cancelar</button><button type="submit" class="btn btn--primary" [disabled]="guardando()">{{ guardando() ? 'Guardando…' : 'Guardar SKU y fórmula' }}</button></div>
+            <p class="hint">
+              Al crear un SKU se agregan Botella, Tap y Etiqueta en 0, con estado «Sin dato».
+              Desactivar el SKU conserva su fórmula, empaques y mano de obra.
+            </p>
+            <div class="panel__actions">
+              <button type="button" class="btn" (click)="cancelar()" [disabled]="guardando()">
+                Cancelar</button
+              ><button type="submit" class="btn btn--primary" [disabled]="guardando()">
+                {{ guardando() ? 'Guardando…' : 'Guardar SKU y fórmula' }}
+              </button>
+            </div>
           </form>
         }
-        <span class="count-chip">{{ presentacionesFiltradas().length }} de {{ presentaciones().length }} SKU</span>
-        <div class="table-card"><div class="table-wrap"><table class="data-table">
-          <thead><tr><th>SKU</th><th>Código de barras</th><th>Litros</th><th>Tecnología</th><th>Ingredientes</th><th class="num">Costo MP</th><th>Estado</th><th>Acciones</th></tr></thead>
-          <tbody>@for (p of presentacionesFiltradas(); track p.id) {
-            <tr><td><div class="cell-name">{{ p.nombre_sku }}</div><div class="hint">{{ nombreProducto(p.producto_id) }} · {{ productosPorId().get(p.producto_id)?.marca }}</div><small class="muted">{{ p.clave_sku }}</small></td><td>{{ p.codigo_barras ?? '—' }}</td><td>{{ p.litros | number:'1.0-6' }}</td><td><span class="chip">{{ p.tecnologia }}</span></td><td>{{ cantidadIngredientes(p.id) }}</td><td class="num">{{ costoSku(p.id) === null ? 'Sin fórmula' : ('$ ' + (costoSku(p.id) | number:'1.4-6')) }}</td><td>{{ p.activo ? 'Activo' : 'Inactivo' }}<div class="hint">{{ p.estado_formulacion }}</div></td><td><button type="button" class="btn btn--icon" (click)="editarSku(p)" [disabled]="!editor() || guardando()" aria-label="Editar SKU y fórmula"><mat-icon>edit</mat-icon></button></td></tr>
-          } @empty { <tr><td colspan="8" class="empty">No hay SKU para estos filtros.</td></tr> }</tbody>
-        </table></div></div>
+        <span class="count-chip"
+          >{{ presentacionesFiltradas().length }} de {{ presentaciones().length }} SKU</span
+        >
+        <div class="table-card">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>Código de barras</th>
+                  <th>Litros</th>
+                  <th>Tecnología</th>
+                  <th>Ingredientes</th>
+                  <th class="num">Costo MP</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of presentacionesFiltradas(); track p.id) {
+                  <tr>
+                    <td>
+                      <div class="cell-name">{{ p.nombre_sku }}</div>
+                      <div class="hint">
+                        {{ nombreProducto(p.producto_id) }} ·
+                        {{ productosPorId().get(p.producto_id)?.marca }}
+                      </div>
+                      <small class="muted">{{ p.clave_sku }}</small>
+                    </td>
+                    <td>{{ p.codigo_barras ?? '—' }}</td>
+                    <td>{{ p.litros | number: '1.0-6' }}</td>
+                    <td>
+                      <span class="chip">{{ p.tecnologia }}</span>
+                    </td>
+                    <td>{{ cantidadIngredientes(p.id) }}</td>
+                    <td class="num">
+                      {{
+                        costoSku(p.id) === null
+                          ? 'Sin fórmula'
+                          : '$ ' + (costoSku(p.id) | number: '1.4-6')
+                      }}
+                    </td>
+                    <td>
+                      {{ p.activo ? 'Activo' : 'Inactivo' }}
+                      <div class="hint">{{ p.estado_formulacion }}</div>
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        class="btn btn--icon"
+                        (click)="editarSku(p)"
+                        [disabled]="!editor() || guardando()"
+                        aria-label="Editar SKU y fórmula"
+                      >
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="8" class="empty">No hay SKU para estos filtros.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
       }
       @case ('empaques') {
         @if (editando() === 'empaques' && editor()) {
           <form class="panel" [formGroup]="formEmpaque" (ngSubmit)="guardarEmpaque()">
             <h3>{{ formEmpaque.controls.id.value ? 'Editar empaque' : 'Nuevo empaque' }}</h3>
             <fieldset class="form-grid" [disabled]="guardando()">
-              <label class="field"><span class="field__label">SKU</span><select formControlName="presentacion_id" required><option [ngValue]="null">Selecciona…</option>@for (p of presentaciones(); track p.id) { <option [ngValue]="p.id">{{ etiquetaSku(p) }}</option> }</select></label>
-              <label class="field"><span class="field__label">Tipo</span><select formControlName="tipo">@for (t of tiposEmpaque; track t) { <option [value]="t">{{ t }}</option> }</select></label>
-              <label class="field"><span class="field__label">Costo por unidad</span><input type="number" formControlName="costo" min="0" step="any" required /></label>
-              <label class="field"><span class="field__label">Estado del precio</span><select formControlName="estado"><option value="confirmado">Confirmado</option><option value="referencia_producto">Referencia del producto</option><option value="sin_dato">Sin dato</option></select></label>
+              <label class="field"
+                ><span class="field__label">SKU</span
+                ><select formControlName="presentacion_id" required>
+                  <option [ngValue]="null">Selecciona…</option>
+                  @for (p of presentaciones(); track p.id) {
+                    <option [ngValue]="p.id">{{ etiquetaSku(p) }}</option>
+                  }
+                </select></label
+              >
+              <label class="field"
+                ><span class="field__label">Tipo</span
+                ><select formControlName="tipo">
+                  @for (t of tiposEmpaque; track t) {
+                    <option [value]="t">{{ t }}</option>
+                  }
+                </select></label
+              >
+              <label class="field"
+                ><span class="field__label"
+                  >Precio del paquete
+                  @if (
+                    unidadesPaqueteEmpaque(formEmpaque.controls.presentacion_id.value);
+                    as unidades
+                  ) {
+                    ({{ unidades }} unidades)
+                  }</span
+                ><input type="number" formControlName="costo" min="0" step="any" required
+              /></label>
+              <label class="field"
+                ><span class="field__label">Estado del precio</span
+                ><select formControlName="estado">
+                  <option value="confirmado">Confirmado</option>
+                  <option value="referencia_producto">Referencia del producto</option>
+                  <option value="sin_dato">Sin dato</option>
+                </select></label
+              >
             </fieldset>
-            <p class="hint">Se guarda únicamente para el SKU elegido. Un costo confirmado de 0 es válido; «Sin dato» indica que falta conocer el precio.</p>
-            <div class="panel__actions"><button class="btn" type="button" (click)="cancelar()" [disabled]="guardando()">Cancelar</button><button class="btn btn--primary" type="submit" [disabled]="guardando()">{{ guardando() ? 'Guardando…' : 'Guardar empaque' }}</button></div>
+            <p class="hint">
+              Registra el precio del paquete: 12 unidades para presentaciones menores de 1 litro y 6
+              unidades para 1 litro o más. El precio por unidad se calcula automáticamente. «Sin
+              dato» indica un precio pendiente.
+            </p>
+            <div class="panel__actions">
+              <button class="btn" type="button" (click)="cancelar()" [disabled]="guardando()">
+                Cancelar</button
+              ><button class="btn btn--primary" type="submit" [disabled]="guardando()">
+                {{ guardando() ? 'Guardando…' : 'Guardar empaque' }}
+              </button>
+            </div>
           </form>
         }
-        <span class="count-chip">{{ empaquesFiltrados().length }} de {{ empaques().length }} empaques</span>
-        <div class="table-card"><div class="table-wrap"><table class="data-table">
-          <thead><tr><th>SKU</th><th>Tipo</th><th class="num">Costo unitario</th><th>Estado</th><th>Acciones</th></tr></thead>
-          <tbody>@for (e of empaquesFiltrados(); track e.id) {
-            <tr><td class="cell-name">{{ nombreSku(e.presentacion_id) }}</td><td>{{ e.tipo }}</td><td class="num">$ {{ e.costo | number:'1.4-6' }}</td><td>{{ e.estado === 'sin_dato' ? 'Sin dato' : e.estado === 'confirmado' ? 'Confirmado' : 'Referencia del producto' }}</td><td><button class="btn btn--icon" type="button" (click)="editarEmpaque(e)" [disabled]="!editor() || guardando()" aria-label="Editar empaque"><mat-icon>edit</mat-icon></button></td></tr>
-          } @empty { <tr><td colspan="5" class="empty">No hay empaques para estos filtros.</td></tr> }</tbody>
-        </table></div></div>
+        <span class="count-chip"
+          >{{ empaquesFiltrados().length }} de {{ empaques().length }} empaques</span
+        >
+        <div class="table-card">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>Tipo</th>
+                  <th class="num">Precio del paquete</th>
+                  <th class="num">Precio por unidad</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (e of empaquesFiltrados(); track e.id) {
+                  <tr>
+                    <td class="cell-name">{{ nombreSku(e.presentacion_id) }}</td>
+                    <td>{{ e.tipo }}</td>
+                    <td class="num">
+                      @if (e.estado === 'sin_dato') {
+                        Sin dato
+                      } @else {
+                        $ {{ e.costo | number: '1.4-6' }}
+                      }
+                      <small>{{ unidadesPaqueteEmpaque(e.presentacion_id) }} unidades</small>
+                    </td>
+                    <td class="num">
+                      @let unitario = precioUnitarioEmpaque(e);
+                      @if (unitario !== null) {
+                        $ {{ unitario | number: '1.4-6' }}
+                      } @else {
+                        Sin dato
+                      }
+                    </td>
+                    <td>
+                      {{
+                        e.estado === 'sin_dato'
+                          ? 'Sin dato'
+                          : e.estado === 'confirmado'
+                            ? 'Confirmado'
+                            : 'Referencia del producto'
+                      }}
+                    </td>
+                    <td>
+                      <button
+                        class="btn btn--icon"
+                        type="button"
+                        (click)="editarEmpaque(e)"
+                        [disabled]="!editor() || guardando()"
+                        aria-label="Editar empaque"
+                      >
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="6" class="empty">No hay empaques para estos filtros.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
       }
       @case ('historial') {
         @if (!editor()) {
-          <p class="alert alert--info">Inicia sesión con una cuenta editora para consultar los cambios.</p>
+          <p class="alert alert--info">
+            Inicia sesión con una cuenta editora para consultar los cambios.
+          </p>
         } @else {
-          <div class="toolbar"><select class="toolbar__select" aria-label="Filtrar historial" [value]="filtroHistorial()" (change)="cambiarFiltroHistorial($any($event.target).value)"><option value="">Todos los cambios</option>@for (t of tablasHistorial; track t) { <option [value]="t">{{ etiquetaTabla(t) }}</option> }</select><span class="count-chip">Últimos {{ historial().length }} cambios · máximo 200</span><button type="button" class="btn toolbar__action" (click)="cargarHistorial()" [disabled]="cargandoHistorial()"><mat-icon>refresh</mat-icon>Actualizar</button></div>
-          @if (errorHistorial()) { <p class="alert alert--error" role="alert">{{ errorHistorial() }}</p> }
-          @if (cargandoHistorial()) { <p class="hint" role="status">Cargando historial…</p> }
-          <div class="table-card"><div class="table-wrap"><table class="data-table">
-            <thead><tr><th>Fecha</th><th>Usuario</th><th>Tipo</th><th>Acción</th><th>Detalle</th></tr></thead>
-            <tbody>@for (h of historial(); track h.id) {
-              <tr><td class="nowrap">{{ h.fecha | date:'dd-MM-yyyy HH:mm:ss' }}</td><td>{{ h.usuario ?? '—' }}</td><td>{{ etiquetaTabla(h.tabla) }}</td><td><span class="chip">{{ h.accion === 'INSERT' ? 'Agregado' : h.accion === 'UPDATE' ? 'Editado' : 'Eliminado' }}</span></td><td><div class="cell-name">{{ resumen(h) }}</div>@for (c of cambios(h); track $index) { <div class="change">{{ c }}</div> }</td></tr>
-            } @empty { @if (!errorHistorial() && !cargandoHistorial()) { <tr><td colspan="5" class="empty">Aún no hay cambios registrados para este filtro.</td></tr> } }</tbody>
-          </table></div></div>
+          <div class="toolbar">
+            <select
+              class="toolbar__select"
+              aria-label="Filtrar historial"
+              [value]="filtroHistorial()"
+              (change)="cambiarFiltroHistorial($any($event.target).value)"
+            >
+              <option value="">Todos los cambios</option>
+              @for (t of tablasHistorial; track t) {
+                <option [value]="t">{{ etiquetaTabla(t) }}</option>
+              }</select
+            ><span class="count-chip">Últimos {{ historial().length }} cambios · máximo 200</span
+            ><button
+              type="button"
+              class="btn toolbar__action"
+              (click)="cargarHistorial()"
+              [disabled]="cargandoHistorial()"
+            >
+              <mat-icon>refresh</mat-icon>Actualizar
+            </button>
+          </div>
+          @if (errorHistorial()) {
+            <p class="alert alert--error" role="alert">{{ errorHistorial() }}</p>
+          }
+          @if (cargandoHistorial()) {
+            <p class="hint" role="status">Cargando historial…</p>
+          }
+          <div class="table-card">
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Usuario</th>
+                    <th>Tipo</th>
+                    <th>Acción</th>
+                    <th>Detalle</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (h of historial(); track h.id) {
+                    <tr>
+                      <td class="nowrap">{{ h.fecha | date: 'dd-MM-yyyy HH:mm:ss' }}</td>
+                      <td>{{ h.usuario ?? '—' }}</td>
+                      <td>{{ etiquetaTabla(h.tabla) }}</td>
+                      <td>
+                        <span class="chip">{{
+                          h.accion === 'INSERT'
+                            ? 'Agregado'
+                            : h.accion === 'UPDATE'
+                              ? 'Editado'
+                              : 'Eliminado'
+                        }}</span>
+                      </td>
+                      <td>
+                        <div class="cell-name">{{ resumen(h) }}</div>
+                        @for (c of cambios(h); track $index) {
+                          <div class="change">{{ c }}</div>
+                        }
+                      </td>
+                    </tr>
+                  } @empty {
+                    @if (!errorHistorial() && !cargandoHistorial()) {
+                      <tr>
+                        <td colspan="5" class="empty">
+                          Aún no hay cambios registrados para este filtro.
+                        </td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
         }
       }
     }

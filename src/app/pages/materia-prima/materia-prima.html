@@ -244,7 +244,8 @@
                 </div>
                 <p class="table-description">
                   Botellas, tapas y etiquetas agrupadas por tamaño. Despliega una fila para ver los
-                  productos y sus precios por unidad.
+                  productos y sus precios por unidad. Menos de 1 litro: precio del paquete ÷ 12.
+                  Desde 1 litro: precio del paquete ÷ 6.
                 </p>
               }
             </div>
@@ -406,6 +407,17 @@
                                           ? 'Sin dato'
                                           : 'Referencia'
                                     }}</small>
+                                    @if (
+                                      registro.empaque.costoPaquete !== undefined &&
+                                      registro.precio !== null
+                                    ) {
+                                      <small
+                                        >Paquete ${{
+                                          registro.empaque.costoPaquete | number: '1.4-4'
+                                        }}
+                                        ÷ {{ registro.empaque.unidadesPaquete }}</small
+                                      >
+                                    }
                                   </div>
                                   <button
                                     class="row-action"
