@@ -29,7 +29,8 @@ los señala como incompletos. No se inventan precios para llenar los vacíos.
 ## Aplicación
 
 1. Publicar primero la aplicación con soporte de `Cartón`.
-2. Ejecutar `agregar-carton.sql` en Supabase > SQL Editor.
+2. Copiar y ejecutar todo `agregar-carton.sql` en Supabase > SQL Editor. La actualización
+   ocurre dentro de una única sentencia DO, sin depender de tablas temporales ni de otra sesión.
 3. Revisar los resultados y completar los cartones sin dato con precios verificados.
 4. Pulsar **Actualizar ahora** en la sección Empaques de la web.
 

@@ -1,8 +1,8 @@
 -- Supabase > SQL Editor. Ejecutar DESPUÉS de publicar el soporte de Cartón.
 -- Un cartón por botella. No modifica Botella, Tap ni Etiqueta.
 -- Fuentes y equivalencias: ver carton-referencias.md.
+-- Copiar y ejecutar TODO el archivo. La actualización completa ocurre en un único DO.
 -- Puede repetirse: no duplica empaques ni reemplaza costos ya confirmados.
-begin;
 
 -- Se conserva el nombre y la condición de las restricciones existentes.
 -- Solo se amplían CHECK que afectan exclusivamente a la columna tipo.
@@ -12,6 +12,11 @@ declare
   tipo_columna smallint;
   tipo_dato oid;
   restriccion record;
+  objetivo record;
+  afectados integer;
+  revisados integer := 0;
+  creados integer := 0;
+  completados integer := 0;
 begin
   select attnum, atttypid into tipo_columna, tipo_dato
   from pg_attribute
@@ -37,11 +42,9 @@ begin
         restriccion.conname, restriccion.expresion, 'Cartón');
     end if;
   end loop;
-end;
-$carton$;
-
-create temporary table carton_objetivos on commit drop as
-with productos as (
+  -- No se crean tablas temporales: cada objetivo se procesa dentro de este bloque.
+  for objetivo in
+  with productos as (
   select p.*, translate(lower(trim(p.categoria)), 'áéíóú', 'aeiou') as categoria_normalizada,
     translate(lower(trim(p.variante)), 'áéíóú', 'aeiou') as variante_normalizada
   from public.producto p
@@ -67,31 +70,40 @@ select o.*,
     when litros = 1.000 then 0.22::numeric
     else null::numeric
   end as costo_referencia
-from objetivos o;
+  from objetivos o
+  loop
+    revisados := revisados + 1;
 
 -- Completa únicamente cartones todavía sin dato si existe una referencia válida.
 update public.empaque e
-set costo = o.costo_referencia,
+set costo = objetivo.costo_referencia,
     estado = 'referencia_producto',
-    producto_origen_id = o.producto_id
-from carton_objetivos o
-where e.presentacion_id = o.presentacion_id and e.tipo = 'Cartón'
-  and e.estado = 'sin_dato' and o.costo_referencia is not null;
+    producto_origen_id = objetivo.producto_id
+where e.presentacion_id = objetivo.presentacion_id and e.tipo = 'Cartón'
+  and e.estado = 'sin_dato' and objetivo.costo_referencia is not null;
+get diagnostics afectados = row_count;
+completados := completados + afectados;
 
 insert into public.empaque (presentacion_id, tipo, costo, estado, producto_origen_id)
-select o.presentacion_id, 'Cartón', coalesce(o.costo_referencia, 0),
-  case when o.costo_referencia is null then 'sin_dato' else 'referencia_producto' end,
-  case when o.costo_referencia is null then null else o.producto_id end
-from carton_objetivos o
+select objetivo.presentacion_id, 'Cartón', coalesce(objetivo.costo_referencia, 0),
+  case when objetivo.costo_referencia is null then 'sin_dato' else 'referencia_producto' end,
+  case when objetivo.costo_referencia is null then null else objetivo.producto_id end
 where not exists (
   select 1 from public.empaque e
-  where e.presentacion_id = o.presentacion_id and e.tipo = 'Cartón'
+  where e.presentacion_id = objetivo.presentacion_id and e.tipo = 'Cartón'
 );
+get diagnostics afectados = row_count;
+creados := creados + afectados;
+  end loop;
+
+  raise notice 'SKU revisados: %, cartones creados: %, costos completados: %', revisados, creados, completados;
+end;
+$carton$;
 
 -- Resultado para revisar: sin_dato NO significa que el cartón sea gratis.
-select o.presentacion_id, o.nombre_sku, e.tipo, e.costo, e.estado
-from carton_objetivos o
-join public.empaque e on e.presentacion_id = o.presentacion_id and e.tipo = 'Cartón'
-order by o.nombre_sku;
-
-commit;
+-- Esta consulta también se puede ejecutar por separado para comprobar lo registrado.
+select s.id as presentacion_id, s.nombre_sku, e.tipo, e.costo, e.estado
+from public.presentacion s
+join public.empaque e on e.presentacion_id = s.id
+where e.tipo = 'Cartón'
+order by s.nombre_sku;
