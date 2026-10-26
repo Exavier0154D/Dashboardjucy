@@ -1,11 +1,4 @@
-import {
-  Component,
-  computed,
-  effect,
-  inject,
-  signal,
-  PLATFORM_ID
-} from '@angular/core';
+import { Component, computed, effect, inject, signal, PLATFORM_ID } from '@angular/core';
 
 import { DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { CostosProduccionService, CostosPresentacion } from '../../core/costos-produccion.service';
@@ -23,10 +16,7 @@ import { ChartConfiguration, ChartData } from 'chart.js';
 
 import { SelectionService } from '../../core/selection.service';
 
-import {
-  Ingrediente,
-  Presentacion
-} from '../../models/producto.model';
+import { Ingrediente, Presentacion } from '../../models/producto.model';
 
 import { HistoricoCostos } from '../../shared/historico-costos/historico-costos';
 import { GastosIndirectos } from '../../shared/gastos-indirectos/gastos-indirectos';
@@ -43,13 +33,12 @@ import { GastosIndirectos } from '../../shared/gastos-indirectos/gastos-indirect
     MatTableModule,
     BaseChartDirective,
     HistoricoCostos,
-    GastosIndirectos
+    GastosIndirectos,
   ],
   templateUrl: './estandar.html',
-  styleUrl: './estandar.css'
+  styleUrl: './estandar.css',
 })
 export class Estandar {
-
   // SERVICIOS
 
   private readonly selectionService = inject(SelectionService);
@@ -60,11 +49,9 @@ export class Estandar {
 
   // PRODUCTO SELECCIONADO
 
-  readonly productoSeleccionado =
-    this.selectionService.productoSeleccionado;
+  readonly productoSeleccionado = this.selectionService.productoSeleccionado;
 
-  readonly presentacionSeleccionada =
-    this.selectionService.presentacionSeleccionada;
+  readonly presentacionSeleccionada = this.selectionService.presentacionSeleccionada;
 
   readonly vista = signal<'estandar' | 'indirectos'>('estandar');
   private readonly productoVistaId = computed(() => this.productoSeleccionado()?.id ?? null);
@@ -91,13 +78,7 @@ export class Estandar {
 
   // TABLA DE FORMULACIÓN
 
-  readonly displayedColumns: string[] = [
-    'componente',
-    'unidad',
-    'porcentaje',
-    'kg',
-    'litros'
-  ];
+  readonly displayedColumns: string[] = ['componente', 'unidad', 'porcentaje', 'kg', 'litros'];
 
   readonly formulacion = computed(() => {
     const producto = this.productoSeleccionado();
@@ -107,10 +88,9 @@ export class Estandar {
       return [];
     }
 
-    return presentacion.ingredientes.map(ingrediente => {
+    return presentacion.ingredientes.map((ingrediente) => {
       const item = presentacion.items.find(
-        itemPresentacion =>
-          itemPresentacion.materiaPrimaId === ingrediente.materiaPrimaId
+        (itemPresentacion) => itemPresentacion.materiaPrimaId === ingrediente.materiaPrimaId,
       );
 
       return {
@@ -118,7 +98,7 @@ export class Estandar {
         unidad: ingrediente.unidad,
         porcentaje: ingrediente.porcentaje,
         kg: item?.kg ?? null,
-        litros: item?.litros ?? null
+        litros: item?.litros ?? null,
       };
     });
   });
@@ -135,44 +115,36 @@ export class Estandar {
     '#ef4444',
     '#ec4899',
     '#8b5cf6',
-    '#64748b'
+    '#64748b',
   ];
 
   readonly doughnutChartType = 'doughnut' as const;
 
-  readonly doughnutChartData =
-    computed<ChartData<'doughnut'>>(() => {
-      const ingredientes = this.ingredientes();
+  readonly doughnutChartData = computed<ChartData<'doughnut'>>(() => {
+    const ingredientes = this.ingredientes();
 
-      return {
-        labels: ingredientes.map(
-          ingrediente => ingrediente.nombre
-        ),
-        datasets: [
-          {
-            data: ingredientes.map(
-              ingrediente => ingrediente.porcentaje
-            ),
-            backgroundColor: ingredientes.map(
-              (_, i) => this.paleta[i % this.paleta.length]
-            ),
-            borderWidth: 2,
-            borderColor: '#ffffff'
-          }
-        ]
-      };
-    });
-
-  readonly doughnutChartOptions:
-    ChartConfiguration<'doughnut'>['options'] = {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom'
-        }
-      }
+    return {
+      labels: ingredientes.map((ingrediente) => ingrediente.nombre),
+      datasets: [
+        {
+          data: ingredientes.map((ingrediente) => ingrediente.porcentaje),
+          backgroundColor: ingredientes.map((_, i) => this.paleta[i % this.paleta.length]),
+          borderWidth: 2,
+          borderColor: '#ffffff',
+        },
+      ],
     };
+  });
+
+  readonly doughnutChartOptions: ChartConfiguration<'doughnut'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+      },
+    },
+  };
 
   // CALCULADORA DE BATCH
 
@@ -193,20 +165,16 @@ export class Estandar {
     const litrosBatch = this.litrosBatch();
     const presentacion = this.presentacionActual();
 
-    if (
-      litrosBatch <= 0 ||
-      !presentacion ||
-      presentacion.litros <= 0
-    ) {
+    if (litrosBatch <= 0 || !presentacion || presentacion.litros <= 0) {
       return [];
     }
 
     const factor = litrosBatch / presentacion.litros;
 
-    return presentacion.items.map(item => ({
+    return presentacion.items.map((item) => ({
       ingrediente: item.ingrediente,
       kg: item.kg * factor,
-      litros: item.litros * factor
+      litros: item.litros * factor,
     }));
   });
 
@@ -224,8 +192,12 @@ export class Estandar {
     return this.presentacionActual()?.totalCosto ?? null;
   });
 
-  readonly hayFormula = computed(() => this.ingredientes().length > 0 && (this.presentacionActual()?.items.length ?? 0) > 0);
-  readonly sumaPorcentajes = computed(() => this.ingredientes().reduce((n, i) => n + i.porcentaje, 0));
+  readonly hayFormula = computed(
+    () => this.ingredientes().length > 0 && (this.presentacionActual()?.items.length ?? 0) > 0,
+  );
+  readonly sumaPorcentajes = computed(() =>
+    this.ingredientes().reduce((n, i) => n + i.porcentaje, 0),
+  );
   readonly costos = signal<CostosPresentacion | null>(null);
   readonly costosActuales = computed(() => {
     const costos = this.costos();
@@ -236,25 +208,46 @@ export class Estandar {
   readonly mesSeleccionado = signal('');
   readonly meses = computed(() => this.costosActuales()?.meses ?? []);
   readonly costoEmpaque = computed(() => this.costosActuales()?.costoEmpaque ?? null);
+  readonly costoCarton = computed(() => this.costosActuales()?.costoCarton ?? null);
   readonly costoMateriaPrima = computed(() => this.presentacionActual()?.totalCosto ?? null);
   readonly costoPreliminar = computed(() => {
-    const materia = this.costoMateriaPrima(), empaque = this.costoEmpaque();
-    return materia === null || empaque === null ? null : materia + empaque;
+    const materia = this.costoMateriaPrima(),
+      empaque = this.costoEmpaque(),
+      carton = this.costoCarton();
+    return materia === null || empaque === null || carton === null
+      ? null
+      : materia + empaque + carton;
   });
   readonly manoObraVigente = computed(() => {
-    const costos = this.costosActuales(), mes = this.mesSeleccionado();
+    const costos = this.costosActuales(),
+      mes = this.mesSeleccionado();
     return costos && mes ? resolverManoObra(costos.manoObra, `${mes}-01`) : null;
   });
   readonly costoManoObra = computed(() => this.manoObraVigente()?.costo_unitario ?? null);
   readonly gastosIndirectosDelMes = computed(() => {
-    const costos = this.costosActuales(), mes = this.mesSeleccionado();
+    const costos = this.costosActuales(),
+      mes = this.mesSeleccionado();
     return costos && mes ? resolverGastosIndirectos(costos.gastosIndirectos, mes) : null;
   });
   readonly costoGastosIndirectos = computed(() => this.gastosIndirectosDelMes()?.costo ?? null);
   readonly costoFinal = computed(() => {
     const empaque = this.costoEmpaque();
-    if (!this.costosActuales() || this.cargandoCostos() || this.errorCostos() || empaque === null) return null;
-    return sumarCostoFinal(this.costoMateriaPrima(), empaque, this.costoManoObra(), this.costoGastosIndirectos());
+    const carton = this.costoCarton();
+    if (
+      !this.costosActuales() ||
+      this.cargandoCostos() ||
+      this.errorCostos() ||
+      empaque === null ||
+      carton === null
+    )
+      return null;
+    return sumarCostoFinal(
+      this.costoMateriaPrima(),
+      empaque,
+      this.costoManoObra(),
+      this.costoGastosIndirectos(),
+      carton,
+    );
   });
 
   constructor() {
@@ -263,10 +256,12 @@ export class Estandar {
       this.productoVistaId();
       this.vista.set('estandar');
     });
-    effect(onCleanup => {
+    effect((onCleanup) => {
       const presentacion = this.presentacionActual();
       const solicitud = ++this.solicitudCostos;
-      onCleanup(() => { this.solicitudCostos++; });
+      onCleanup(() => {
+        this.solicitudCostos++;
+      });
       this.costos.set(null);
       this.errorCostos.set(null);
       this.cargandoCostos.set(false);
@@ -285,8 +280,11 @@ export class Estandar {
 
   nombreMes(mes: string): string {
     if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(mes)) return '';
-    return new Intl.DateTimeFormat('es-EC', { month: 'long', year: 'numeric', timeZone: 'UTC' })
-      .format(new Date(`${mes}-01T00:00:00Z`));
+    return new Intl.DateTimeFormat('es-EC', {
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }).format(new Date(`${mes}-01T00:00:00Z`));
   }
 
   actualizarCostos(): void {
@@ -305,13 +303,20 @@ export class Estandar {
       this.costos.set(costos);
       if (!costos.meses.includes(this.mesSeleccionado())) {
         const actual = mesActualEcuador();
-        const ultimoConGastos = costos.gastosIndirectos.map(g => g.mes.slice(0, 7))
-          .filter(mes => mes <= actual).sort().at(-1);
-        this.mesSeleccionado.set(ultimoConGastos ?? (costos.meses.includes(actual) ? actual : costos.meses.at(-1) ?? ''));
+        const ultimoConGastos = costos.gastosIndirectos
+          .map((g) => g.mes.slice(0, 7))
+          .filter((mes) => mes <= actual)
+          .sort()
+          .at(-1);
+        this.mesSeleccionado.set(
+          ultimoConGastos ?? (costos.meses.includes(actual) ? actual : (costos.meses.at(-1) ?? '')),
+        );
       }
     } catch (error: unknown) {
       if (solicitud !== this.solicitudCostos) return;
-      this.errorCostos.set(error instanceof Error ? error.message : 'No se pudieron cargar los costos de producción.');
+      this.errorCostos.set(
+        error instanceof Error ? error.message : 'No se pudieron cargar los costos de producción.',
+      );
     } finally {
       if (solicitud === this.solicitudCostos) this.cargandoCostos.set(false);
     }

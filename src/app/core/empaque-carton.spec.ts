@@ -32,20 +32,24 @@ describe('Cartón por presentación', () => {
       0.355,
       tiposEmpaqueRequeridos(productoCoco),
     );
-    expect(resumen.costo).toBeCloseTo(0.35 / 12);
+    expect(resumen.costo).toBeCloseTo(0.15 / 12);
+    expect(resumen.carton).toBeCloseTo(0.2 / 12);
+    expect(resumen.costo + resumen.carton).toBeCloseTo(0.35 / 12);
     expect(resumen.sinDato).toBe(false);
     expect(resumen.estimado).toBe(false);
   });
 
   it('mantiene pendiente un cartón faltante o sin dato, pero permite un cero confirmado', () => {
     const requeridos = tiposEmpaqueRequeridos(productoCoco);
-    expect(calcularEmpaque(base(), 1, 0.355, requeridos).sinDato).toBe(true);
+    expect(calcularEmpaque(base(), 1, 0.355, requeridos).cartonSinDato).toBe(true);
+    expect(calcularEmpaque(base(), 1, 0.355, requeridos).sinDato).toBe(false);
     expect(
-      calcularEmpaque([...base(), fila('Cartón', 0, 'sin_dato')], 1, 0.355, requeridos).sinDato,
+      calcularEmpaque([...base(), fila('Cartón', 0, 'sin_dato')], 1, 0.355, requeridos)
+        .cartonSinDato,
     ).toBe(true);
-    expect(calcularEmpaque([...base(), fila('Cartón', 0)], 1, 0.355, requeridos).sinDato).toBe(
-      false,
-    );
+    expect(
+      calcularEmpaque([...base(), fila('Cartón', 0)], 1, 0.355, requeridos).cartonSinDato,
+    ).toBe(false);
   });
 
   it('un cartón no oculta la falta de etiqueta y no se exige a otros productos', () => {
@@ -63,5 +67,14 @@ describe('Cartón por presentación', () => {
     expect(() => calcularEmpaque([...base(), fila('Cartón', -0.2)], 1, 0.355)).toThrow(
       /costo válido/,
     );
+  });
+
+  it('distingue las referencias y pendientes de cartón de los del empaque', () => {
+    const resumen = calcularEmpaque([...base(), fila('Cartón', 0.2, 'referencia_producto')], 1, 1);
+    expect(resumen.estimado).toBe(false);
+    expect(resumen.cartonEstimado).toBe(true);
+    expect(resumen.cartonAplica).toBe(true);
+    expect(calcularEmpaque(base(), 1, 1).cartonAplica).toBe(false);
+    expect(calcularEmpaque(base(), 1, 1).carton).toBe(0);
   });
 });

@@ -75,7 +75,7 @@ describe('Precios de envase por unidad', () => {
     },
   );
 
-  it('convierte botella, tapa, etiqueta y cartón con la misma regla antes de sumar', () => {
+  it('convierte empaque y cartón con la misma regla y los mantiene separados', () => {
     const origen = tablas(0.355, 12);
     origen.empaques = ['Botella', 'Tap', 'Etiqueta', 'Cartón'].map((tipo, index) => ({
       id: index + 1,
@@ -92,14 +92,21 @@ describe('Precios de envase por unidad', () => {
         1,
         0.355,
       ).costo,
-    ).toBe(4);
+    ).toBe(3);
     expect(
       calcularEmpaque(
         origen.empaques.map((e) => ({ ...e })),
         1,
         1,
       ).costo,
-    ).toBe(8);
+    ).toBe(6);
+    const separado = calcularEmpaque(
+      origen.empaques.map((e) => ({ ...e })),
+      1,
+      0.355,
+    );
+    expect(separado.carton).toBe(1);
+    expect(separado.costo + separado.carton).toBe(4);
   });
 
   it('conserva un cero confirmado y mantiene pendiente el precio sin dato', () => {

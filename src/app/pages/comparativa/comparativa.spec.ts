@@ -10,42 +10,89 @@ describe('Comparativa', () => {
   let component: Comparativa;
   let fixture: ComponentFixture<Comparativa>;
   const sku: Presentacion = {
-    id: 1, productoId: 'producto-1', claveSku: 'sku-1', litros: 0.5,
-    codigoBarras: null, tecnologia: 'HPP', nombreSku: 'Bebida 500 ml',
-    lineaProducto: null, activo: true, estadoFormulacion: 'copiada',
-    presentacionOrigenId: null, factorEscala: null,
-    ingredientes: [], items: [], totalKg: 0.5, totalLitros: 0.5, totalCosto: 1
+    id: 1,
+    productoId: 'producto-1',
+    claveSku: 'sku-1',
+    litros: 0.5,
+    codigoBarras: null,
+    tecnologia: 'HPP',
+    nombreSku: 'Bebida 500 ml',
+    lineaProducto: null,
+    activo: true,
+    estadoFormulacion: 'copiada',
+    presentacionOrigenId: null,
+    factorEscala: null,
+    ingredientes: [],
+    items: [],
+    totalKg: 0.5,
+    totalLitros: 0.5,
+    totalCosto: 1,
   };
   const producto: Producto = {
-    id: 'producto-1', nombre: 'Bebida', categoria: 'Bebida', marca: 'Jucy',
-    variante: '', activo: true, fechaRevision: '', productoOrigenId: null,
-    ingredientes: [], presentaciones: [sku]
+    id: 'producto-1',
+    nombre: 'Bebida',
+    categoria: 'Bebida',
+    marca: 'Jucy',
+    variante: '',
+    activo: true,
+    fechaRevision: '',
+    productoOrigenId: null,
+    ingredientes: [],
+    presentaciones: [sku],
   };
   const costos: CostosPresentacion = {
-    presentacionId: 1, costoEmpaque: 0.3, empaquePorProducto: false,
-    empaqueEstimado: false, empaqueSinDato: false,
+    presentacionId: 1,
+    costoEmpaque: 0.3,
+    empaquePorProducto: false,
+    costoCarton: 0,
+    cartonAplica: false,
+    cartonEstimado: false,
+    cartonSinDato: false,
+    empaqueEstimado: false,
+    empaqueSinDato: false,
     manoObra: [
       { mes: '2026-01-01', costo_unitario: 0.2 },
-      { mes: '2026-02-01', costo_unitario: 0.4 }
+      { mes: '2026-02-01', costo_unitario: 0.4 },
     ],
     gastosIndirectos: [
       { mes: '2026-01-01', concepto: 'Energía', costo_unitario: 0.1, estimado: false },
-      { mes: '2026-02-01', concepto: 'Energía', costo_unitario: 0, estimado: false }
-    ], meses: ['2026-01', '2026-02', '2026-03']
+      { mes: '2026-02-01', concepto: 'Energía', costo_unitario: 0, estimado: false },
+    ],
+    meses: ['2026-01', '2026-02', '2026-03'],
   };
   let cargar: ReturnType<typeof vi.fn>;
+
+  it('separa el cartón en el reporte y lo incluye una sola vez en el total', async () => {
+    component.mesDesde.set('2026-01');
+    component.mesHasta.set('2026-01');
+    cargar.mockResolvedValue({ ...costos, costoCarton: 0.1, cartonAplica: true });
+    component.reintentarCostos();
+    await fixture.whenStable();
+    const fila = component.filas()[0];
+    expect(fila.empaque).toBe(0.3);
+    expect(fila.carton).toBe(0.1);
+    expect(fila.totalUnidad).toBeCloseTo(1.7);
+    expect(fixture.nativeElement.querySelector('.monthly-report thead')?.textContent).toContain(
+      'Cartón actual',
+    );
+  });
 
   beforeEach(async () => {
     cargar = vi.fn().mockResolvedValue(costos);
     await TestBed.configureTestingModule({
       imports: [Comparativa],
       providers: [
-        { provide: DataService, useValue: {
-          productos: signal([producto]), cargando: signal(false),
-          cargado: signal(true), error: signal(null)
-        } },
-        { provide: CostosProduccionService, useValue: { cargar } }
-      ]
+        {
+          provide: DataService,
+          useValue: {
+            productos: signal([producto]),
+            cargando: signal(false),
+            cargado: signal(true),
+            error: signal(null),
+          },
+        },
+        { provide: CostosProduccionService, useValue: { cargar } },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Comparativa);
@@ -58,7 +105,7 @@ describe('Comparativa', () => {
     component.mesHasta.set('2026-03');
     await fixture.whenStable();
     const filas = component.filas();
-    expect(filas.map(f => f.mes)).toEqual(['2026-01', '2026-02', '2026-03']);
+    expect(filas.map((f) => f.mes)).toEqual(['2026-01', '2026-02', '2026-03']);
     expect(filas[0].totalUnidad).toBeCloseTo(1.6);
     expect(filas[0].totalLitro).toBeCloseTo(3.2);
     expect(filas[1].gif).toBe(0);
@@ -69,12 +116,18 @@ describe('Comparativa', () => {
     expect(component.resumen()).toEqual({ productos: 1, sku: 1, calculados: 2, observados: 1 });
     expect(cargar).toHaveBeenCalledTimes(1);
     expect(component.filasPorSku().length).toBe(1);
-    expect(component.filasPorSku()[0].meses.map(f => f.mes)).toEqual(['2026-01', '2026-02', '2026-03']);
+    expect(component.filasPorSku()[0].meses.map((f) => f.mes)).toEqual([
+      '2026-01',
+      '2026-02',
+      '2026-03',
+    ]);
     const tabla: HTMLTableElement = fixture.nativeElement.querySelector('.monthly-report');
     expect(tabla.querySelectorAll(':scope > tbody > tr:not(.formula-row)').length).toBe(1);
     expect(tabla.querySelectorAll('.month-heading').length).toBe(3);
     expect(tabla.querySelectorAll(':scope > tbody > tr:first-child > td.total').length).toBe(6);
-    expect(tabla.querySelector('.formula-row > td')?.getAttribute('colspan')).toBe('20');
+    expect(Number(tabla.querySelector('.formula-row > td')?.getAttribute('colspan'))).toBe(
+      tabla.querySelector(':scope > tbody > tr:first-child')?.children.length,
+    );
     expect(fixture.nativeElement.textContent).toContain('febrero de 2026');
   });
 

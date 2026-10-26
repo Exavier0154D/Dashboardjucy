@@ -1,36 +1,63 @@
 <section class="history-card">
   <header>
-    <h3>{{ modo() === 'materia' ? 'Histórico de precios de materias primas' : 'Histórico de costo del producto' }}</h3>
-    <p>{{ modo() === 'materia' ? 'Evolución del precio semanal en USD por kilogramo.' : 'Materia prima histórica y costo final estimado por presentación: formulación actual, empaque actual, mano de obra vigente y gastos indirectos del mes de cada fecha.' }}</p>
+    <h3>
+      {{
+        modo() === 'materia'
+          ? 'Histórico de precios de materias primas'
+          : 'Histórico de costo del producto'
+      }}
+    </h3>
+    <p>
+      {{
+        modo() === 'materia'
+          ? 'Evolución del precio semanal en USD por kilogramo.'
+          : 'Materia prima histórica y costo final estimado por presentación: formulación actual, empaque y cartón actuales, mano de obra vigente y gastos indirectos del mes de cada fecha.'
+      }}
+    </p>
     @if (modo() === 'producto' && producto() && presentacion()) {
-      <strong>{{ producto()!.nombre }} · {{ presentacion()!.litros * 1000 | number:'1.0-3' }} ml · {{ presentacion()!.tecnologia }} · SKU {{ presentacion()!.id }}</strong>
+      <strong
+        >{{ producto()!.nombre }} · {{ presentacion()!.litros * 1000 | number: '1.0-3' }} ml ·
+        {{ presentacion()!.tecnologia }} · SKU {{ presentacion()!.id }}</strong
+      >
     }
   </header>
-  <p class="note">Los costos se comprueban automáticamente cada 15 segundos. <button type="button" (click)="cargarDatos()">Actualizar ahora</button></p>
+  <p class="note">
+    Los costos se comprueban automáticamente cada 15 segundos.
+    <button type="button" (click)="cargarDatos()">Actualizar ahora</button>
+  </p>
   <div class="filters">
     @if (modo() === 'materia') {
       <div class="material-filter">
         <mat-form-field appearance="outline" class="material-search" subscriptSizing="dynamic">
           <mat-label>Buscar y seleccionar materia prima</mat-label>
           <mat-icon matPrefix>search</mat-icon>
-          <input matInput #busquedaMateria
+          <input
+            matInput
+            #busquedaMateria
             placeholder="Ej. azucar, limon, mora pulpa…"
             autocomplete="off"
             [value]="textoMateria()"
             [disabled]="cargando()"
             [matAutocomplete]="opcionesMateria"
             (focus)="prepararBusquedaMateria()"
-            (input)="buscarMateria(busquedaMateria.value)">
+            (input)="buscarMateria(busquedaMateria.value)"
+          />
           @if (textoMateria()) {
-            <button mat-icon-button matSuffix type="button"
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
               aria-label="Limpiar selección de materia prima"
-              (click)="limpiarSelectorMateria(); busquedaMateria.focus()">
+              (click)="limpiarSelectorMateria(); busquedaMateria.focus()"
+            >
               <mat-icon>close</mat-icon>
             </button>
           }
-          <mat-autocomplete #opcionesMateria="matAutocomplete"
+          <mat-autocomplete
+            #opcionesMateria="matAutocomplete"
             [displayWith]="mostrarMateria"
-            (optionSelected)="seleccionarMateria($event.option.value)">
+            (optionSelected)="seleccionarMateria($event.option.value)"
+          >
             @for (m of materiasSelector(); track m.id) {
               <mat-option [value]="m">{{ m.nombre }}</mat-option>
             } @empty {
@@ -38,87 +65,199 @@
             }
           </mat-autocomplete>
         </mat-form-field>
-        <p class="note selector-count" aria-live="polite">{{ materiasSelector().length }} de {{ materiales().length }} materias primas. Selecciona una sugerencia con clic o con flechas y Enter.</p>
+        <p class="note selector-count" aria-live="polite">
+          {{ materiasSelector().length }} de {{ materiales().length }} materias primas. Selecciona
+          una sugerencia con clic o con flechas y Enter.
+        </p>
       </div>
     }
-    <label>Desde <input #fechaDesde type="date" [value]="desde()" (change)="desde.set(fechaDesde.value)"></label>
-    <label>Hasta <input #fechaHasta type="date" [value]="hasta()" (change)="hasta.set(fechaHasta.value)"></label>
+    <label
+      >Desde
+      <input #fechaDesde type="date" [value]="desde()" (change)="desde.set(fechaDesde.value)"
+    /></label>
+    <label
+      >Hasta
+      <input #fechaHasta type="date" [value]="hasta()" (change)="hasta.set(fechaHasta.value)"
+    /></label>
   </div>
-  <p class="note">La línea mantiene cada precio hasta su próxima actualización. Puntos azules: precios históricos vigentes. Puntos grises: alguna materia utiliza el precio base de referencia anterior al primer registro (si no hay base histórica conservada, se usa el precio actual como estimación). Se incluyen los límites del rango y las fechas registradas. Los precios de materia prima no se promedian.</p>
+  <p class="note">
+    La línea mantiene cada precio hasta su próxima actualización. Puntos azules: precios históricos
+    vigentes. Puntos grises: alguna materia utiliza el precio base de referencia anterior al primer
+    registro (si no hay base histórica conservada, se usa el precio actual como estimación). Se
+    incluyen los límites del rango y las fechas registradas. Los precios de materia prima no se
+    promedian.
+  </p>
   @if (modo() === 'producto') {
-    <p class="note">Azul: materia prima. Verde: costo final estimado. El empaque actual se aplica a todo el período;
-      no disponemos de su histórico. La mano de obra mantiene el último valor conocido hasta su próxima actualización. Los gastos indirectos se suman únicamente para el mes registrado.</p>
-    @if (costosActuales()?.empaqueEstimado) { <p class="note">El empaque de este SKU es una referencia copiada del producto anterior.</p> }
-    @if (costosActuales()?.empaqueSinDato) { <p class="note">Faltan datos de empaque; los registros ausentes aportan 0.</p> }
+    <p class="note">
+      Azul: materia prima. Verde: costo final estimado. Empaque y cartón actuales se suman por
+      separado en todo el período; no disponemos de su histórico. La mano de obra mantiene el último
+      valor conocido hasta su próxima actualización. Los gastos indirectos se suman únicamente para
+      el mes registrado.
+    </p>
+    @if (costosActuales()?.empaqueEstimado) {
+      <p class="note">El empaque de este SKU es una referencia copiada del producto anterior.</p>
+    }
+    @if (costosActuales()?.empaqueSinDato) {
+      <p class="note">Faltan datos de empaque; los registros ausentes aportan 0.</p>
+    }
+    @if (costosActuales()?.cartonSinDato) {
+      <p class="note">Falta el precio del cartón; aporta 0 al subtotal.</p>
+    }
+    @if (costosActuales()?.cartonEstimado) {
+      <p class="note">El cartón utiliza un precio de referencia.</p>
+    }
     @if (puntosSinManoObra() > 0) {
-      <p class="note" role="status">{{ puntosSinManoObra() }} fechas sin mano de obra anterior disponible. Para esas fechas todavía no se puede calcular el costo final.</p>
+      <p class="note" role="status">
+        {{ puntosSinManoObra() }} fechas sin mano de obra anterior disponible. Para esas fechas
+        todavía no se puede calcular el costo final.
+      </p>
     }
     @if (puntosSinIndirectos() > 0) {
-      <p class="note" role="status">{{ puntosSinIndirectos() }} fechas sin gastos indirectos registrados para su mes. Para esas fechas el costo final queda pendiente.</p>
+      <p class="note" role="status">
+        {{ puntosSinIndirectos() }} fechas sin gastos indirectos registrados para su mes. Para esas
+        fechas el costo final queda pendiente.
+      </p>
     }
   }
   @if (modo() === 'materia' && materiaActual(); as materia) {
-    <p class="note">Precio base de referencia: ${{ materia.costo_kg | number:'1.4-4' }} / kg</p>
+    <p class="note">Precio base de referencia: ${{ materia.costo_kg | number: '1.4-4' }} / kg</p>
   }
   @if (cargando() || cargandoProducto()) {
     <p role="status">Cargando histórico…</p>
   } @else if (error() || errorProducto() || errorCalculo()) {
     <p role="alert" class="error">{{ error() || errorProducto() || errorCalculo() }}</p>
-    @if (error()) { <button type="button" (click)="cargarDatos()">Reintentar</button> }
+    @if (error()) {
+      <button type="button" (click)="cargarDatos()">Reintentar</button>
+    }
   } @else if (sinFormula()) {
     <p role="status">Este SKU todavía no tiene fórmula para reconstruir su costo histórico.</p>
   } @else if (semanas().length === 0) {
-    <p role="status">No hay registros históricos fechados disponibles para esta vista. Los históricos de la base anterior todavía deben importarse; los precios actuales no se convierten en registros históricos.</p>
+    <p role="status">
+      No hay registros históricos fechados disponibles para esta vista. Los históricos de la base
+      anterior todavía deben importarse; los precios actuales no se convierten en registros
+      históricos.
+    </p>
   } @else if (rangoInvalido()) {
-    <p role="alert" class="error">Selecciona ambas fechas. Desde debe ser anterior o igual a Hasta.</p>
+    <p role="alert" class="error">
+      Selecciona ambas fechas. Desde debe ser anterior o igual a Hasta.
+    </p>
   } @else if (modo() === 'materia' && !materiaActual()) {
     <p role="status">Busca una materia prima y selecciona una sugerencia para ver su histórico.</p>
   } @else if (serie().length === 0) {
-    <p role="status">No hay semanas disponibles en este rango o falta seleccionar una presentación.</p>
+    <p role="status">
+      No hay semanas disponibles en este rango o falta seleccionar una presentación.
+    </p>
   } @else {
     @if (resumen(); as r) {
       <div class="metrics">
-        <div><span>{{ modo() === 'producto' ? 'MP al inicio' : 'Inicio del período' }}</span><strong>${{ r.inicial | number:'1.4-4' }}</strong></div>
-        <div><span>{{ modo() === 'producto' ? 'MP al final' : 'Fin del período' }}</span><strong>${{ r.ultimo | number:'1.4-4' }}</strong></div>
-        <div><span>{{ modo() === 'producto' ? 'Variación MP USD' : 'Variación USD' }}</span><strong>${{ r.diferencia | number:'1.4-4' }}</strong></div>
-        <div><span>{{ modo() === 'producto' ? 'Variación MP %' : 'Variación %' }}</span><strong>@if (r.porcentaje !== null) { {{ r.porcentaje | number:'1.2-2' }} % } @else { No aplica } </strong></div>
+        <div>
+          <span>{{ modo() === 'producto' ? 'MP al inicio' : 'Inicio del período' }}</span
+          ><strong>${{ r.inicial | number: '1.4-4' }}</strong>
+        </div>
+        <div>
+          <span>{{ modo() === 'producto' ? 'MP al final' : 'Fin del período' }}</span
+          ><strong>${{ r.ultimo | number: '1.4-4' }}</strong>
+        </div>
+        <div>
+          <span>{{ modo() === 'producto' ? 'Variación MP USD' : 'Variación USD' }}</span
+          ><strong>${{ r.diferencia | number: '1.4-4' }}</strong>
+        </div>
+        <div>
+          <span>{{ modo() === 'producto' ? 'Variación MP %' : 'Variación %' }}</span
+          ><strong>
+            @if (r.porcentaje !== null) {
+              {{ r.porcentaje | number: '1.2-2' }} %
+            } @else {
+              No aplica
+            }
+          </strong>
+        </div>
       </div>
       <p class="note">{{ r.semanasBase }} de {{ serie().length }} fechas utilizan precios base.</p>
     }
-    <div class="chart" role="img" [attr.aria-label]="modo() === 'materia' ? 'Evolución semanal del precio de la materia prima' : 'Evolución semanal del costo del producto'">
+    <div
+      class="chart"
+      role="img"
+      [attr.aria-label]="
+        modo() === 'materia'
+          ? 'Evolución semanal del precio de la materia prima'
+          : 'Evolución semanal del costo del producto'
+      "
+    >
       <canvas baseChart [type]="'line'" [data]="chartData()" [options]="chartOptions"></canvas>
     </div>
     <details>
       <summary>Ver valores por fecha</summary>
-      <div class="table-scroll"><table>
-        <thead><tr>
-          <th>Fecha</th><th>{{ modo() === 'materia' ? 'USD/kg' : 'Materia prima USD' }}</th>
-          @if (modo() === 'producto') { <th>Empaque actual USD</th><th>Mano de obra USD</th><th>Mes de origen MO</th><th>Gastos indirectos USD</th><th>Costo calculado USD</th> }
-          <th>Materias con precio base</th><th>Materias con precio anterior vigente</th>
-        </tr></thead>
-        <tbody>
-          @for (p of serie(); track p.semana; let i = $index) {
-            <tr><td>{{ p.semana }}</td><td>${{ p.costo | number:'1.4-4' }}</td>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>{{ modo() === 'materia' ? 'USD/kg' : 'Materia prima USD' }}</th>
               @if (modo() === 'producto') {
-                <td>${{ costosActuales()?.costoEmpaque | number:'1.4-4' }}</td>
-                <td>@if (serieFinal()[i]?.manoObra != null) {
-                  ${{ serieFinal()[i].manoObra | number:'1.4-4' }}
-                  @if (serieFinal()[i].manoObraEstimada) { <small>Estimada</small> }
-                } @else { Sin registro }</td>
-                <td>{{ serieFinal()[i]?.mesManoObra?.slice(0, 7) ?? 'Sin registro' }}</td>
-                <td>@if (serieFinal()[i]?.indirectos != null) {
-                  ${{ serieFinal()[i].indirectos | number:'1.4-4' }}
-                  @if (serieFinal()[i].indirectosEstimados) { <small>Estimados</small> }
-                } @else { Sin registro del mes }</td>
-                <td>@if (serieFinal()[i]?.total != null) {
-                  ${{ serieFinal()[i].total | number:'1.4-4' }}
-                } @else { Subtotal: ${{ serieFinal()[i]?.subtotal | number:'1.4-4' }} }</td>
+                <th>Empaque actual USD</th>
+                <th>Cartón actual USD</th>
+                <th>Mano de obra USD</th>
+                <th>Mes de origen MO</th>
+                <th>Gastos indirectos USD</th>
+                <th>Costo calculado USD</th>
               }
-              <td>{{ p.conBase }}</td><td>{{ p.conAnterior ?? 0 }}</td>
+              <th>Materias con precio base</th>
+              <th>Materias con precio anterior vigente</th>
             </tr>
-          }
-        </tbody>
-      </table></div>
+          </thead>
+          <tbody>
+            @for (p of serie(); track p.semana; let i = $index) {
+              <tr>
+                <td>{{ p.semana }}</td>
+                <td>${{ p.costo | number: '1.4-4' }}</td>
+                @if (modo() === 'producto') {
+                  <td>${{ costosActuales()?.costoEmpaque | number: '1.4-4' }}</td>
+                  <td>
+                    @if (costosActuales()?.cartonSinDato) {
+                      Sin dato
+                    } @else if (!costosActuales()?.cartonAplica) {
+                      No aplica
+                    } @else {
+                      ${{ costosActuales()?.costoCarton | number: '1.4-4' }}
+                    }
+                  </td>
+                  <td>
+                    @if (serieFinal()[i]?.manoObra != null) {
+                      ${{ serieFinal()[i].manoObra | number: '1.4-4' }}
+                      @if (serieFinal()[i].manoObraEstimada) {
+                        <small>Estimada</small>
+                      }
+                    } @else {
+                      Sin registro
+                    }
+                  </td>
+                  <td>{{ serieFinal()[i]?.mesManoObra?.slice(0, 7) ?? 'Sin registro' }}</td>
+                  <td>
+                    @if (serieFinal()[i]?.indirectos != null) {
+                      ${{ serieFinal()[i].indirectos | number: '1.4-4' }}
+                      @if (serieFinal()[i].indirectosEstimados) {
+                        <small>Estimados</small>
+                      }
+                    } @else {
+                      Sin registro del mes
+                    }
+                  </td>
+                  <td>
+                    @if (serieFinal()[i]?.total != null) {
+                      ${{ serieFinal()[i].total | number: '1.4-4' }}
+                    } @else {
+                      Subtotal: ${{ serieFinal()[i]?.subtotal | number: '1.4-4' }}
+                    }
+                  </td>
+                }
+                <td>{{ p.conBase }}</td>
+                <td>{{ p.conAnterior ?? 0 }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </details>
   }
 </section>

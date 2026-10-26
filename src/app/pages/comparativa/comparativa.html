@@ -3,73 +3,131 @@
     <div>
       <span class="eyebrow">JUCY · COSTOS DE PRODUCCIÓN</span>
       <h1>Reporte comparativo</h1>
-      <p>Materia prima, empaque, mano de obra y gastos indirectos de fabricación de todos los productos del catálogo.</p>
+      <p>
+        Materia prima, empaque, cartón, mano de obra y gastos indirectos de fabricación de todos los
+        productos del catálogo.
+      </p>
     </div>
-    <button type="button" class="primary-button" [disabled]="cargando()" (click)="actualizarAhora()">
+    <button
+      type="button"
+      class="primary-button"
+      [disabled]="cargando()"
+      (click)="actualizarAhora()"
+    >
       <mat-icon>refresh</mat-icon> Actualizar costos
     </button>
   </header>
 
   @if (errorCarga()) {
-    <div class="status error" role="alert">{{ errorCarga() }}
-      <button type="button" [disabled]="cargando()" (click)="actualizarAhora()">Reintentar catálogo</button>
+    <div class="status error" role="alert">
+      {{ errorCarga() }}
+      <button type="button" [disabled]="cargando()" (click)="actualizarAhora()">
+        Reintentar catálogo
+      </button>
     </div>
   }
-  @if (errorActualizacion()) { <p class="status error" role="alert">{{ errorActualizacion() }}</p> }
-  @if (cargandoCatalogo() && !cargado()) { <p role="status">Cargando catálogo…</p> }
+  @if (errorActualizacion()) {
+    <p class="status error" role="alert">{{ errorActualizacion() }}</p>
+  }
+  @if (cargandoCatalogo() && !cargado()) {
+    <p role="status">Cargando catálogo…</p>
+  }
 
   @if (cargado()) {
     <mat-card class="filters-card" appearance="outlined">
       <div class="filters-heading">
         <div>
           <h2>Configura tu reporte</h2>
-          <p>Elige un rango de meses. Cada presentación aparece una sola vez, con los meses en columnas de izquierda a derecha.</p>
+          <p>
+            Elige un rango de meses. Cada presentación aparece una sola vez, con los meses en
+            columnas de izquierda a derecha.
+          </p>
         </div>
-        <button type="button" class="text-button" (click)="limpiarFiltros()">Limpiar filtros</button>
+        <button type="button" class="text-button" (click)="limpiarFiltros()">
+          Limpiar filtros
+        </button>
       </div>
       <div class="filters-grid">
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
           <mat-label>Buscar producto o SKU</mat-label>
           <mat-icon matPrefix>search</mat-icon>
-          <input matInput #busqueda [value]="textoBusqueda()" (input)="textoBusqueda.set(busqueda.value)" placeholder="Nombre, marca, código o línea">
+          <input
+            matInput
+            #busqueda
+            [value]="textoBusqueda()"
+            (input)="textoBusqueda.set(busqueda.value)"
+            placeholder="Nombre, marca, código o línea"
+          />
         </mat-form-field>
 
         <label class="select-field">
           <span>Categoría</span>
-          <select #categoria [value]="categoriaSeleccionada()" (change)="categoriaSeleccionada.set(categoria.value)">
+          <select
+            #categoria
+            [value]="categoriaSeleccionada()"
+            (change)="categoriaSeleccionada.set(categoria.value)"
+          >
             <option value="Todas">Todas las categorías</option>
-            @for (c of categorias(); track c) { <option [value]="c">{{ c }}</option> }
+            @for (c of categorias(); track c) {
+              <option [value]="c">{{ c }}</option>
+            }
           </select>
         </label>
 
         <label class="select-field">
           <span>Marca</span>
-          <select #marca [value]="marcaSeleccionada()" (change)="marcaSeleccionada.set(marca.value)">
+          <select
+            #marca
+            [value]="marcaSeleccionada()"
+            (change)="marcaSeleccionada.set(marca.value)"
+          >
             <option value="Todas">Todas las marcas</option>
-            @for (m of marcas(); track m) { <option [value]="m">{{ m || 'Sin marca' }}</option> }
+            @for (m of marcas(); track m) {
+              <option [value]="m">{{ m || 'Sin marca' }}</option>
+            }
           </select>
         </label>
 
         <label class="select-field">
           <span>Tecnología</span>
-          <select #tecnologia [value]="tecnologiaSeleccionada()" (change)="tecnologiaSeleccionada.set(tecnologia.value)">
+          <select
+            #tecnologia
+            [value]="tecnologiaSeleccionada()"
+            (change)="tecnologiaSeleccionada.set(tecnologia.value)"
+          >
             <option value="Todas">Todas las tecnologías</option>
-            @for (t of tecnologias(); track t) { <option [value]="t">{{ t }}</option> }
+            @for (t of tecnologias(); track t) {
+              <option [value]="t">{{ t }}</option>
+            }
           </select>
         </label>
 
         <label class="select-field">
           <span>Desde el mes</span>
-          <input type="month" #desde [value]="mesDesde()" [max]="mesHasta()" min="0001-01"
-            [attr.aria-invalid]="rangoInvalido()" aria-describedby="rango-meses-error"
-            (input)="cambiarDesde(desde.value)">
+          <input
+            type="month"
+            #desde
+            [value]="mesDesde()"
+            [max]="mesHasta()"
+            min="0001-01"
+            [attr.aria-invalid]="rangoInvalido()"
+            aria-describedby="rango-meses-error"
+            (input)="cambiarDesde(desde.value)"
+          />
         </label>
 
         <label class="select-field">
           <span>Hasta el mes</span>
-          <input type="month" #hasta [value]="mesHasta()" [min]="mesDesde() || '0001-01'" max="9999-12"
-            [attr.aria-invalid]="rangoInvalido()" aria-describedby="rango-meses-error"
-            (input)="cambiarHasta(hasta.value)">
+          <input
+            type="month"
+            #hasta
+            [value]="mesHasta()"
+            [min]="mesDesde() || '0001-01'"
+            max="9999-12"
+            [attr.aria-invalid]="rangoInvalido()"
+            aria-describedby="rango-meses-error"
+            (input)="cambiarHasta(hasta.value)"
+          />
         </label>
 
         <label class="select-field">
@@ -81,21 +139,34 @@
           </select>
         </label>
       </div>
-      <p id="rango-meses-error" class="error" role="alert" [hidden]="!rangoInvalido()">Selecciona ambos meses. El mes inicial debe ser anterior o igual al mes final.</p>
+      <p id="rango-meses-error" class="error" role="alert" [hidden]="!rangoInvalido()">
+        Selecciona ambos meses. El mes inicial debe ser anterior o igual al mes final.
+      </p>
       <p class="scope-note">
         <mat-icon>info</mat-icon>
         <span>
           En cada mes se usa la mano de obra vigente y se suman los GIF registrados para ese mes.
-          Materia prima y empaque usan sus valores actuales en todo el rango. Si faltan GIF o mano de obra, el total queda pendiente.
+          Materia prima, empaque y cartón usan sus valores actuales en todo el rango. Si faltan GIF
+          o mano de obra, el total queda pendiente.
         </span>
       </p>
     </mat-card>
 
     <section class="kpi-grid" aria-label="Resumen del reporte filtrado">
-      <mat-card appearance="outlined" class="kpi-card"><span>Productos visibles</span><strong>{{ resumen().productos }}</strong></mat-card>
-      <mat-card appearance="outlined" class="kpi-card"><span>Presentaciones visibles</span><strong>{{ resumen().sku }}</strong></mat-card>
-      <mat-card appearance="outlined" class="kpi-card"><span>Costos mensuales calculados</span><strong>{{ resumen().calculados }}</strong></mat-card>
-      <mat-card appearance="outlined" class="kpi-card"><span>Costos mensuales con observaciones</span><strong>{{ resumen().observados }}</strong></mat-card>
+      <mat-card appearance="outlined" class="kpi-card"
+        ><span>Productos visibles</span><strong>{{ resumen().productos }}</strong></mat-card
+      >
+      <mat-card appearance="outlined" class="kpi-card"
+        ><span>Presentaciones visibles</span><strong>{{ resumen().sku }}</strong></mat-card
+      >
+      <mat-card appearance="outlined" class="kpi-card"
+        ><span>Costos mensuales calculados</span
+        ><strong>{{ resumen().calculados }}</strong></mat-card
+      >
+      <mat-card appearance="outlined" class="kpi-card"
+        ><span>Costos mensuales con observaciones</span
+        ><strong>{{ resumen().observados }}</strong></mat-card
+      >
     </section>
 
     <mat-card appearance="outlined" class="report-card">
@@ -103,37 +174,63 @@
         <div>
           <h2>Costos mensuales por SKU</h2>
           @if (!rangoInvalido()) {
-            <p>{{ resumen().sku }} de {{ opciones().length }} presentaciones activas · {{ mesesDelRango().length }} meses en columnas · USD · {{ etiquetaMes(mesDesde()) }} – {{ etiquetaMes(mesHasta()) }}</p>
+            <p>
+              {{ resumen().sku }} de {{ opciones().length }} presentaciones activas ·
+              {{ mesesDelRango().length }} meses en columnas · USD · {{ etiquetaMes(mesDesde()) }} –
+              {{ etiquetaMes(mesHasta()) }}
+            </p>
           }
         </div>
-        <button type="button" class="text-button" [disabled]="cargando()" (click)="reintentarCostos()">Recargar costos de fabricación</button>
+        <button
+          type="button"
+          class="text-button"
+          [disabled]="cargando()"
+          (click)="reintentarCostos()"
+        >
+          Recargar costos de fabricación
+        </button>
       </div>
 
-      @if (cargandoCostos()) { <p class="loading" role="status">Cargando costos por presentación… Los resultados se completan progresivamente.</p> }
+      @if (cargandoCostos()) {
+        <p class="loading" role="status">
+          Cargando costos por presentación… Los resultados se completan progresivamente.
+        </p>
+      }
 
       @if (rangoInvalido()) {
         <p class="status" role="status">Corrige el rango de meses para ver el reporte.</p>
       } @else if (filas().length) {
-        <div class="table-container" tabindex="0" role="region" aria-label="Tabla de costos por SKU; desplázate horizontalmente para ver todas las columnas">
+        <div
+          class="table-container"
+          tabindex="0"
+          role="region"
+          aria-label="Tabla de costos por SKU; desplázate horizontalmente para ver todas las columnas"
+        >
           <table class="monthly-report">
-            <caption class="sr-only">Desglose mensual de costos por unidad y por litro nominal incluyendo gastos indirectos.</caption>
+            <caption class="sr-only">
+              Desglose mensual de costos por unidad y por litro nominal incluyendo gastos
+              indirectos.
+            </caption>
             <thead>
               <tr>
                 <th scope="col" rowspan="2" class="product-column">Producto / SKU</th>
                 <th scope="col" rowspan="2">Presentación</th>
                 <th scope="col" rowspan="2">Marca</th>
-                <th scope="col" rowspan="2" class="numeric">Materia prima actual<br>USD/unidad</th>
-                <th scope="col" rowspan="2" class="numeric">Empaque actual<br>USD/unidad</th>
+                <th scope="col" rowspan="2" class="numeric">
+                  Materia prima actual<br />USD/unidad
+                </th>
+                <th scope="col" rowspan="2" class="numeric">Empaque actual<br />USD/unidad</th>
+                <th scope="col" rowspan="2" class="numeric">Cartón actual<br />USD/unidad</th>
                 @for (mes of mesesDelRango(); track mes) {
                   <th scope="colgroup" colspan="5" class="month-heading">{{ etiquetaMes(mes) }}</th>
                 }
               </tr>
               <tr class="month-subheaders">
                 @for (mes of mesesDelRango(); track mes) {
-                  <th scope="col" class="numeric month-start">Mano de obra<br>USD/unidad</th>
-                  <th scope="col" class="numeric">Gastos indirectos<br>USD/unidad</th>
-                  <th scope="col" class="numeric total">Costo calculado<br>USD/unidad</th>
-                  <th scope="col" class="numeric total">Costo calculado<br>USD/litro</th>
+                  <th scope="col" class="numeric month-start">Mano de obra<br />USD/unidad</th>
+                  <th scope="col" class="numeric">Gastos indirectos<br />USD/unidad</th>
+                  <th scope="col" class="numeric total">Costo calculado<br />USD/unidad</th>
+                  <th scope="col" class="numeric total">Costo calculado<br />USD/litro</th>
                   <th scope="col">Observaciones</th>
                 }
               </tr>
@@ -151,64 +248,110 @@
                   <td>{{ f.producto.marca || 'Sin marca' }}</td>
 
                   <td class="numeric">
-                    @if (f.materiaPrima !== null) { ${{ f.materiaPrima | number:'1.4-4' }} }
-                    @else { <span class="missing">Pendiente</span> }
-                  </td>
-
-                  <td class="numeric">
-                    @if (f.empaque !== null) { ${{ f.empaque | number:'1.4-4' }} }
-                    @else { <span class="missing">{{ f.pendiente ? 'Cargando…' : 'Sin dato' }}</span> }
-                  </td>
-
-                  @for (mensual of grupo.meses; track mensual.mes) {
-                  <td class="numeric month-start">
-                    @if (mensual.manoObra !== null) {
-                      ${{ mensual.manoObra | number:'1.4-4' }}<small>Desde {{ etiquetaMes(mensual.mesAplicado!) }}</small>
+                    @if (f.materiaPrima !== null) {
+                      ${{ f.materiaPrima | number: '1.4-4' }}
                     } @else {
-                      <span class="missing">{{ mensual.pendiente ? 'Cargando…' : 'Sin dato' }}</span>
+                      <span class="missing">Pendiente</span>
                     }
                   </td>
 
                   <td class="numeric">
-                    @if (mensual.gif !== null) {
-                      ${{ mensual.gif | number:'1.4-4' }}
+                    @if (f.empaque !== null) {
+                      ${{ f.empaque | number: '1.4-4' }}
                     } @else {
+                      <span class="missing">{{ f.pendiente ? 'Cargando…' : 'Sin dato' }}</span>
+                    }
+                  </td>
+
+                  <td class="numeric">
+                    @if (f.carton === null) {
+                      <span class="missing">{{ f.pendiente ? 'Cargando…' : 'Sin dato' }}</span>
+                    } @else if (!f.cartonAplica) {
+                      No aplica
+                    } @else if (f.cartonSinDato) {
                       <span class="missing">Sin dato</span>
+                    } @else {
+                      ${{ f.carton | number: '1.4-4' }}
                     }
                   </td>
+                  @for (mensual of grupo.meses; track mensual.mes) {
+                    <td class="numeric month-start">
+                      @if (mensual.manoObra !== null) {
+                        ${{ mensual.manoObra | number: '1.4-4'
+                        }}<small>Desde {{ etiquetaMes(mensual.mesAplicado!) }}</small>
+                      } @else {
+                        <span class="missing">{{
+                          mensual.pendiente ? 'Cargando…' : 'Sin dato'
+                        }}</span>
+                      }
+                    </td>
 
-                  <td class="numeric total">
-                    @if (mensual.totalUnidad !== null) { <strong>${{ mensual.totalUnidad | number:'1.4-4' }}</strong> }
-                    @else { <span class="missing">{{ mensual.pendiente ? 'Cargando…' : 'Pendiente' }}</span> }
-                  </td>
+                    <td class="numeric">
+                      @if (mensual.gif !== null) {
+                        ${{ mensual.gif | number: '1.4-4' }}
+                      } @else {
+                        <span class="missing">Sin dato</span>
+                      }
+                    </td>
 
-                  <td class="numeric total">
-                    @if (mensual.totalLitro !== null) { <strong>${{ mensual.totalLitro | number:'1.4-4' }}</strong> }
-                    @else { <span class="missing">{{ mensual.pendiente ? 'Cargando…' : 'Pendiente' }}</span> }
-                  </td>
+                    <td class="numeric total">
+                      @if (mensual.totalUnidad !== null) {
+                        <strong>${{ mensual.totalUnidad | number: '1.4-4' }}</strong>
+                      } @else {
+                        <span class="missing">{{
+                          mensual.pendiente ? 'Cargando…' : 'Pendiente'
+                        }}</span>
+                      }
+                    </td>
 
-                  <td class="observations">
-                    @if (mensual.error) { <p class="error" role="status">{{ mensual.error }}</p> }
-                    @for (aviso of mensual.avisos; track aviso) { <p class="warning">{{ aviso }}</p> }
-                    @if (mensual.pendiente) { <span class="missing">Cargando costos…</span> }
-                    @else if (!mensual.error && !mensual.avisos.length) { <span class="ok">Datos disponibles</span> }
-                  </td>
+                    <td class="numeric total">
+                      @if (mensual.totalLitro !== null) {
+                        <strong>${{ mensual.totalLitro | number: '1.4-4' }}</strong>
+                      } @else {
+                        <span class="missing">{{
+                          mensual.pendiente ? 'Cargando…' : 'Pendiente'
+                        }}</span>
+                      }
+                    </td>
+
+                    <td class="observations">
+                      @if (mensual.error) {
+                        <p class="error" role="status">{{ mensual.error }}</p>
+                      }
+                      @for (aviso of mensual.avisos; track aviso) {
+                        <p class="warning">{{ aviso }}</p>
+                      }
+                      @if (mensual.pendiente) {
+                        <span class="missing">Cargando costos…</span>
+                      } @else if (!mensual.error && !mensual.avisos.length) {
+                        <span class="ok">Datos disponibles</span>
+                      }
+                    </td>
                   }
                 </tr>
 
                 <tr class="formula-row">
-                  <td [attr.colspan]="5 + mesesDelRango().length * 5">
+                  <td [attr.colspan]="6 + mesesDelRango().length * 5">
                     <details class="formula-details">
-                      <summary>Ver fórmula · {{ f.formula.length }} ingredientes · {{ etiqueta(f.presentacion) }}</summary>
+                      <summary>
+                        Ver fórmula · {{ f.formula.length }} ingredientes ·
+                        {{ etiqueta(f.presentacion) }}
+                      </summary>
                       <div class="formula-body">
                         <p class="formula-caption">
-                          <strong>{{ f.presentacion.nombreSku }}</strong> · Estado de formulación: {{ f.presentacion.estadoFormulacion }}.
-                          Cantidades y costos de materia prima por una unidad de esta presentación.
+                          <strong>{{ f.presentacion.nombreSku }}</strong> · Estado de formulación:
+                          {{ f.presentacion.estadoFormulacion }}. Cantidades y costos de materia
+                          prima por una unidad de esta presentación.
                         </p>
                         @if (f.formula.length) {
                           <div class="formula-scroll">
                             <table class="formula-table">
-                              <caption class="sr-only">Fórmula de {{ f.presentacion.nombreSku }}</caption>
+                              <caption class="sr-only">
+                                Fórmula de
+                                {{
+                                  f.presentacion.nombreSku
+                                }}
+                              </caption>
                               <thead>
                                 <tr>
                                   <th scope="col">Ingrediente</th>
@@ -224,21 +367,49 @@
                                   <tr>
                                     <th scope="row">{{ i.nombre }}</th>
                                     <td>{{ i.unidad ?? 'Sin dato' }}</td>
-                                    <td class="numeric">@if (i.porcentaje !== null) { {{ i.porcentaje | number:'1.2-4' }} % } @else { <span class="missing">Sin dato</span> }</td>
-                                    <td class="numeric">@if (i.kg !== null) { {{ i.kg | number:'1.4-6' }} } @else { <span class="missing">Sin dato</span> }</td>
-                                    <td class="numeric">@if (i.litros !== null) { {{ i.litros | number:'1.4-6' }} } @else { <span class="missing">Sin dato</span> }</td>
-                                    <td class="numeric">@if (i.costo !== null) { ${{ i.costo | number:'1.4-4' }} } @else { <span class="missing">Sin dato</span> }</td>
+                                    <td class="numeric">
+                                      @if (i.porcentaje !== null) {
+                                        {{ i.porcentaje | number: '1.2-4' }} %
+                                      } @else {
+                                        <span class="missing">Sin dato</span>
+                                      }
+                                    </td>
+                                    <td class="numeric">
+                                      @if (i.kg !== null) {
+                                        {{ i.kg | number: '1.4-6' }}
+                                      } @else {
+                                        <span class="missing">Sin dato</span>
+                                      }
+                                    </td>
+                                    <td class="numeric">
+                                      @if (i.litros !== null) {
+                                        {{ i.litros | number: '1.4-6' }}
+                                      } @else {
+                                        <span class="missing">Sin dato</span>
+                                      }
+                                    </td>
+                                    <td class="numeric">
+                                      @if (i.costo !== null) {
+                                        ${{ i.costo | number: '1.4-4' }}
+                                      } @else {
+                                        <span class="missing">Sin dato</span>
+                                      }
+                                    </td>
                                   </tr>
                                 }
                               </tbody>
                             </table>
                           </div>
                           <p class="formula-caption">
-                            Los porcentajes usan la escala 0–100. Un cero registrado se muestra como cero;
-                            una cantidad ausente se muestra como «Sin dato». Los costos corresponden a la materia prima vigente.
+                            Los porcentajes usan la escala 0–100. Un cero registrado se muestra como
+                            cero; una cantidad ausente se muestra como «Sin dato». Los costos
+                            corresponden a la materia prima vigente.
                           </p>
                         } @else {
-                          <p class="missing">Esta presentación todavía no tiene ingredientes ni cantidades registrados.</p>
+                          <p class="missing">
+                            Esta presentación todavía no tiene ingredientes ni cantidades
+                            registrados.
+                          </p>
                         }
                       </div>
                     </details>
@@ -256,9 +427,9 @@
         </div>
       }
       <p class="footnote">
-        Costo por litro = costo calculado por unidad ÷ litros nominales.
-        Los empaques incompletos se identifican en observaciones y aportan 0 en los tipos sin dato.
-        Los importes se calculan sin redondear y se muestran con cuatro decimales.
+        Costo por litro = costo calculado por unidad ÷ litros nominales. Los empaques o cartones
+        pendientes se identifican en observaciones y aportan 0 en los tipos sin dato. Los importes
+        se calculan sin redondear y se muestran con cuatro decimales.
       </p>
     </mat-card>
   }

@@ -26,7 +26,7 @@
             {{
               vista() === 'productos'
                 ? 'Encuentra un producto y consulta sus costos.'
-                : 'Consulta ingredientes, envases y empaques en un solo lugar.'
+                : 'Consulta ingredientes, envases y cartones en un solo lugar.'
             }}
           </p>
         </div>
@@ -165,7 +165,7 @@
               <span class="summary-icon"><mat-icon>inventory_2</mat-icon></span>
               <div>
                 <strong>{{ gruposEnvases().length }}</strong
-                ><span>Envases y empaques por presentación</span>
+                ><span>Envases y cartones por presentación</span>
               </div>
             </div>
             <div>
@@ -174,7 +174,7 @@
               >
               <div>
                 <strong>{{ envasesPendientes() }}</strong
-                ><span>Precios de empaque pendientes</span>
+                ><span>Envases y cartones sin precio</span>
               </div>
             </div>
           </div>
@@ -194,7 +194,7 @@
                 [attr.aria-pressed]="tipoMaterial() === 'envases'"
                 (click)="cambiarTipoMaterial('envases')"
               >
-                <mat-icon>inventory_2</mat-icon>Envases y empaques
+                <mat-icon>inventory_2</mat-icon>Envases y cartones
                 <span>{{ gruposEnvases().length }}</span>
               </button>
             </nav>
@@ -239,7 +239,7 @@
                     </select></label
                   >
                   <a class="text-button" routerLink="/empaques"
-                    >Ver costo total por producto <mat-icon>arrow_forward</mat-icon></a
+                    >Ver costos de empaque y cartón <mat-icon>arrow_forward</mat-icon></a
                   >
                 </div>
                 <p class="table-description">

@@ -8,7 +8,7 @@ import { Presentacion } from '../../models/producto.model';
 import {
   EstadoEmpaque,
   TipoEmpaque,
-  TIPOS_EMPAQUE,
+  TIPOS_EMPAQUE_BASE,
   tiposEmpaqueRequeridos,
 } from '../../models/empaque.model';
 import { coincideBusqueda } from '../../core/busqueda-texto';
@@ -26,7 +26,7 @@ export class Empaques {
   readonly cargando = this.data.cargando.asReadonly();
   readonly cargado = this.data.cargado.asReadonly();
   readonly errorCarga = this.data.error.asReadonly();
-  readonly tiposEmpaque = TIPOS_EMPAQUE;
+  readonly tiposEmpaque = TIPOS_EMPAQUE_BASE;
   readonly busqueda = signal('');
   readonly soloIncompletos = signal(false);
   readonly mostrarGraficos = signal(false);
@@ -60,14 +60,17 @@ export class Empaques {
         const valor = (tipo: TipoEmpaque): number =>
           empaques.find((e) => e.tipo === tipo)?.costo ?? 0;
         const requiereCarton = tiposEmpaqueRequeridos(producto).includes('Cartón');
+        const tieneCarton = requiereCarton || empaques.some((e) => e.tipo === 'Cartón');
         const incompleto =
           tiposEmpaqueRequeridos(producto).some(
             (t) => !empaques.some((e) => e.tipo === t && e.estado !== 'sin_dato'),
           ) || empaques.some((e) => e.estado === 'sin_dato');
         const referencia = empaques.some((e) => e.estado === 'referencia_producto');
-        const total = empaques.reduce((n, e) => n + e.costo, 0);
+        const componentesEmpaque = empaques.filter((e) => e.tipo !== 'Cartón');
+        const total = componentesEmpaque.reduce((n, e) => n + e.costo, 0);
+        const carton = valor('Cartón');
         const preliminar =
-          presentacion.totalCosto === null ? null : presentacion.totalCosto + total;
+          presentacion.totalCosto === null ? null : presentacion.totalCosto + total + carton;
         return {
           id: presentacion.id,
           producto,
@@ -77,16 +80,16 @@ export class Empaques {
           botella: valor('Botella'),
           tap: valor('Tap'),
           etiqueta: valor('Etiqueta'),
-          carton: valor('Cartón'),
+          carton,
           cartonPendiente:
-            requiereCarton && !empaques.some((e) => e.tipo === 'Cartón' && e.estado !== 'sin_dato'),
-          tieneCarton: requiereCarton || empaques.some((e) => e.tipo === 'Cartón'),
+            tieneCarton && !empaques.some((e) => e.tipo === 'Cartón' && e.estado !== 'sin_dato'),
+          tieneCarton,
           total,
           incompleto,
           referencia,
           preliminar,
           pct: preliminar !== null && preliminar > 0 ? (total / preliminar) * 100 : null,
-          empaques,
+          componentesEmpaque,
         };
       }),
     ),
@@ -109,7 +112,9 @@ export class Empaques {
   readonly detalle = computed(
     () => this.resumen().find((r) => r.id === this.presentacionDetalleId()) ?? null,
   );
-  readonly totalRegistros = computed(() => this.empaques().length);
+  readonly totalRegistros = computed(
+    () => this.empaques().filter((e) => e.tipo !== 'Cartón').length,
+  );
   readonly sinCosto = computed(() => this.resumen().filter((r) => r.incompleto).length);
   readonly promedioPorTipo = computed(() =>
     this.tiposEmpaque.map((tipo) => {
@@ -135,7 +140,6 @@ export class Empaques {
         { label: 'Botella', data: top.map((r) => r.botella), backgroundColor: '#1d4ed8' },
         { label: 'Tap', data: top.map((r) => r.tap), backgroundColor: '#16a34a' },
         { label: 'Etiqueta', data: top.map((r) => r.etiqueta), backgroundColor: '#f59e0b' },
-        { label: 'Cartón', data: top.map((r) => r.carton), backgroundColor: '#9333ea' },
       ],
     };
   });
@@ -155,7 +159,7 @@ export class Empaques {
             .filter((e) => e.tipo === tipo)
             .reduce((n, e) => n + e.costo, 0),
         ),
-        backgroundColor: ['#1d4ed8', '#16a34a', '#f59e0b', '#9333ea'],
+        backgroundColor: ['#1d4ed8', '#16a34a', '#f59e0b'],
       },
     ],
   }));

@@ -1,7 +1,7 @@
 <div class="empaques-container" [attr.aria-busy]="cargando()">
   <div class="encabezado">
-    <h1>Costos de empaque</h1>
-    <p>Consulta cuánto cuesta empacar cada presentación.</p>
+    <h1>Empaque y cartón</h1>
+    <p>Consulta el costo del empaque y del cartón como rubros separados.</p>
     <button
       class="btn btn-principal"
       type="button"
@@ -74,8 +74,8 @@
               <th>Botella</th>
               <th>Tapa</th>
               <th>Etiqueta</th>
-              <th>Cartón</th>
-              <th>Total unitario</th>
+              <th>Total empaque</th>
+              <th>Cartón independiente</th>
               <th>Estado</th>
             </tr>
           </thead>
@@ -92,6 +92,9 @@
                 <td>${{ r.tap | number: '1.4-4' }}</td>
                 <td>${{ r.etiqueta | number: '1.4-4' }}</td>
                 <td>
+                  <strong>${{ r.total | number: '1.4-4' }}</strong>
+                </td>
+                <td>
                   @if (r.cartonPendiente) {
                     Sin dato
                   } @else if (r.tieneCarton) {
@@ -99,9 +102,6 @@
                   } @else {
                     No aplica
                   }
-                </td>
-                <td>
-                  <strong>${{ r.total | number: '1.4-4' }}</strong>
                 </td>
                 <td>
                   <span class="badge" [class.badge--warn]="r.incompleto || r.referencia">{{
@@ -136,7 +136,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (e of d.empaques; track e.id) {
+              @for (e of d.componentesEmpaque; track e.id) {
                 <tr>
                   <td>{{ e.tipo }}</td>
                   <td>${{ e.costo | number: '1.4-4' }}</td>
@@ -155,6 +155,16 @@
           }
         </p>
         <p>Empaque: ${{ d.total | number: '1.4-4' }}</p>
+        <p>
+          Cartón independiente:
+          @if (d.cartonPendiente) {
+            Sin dato
+          } @else if (!d.tieneCarton) {
+            No aplica
+          } @else {
+            ${{ d.carton | number: '1.4-4' }}
+          }
+        </p>
         @if (d.cartonPendiente) {
           <p class="badge badge--warn">
             Falta registrar el costo de cartón de este SKU. El subtotal está incompleto.
@@ -162,7 +172,7 @@
         }
         <p>
           <strong
-            >Subtotal materia prima + empaque:
+            >Subtotal materia prima + empaque + cartón:
             @if (d.preliminar !== null) {
               ${{ d.preliminar | number: '1.4-4' }}
             } @else {

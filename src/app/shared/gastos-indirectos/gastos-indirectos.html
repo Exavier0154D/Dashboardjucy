@@ -5,25 +5,42 @@
       <h2>Gastos indirectos de fabricación</h2>
       <p>{{ producto().nombre }}</p>
     </div>
-    <span class="status-chip">{{ cargando() ? 'Cargando…' : error() ? 'Error de carga' : meses().length + ' meses registrados' }}</span>
+    <span class="status-chip">{{
+      cargando() ? 'Cargando…' : error() ? 'Error de carga' : meses().length + ' meses registrados'
+    }}</span>
   </header>
 
   @if (sku(); as presentacion) {
     <div class="sku-context">
-      <span>{{ presentacion.litros * 1000 | number:'1.0-3' }} ml · {{ presentacion.tecnologia }}</span>
-      @if (presentacion.codigoBarras) { <span>Código: {{ presentacion.codigoBarras }}</span> }
+      <span
+        >{{ presentacion.litros * 1000 | number: '1.0-3' }} ml · {{ presentacion.tecnologia }}</span
+      >
+      @if (presentacion.codigoBarras) {
+        <span>Código: {{ presentacion.codigoBarras }}</span>
+      }
     </div>
   }
 
   <div class="indirectos-controls">
-    <label>Mes de gastos indirectos
-      <select #selectorMes [value]="mes()" [disabled]="cargando() || !meses().length"
-        (change)="seleccionarMes.emit(selectorMes.value)">
-        @if (mes() && !meses().includes(mes())) { <option [value]="mes()">{{ nombreMes(mes()) }} · sin registro</option> }
-        @for (m of meses(); track m) { <option [value]="m">{{ nombreMes(m) }}</option> }
+    <label
+      >Mes de gastos indirectos
+      <select
+        #selectorMes
+        [value]="mes()"
+        [disabled]="cargando() || !meses().length"
+        (change)="seleccionarMes.emit(selectorMes.value)"
+      >
+        @if (mes() && !meses().includes(mes())) {
+          <option [value]="mes()">{{ nombreMes(mes()) }} · sin registro</option>
+        }
+        @for (m of meses(); track m) {
+          <option [value]="m">{{ nombreMes(m) }}</option>
+        }
       </select>
     </label>
-    <button type="button" [disabled]="cargando() || !sku()" (click)="actualizar.emit()">Actualizar gastos</button>
+    <button type="button" [disabled]="cargando() || !sku()" (click)="actualizar.emit()">
+      Actualizar gastos
+    </button>
   </div>
 
   @if (cargando()) {
@@ -33,43 +50,109 @@
   } @else if (!sku()) {
     <p role="status">Selecciona una presentación del producto para consultar sus gastos.</p>
   } @else {
-  @if (resumen(); as total) {
-    <div class="gif-summary">
-      <div><span>Gastos indirectos por unidad · {{ nombreMes(mes()) }}</span><strong>${{ total.costo | number:'1.4-8' }}</strong></div>
-      <div><span>{{ total.conceptos }} conceptos</span><strong class="summary-status">{{ total.estimado ? 'Incluye costos estimados' : 'Costos registrados del mes' }}</strong></div>
-    </div>
-    <div class="gif-table-container" tabindex="0" role="region" aria-label="Detalle de gastos indirectos del mes">
-      <table>
-        <caption class="visually-hidden">Gastos indirectos de {{ nombreMes(mes()) }} por unidad de esta presentación</caption>
-        <thead><tr><th scope="col">Concepto</th><th scope="col">USD/unidad</th><th scope="col">Estado</th><th scope="col">Observación / fuente</th></tr></thead>
-        <tbody>
-          @for (registro of conceptos(); track registro.concepto) {
-            <tr><th scope="row">{{ registro.concepto }}</th><td class="numeric">${{ registro.costo_unitario | number:'1.4-8' }}</td>
-              <td>{{ registro.estimado ? 'Estimado' : 'Registrado' }}</td><td class="source-note">{{ registro.observacion || 'Sin observación' }}</td></tr>
-          }
-        </tbody>
-      </table>
-    </div>
-    <p class="gif-note">Este importe se suma a materia prima, empaque y mano de obra para calcular el costo por unidad de la presentación. Se utiliza únicamente el mes seleccionado.</p>
-  } @else {
-  <div class="empty-state">
-    <div class="empty-icon"><mat-icon aria-hidden="true">factory</mat-icon></div>
-    <h3>Sin gastos indirectos registrados {{ mes() ? 'para ' + nombreMes(mes()) : '' }}</h3>
-    <p>El costo final queda pendiente para este mes. Selecciona otro mes con registros o actualiza los gastos.</p>
-  </div>
-  }
-  @if (historico().length) {
-    <h3>Gastos por mes</h3>
-    <p class="gif-note">Consulta los meses cargados para esta presentación. Los valores estimados conservan referencias de meses anteriores.</p>
-    <div class="gif-table-container" tabindex="0" role="region" aria-label="Histórico mensual de gastos indirectos">
-      <table>
-        <thead><tr><th scope="col">Mes</th><th scope="col">Conceptos</th><th scope="col">Total USD/unidad</th><th scope="col">Estado</th></tr></thead>
-        <tbody>@for (fila of historico(); track fila.mes) {
-          <tr [class.selected-month]="fila.mes === mes()"><th scope="row"><button type="button" class="month-link" [attr.aria-pressed]="fila.mes === mes()" (click)="seleccionarMes.emit(fila.mes)">{{ nombreMes(fila.mes) }}</button></th>
-            <td>{{ fila.conceptos }}</td><td class="numeric">${{ fila.costo | number:'1.4-8' }}</td><td>{{ fila.estimado ? 'Incluye estimados' : 'Registrado' }}</td></tr>
-        }</tbody>
-      </table>
-    </div>
-  }
+    @if (resumen(); as total) {
+      <div class="gif-summary">
+        <div>
+          <span>Gastos indirectos por unidad · {{ nombreMes(mes()) }}</span
+          ><strong>${{ total.costo | number: '1.4-8' }}</strong>
+        </div>
+        <div>
+          <span>{{ total.conceptos }} conceptos</span
+          ><strong class="summary-status">{{
+            total.estimado ? 'Incluye costos estimados' : 'Costos registrados del mes'
+          }}</strong>
+        </div>
+      </div>
+      <div
+        class="gif-table-container"
+        tabindex="0"
+        role="region"
+        aria-label="Detalle de gastos indirectos del mes"
+      >
+        <table>
+          <caption class="visually-hidden">
+            Gastos indirectos de
+            {{
+              nombreMes(mes())
+            }}
+            por unidad de esta presentación
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Concepto</th>
+              <th scope="col">USD/unidad</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Observación / fuente</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (registro of conceptos(); track registro.concepto) {
+              <tr>
+                <th scope="row">{{ registro.concepto }}</th>
+                <td class="numeric">${{ registro.costo_unitario | number: '1.4-8' }}</td>
+                <td>{{ registro.estimado ? 'Estimado' : 'Registrado' }}</td>
+                <td class="source-note">{{ registro.observacion || 'Sin observación' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="gif-note">
+        Este importe se suma a materia prima, empaque, cartón y mano de obra para calcular el costo
+        por unidad de la presentación. Se utiliza únicamente el mes seleccionado.
+      </p>
+    } @else {
+      <div class="empty-state">
+        <div class="empty-icon"><mat-icon aria-hidden="true">factory</mat-icon></div>
+        <h3>Sin gastos indirectos registrados {{ mes() ? 'para ' + nombreMes(mes()) : '' }}</h3>
+        <p>
+          El costo final queda pendiente para este mes. Selecciona otro mes con registros o
+          actualiza los gastos.
+        </p>
+      </div>
+    }
+    @if (historico().length) {
+      <h3>Gastos por mes</h3>
+      <p class="gif-note">
+        Consulta los meses cargados para esta presentación. Los valores estimados conservan
+        referencias de meses anteriores.
+      </p>
+      <div
+        class="gif-table-container"
+        tabindex="0"
+        role="region"
+        aria-label="Histórico mensual de gastos indirectos"
+      >
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Mes</th>
+              <th scope="col">Conceptos</th>
+              <th scope="col">Total USD/unidad</th>
+              <th scope="col">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (fila of historico(); track fila.mes) {
+              <tr [class.selected-month]="fila.mes === mes()">
+                <th scope="row">
+                  <button
+                    type="button"
+                    class="month-link"
+                    [attr.aria-pressed]="fila.mes === mes()"
+                    (click)="seleccionarMes.emit(fila.mes)"
+                  >
+                    {{ nombreMes(fila.mes) }}
+                  </button>
+                </th>
+                <td>{{ fila.conceptos }}</td>
+                <td class="numeric">${{ fila.costo | number: '1.4-8' }}</td>
+                <td>{{ fila.estimado ? 'Incluye estimados' : 'Registrado' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   }
 </section>

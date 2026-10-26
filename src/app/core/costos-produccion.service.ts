@@ -13,6 +13,10 @@ import { GastoIndirectoMensual, leerGastosIndirectos } from './gastos-indirectos
 export interface CostosPresentacion {
   presentacionId: number;
   costoEmpaque: number;
+  costoCarton: number;
+  cartonAplica: boolean;
+  cartonEstimado: boolean;
+  cartonSinDato: boolean;
   empaquePorProducto: boolean;
   empaqueEstimado: boolean;
   empaqueSinDato: boolean;
@@ -89,6 +93,10 @@ export class CostosProduccionService {
     return {
       presentacionId,
       costoEmpaque: empaque.costo,
+      costoCarton: empaque.carton,
+      cartonAplica: empaque.cartonAplica,
+      cartonEstimado: empaque.cartonEstimado,
+      cartonSinDato: empaque.cartonSinDato,
       empaquePorProducto: false,
       empaqueEstimado: empaque.estimado,
       empaqueSinDato: empaque.sinDato,

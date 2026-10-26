@@ -110,7 +110,7 @@ export function mesesManoObra(registros: ManoObraMensual[], actual = mesActualEc
 // COSTO POR UNIDAD
 
 /**
- * Suma materia prima, empaque, mano de obra e indirectos.
+ * Suma materia prima, empaque, cartón, mano de obra e indirectos como rubros separados.
  *
  * null indica un dato pendiente.
  * Un costo de cero registrado es válido.
@@ -121,6 +121,7 @@ export function sumarCostoFinal(
   empaque: number,
   manoObra: number | null,
   indirectos: number | null,
+  carton: number = 0,
 ): number | null {
   if (
     !Number.isFinite(empaque) ||
@@ -133,6 +134,9 @@ export function sumarCostoFinal(
   if (manoObra !== null && (!Number.isFinite(manoObra) || manoObra < 0)) {
     throw new Error('Costo de mano de obra inválido.');
   }
+  if (!Number.isFinite(carton) || carton < 0) {
+    throw new Error('Costo de cartón inválido.');
+  }
 
   if (indirectos !== null && (!Number.isFinite(indirectos) || indirectos < 0)) {
     throw new Error('Costo de gastos indirectos inválido.');
@@ -142,13 +146,17 @@ export function sumarCostoFinal(
     return null;
   }
 
-  return materiaPrima + empaque + manoObra + indirectos;
+  return materiaPrima + empaque + carton + manoObra + indirectos;
 }
 
 // EMPAQUES
 
 export interface ResumenEmpaque {
   costo: number;
+  carton: number;
+  cartonAplica: boolean;
+  cartonEstimado: boolean;
+  cartonSinDato: boolean;
   porProducto: boolean;
   estimado: boolean;
   sinDato: boolean;
@@ -171,6 +179,9 @@ export function calcularEmpaque(
   const tipos = new Set<string>();
 
   let costo = 0;
+  let carton = 0;
+  let cartonEstimado = false;
+  let cartonSinDato = false;
   let estimado = false;
   let sinDato = false;
 
@@ -208,16 +219,25 @@ export function calcularEmpaque(
       throw new Error('Estado de empaque inválido.');
     }
 
-    costo += precioUnitarioEnvase(Number(valor), litros);
-
-    estimado ||= estado === 'referencia_producto';
-    sinDato ||= estado === 'sin_dato';
+    if (tipo === 'Cartón') {
+      carton += precioUnitarioEnvase(Number(valor), litros);
+      cartonEstimado ||= estado === 'referencia_producto';
+      cartonSinDato ||= estado === 'sin_dato';
+    } else {
+      costo += precioUnitarioEnvase(Number(valor), litros);
+      estimado ||= estado === 'referencia_producto';
+      sinDato ||= estado === 'sin_dato';
+    }
   }
 
   return {
     costo,
+    carton,
+    cartonAplica: requeridos.includes('Cartón') || tipos.has('Cartón'),
+    cartonEstimado,
+    cartonSinDato: cartonSinDato || (requeridos.includes('Cartón') && !tipos.has('Cartón')),
     porProducto: false,
     estimado,
-    sinDato: sinDato || requeridos.some((tipo) => !tipos.has(tipo)),
+    sinDato: sinDato || requeridos.some((tipo) => tipo !== 'Cartón' && !tipos.has(tipo)),
   };
 }
