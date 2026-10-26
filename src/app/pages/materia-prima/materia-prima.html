@@ -164,7 +164,7 @@
             <div>
               <span class="summary-icon"><mat-icon>inventory_2</mat-icon></span>
               <div>
-                <strong>{{ envases().length }}</strong
+                <strong>{{ gruposEnvases().length }}</strong
                 ><span>Envases y empaques por presentación</span>
               </div>
             </div>
@@ -195,7 +195,7 @@
                 (click)="cambiarTipoMaterial('envases')"
               >
                 <mat-icon>inventory_2</mat-icon>Envases y empaques
-                <span>{{ envases().length }}</span>
+                <span>{{ gruposEnvases().length }}</span>
               </button>
             </nav>
             <div class="material-controls">
@@ -243,7 +243,8 @@
                   >
                 </div>
                 <p class="table-description">
-                  Precio por unidad de botella, tapa, etiqueta y cartón, según su presentación.
+                  Botellas, tapas y etiquetas agrupadas por tamaño. Despliega una fila para ver los
+                  productos y sus precios por unidad.
                 </p>
               }
             </div>
@@ -290,30 +291,50 @@
                   <thead>
                     <tr>
                       <th>Envase</th>
-                      <th>Producto</th>
+                      <th>Se utiliza en</th>
                       <th>Presentación</th>
                       <th class="num">Precio por unidad</th>
                       <th>Estado</th>
-                      <th><span class="sr-only">Consultar producto</span></th>
+                      <th><span class="sr-only">Ver productos y precios</span></th>
                     </tr>
                   </thead>
                   <tbody>
-                    @for (fila of envasesPagina(); track fila.empaque.id) {
+                    @for (fila of envasesPagina(); track fila.id) {
                       <tr>
                         <td>
                           <span class="material-name">{{
-                            fila.empaque.tipo === 'Tap' ? 'Tapa' : fila.empaque.tipo
+                            fila.tipo === 'Tap' ? 'Tapa' : fila.tipo
                           }}</span
                           ><small>Unidad</small>
                         </td>
                         <td>
-                          <span class="usage-text">{{ fila.producto.nombre }}</span
-                          ><small>{{ fila.producto.marca }}</small>
+                          <span class="usage-text" [title]="fila.productos.join(', ')">{{
+                            fila.productos.length === 1
+                              ? fila.productos[0]
+                              : fila.productos.length + ' productos'
+                          }}</span>
+                          <small
+                            >{{ fila.presentaciones }}
+                            {{
+                              fila.presentaciones === 1
+                                ? 'presentación asociada'
+                                : 'presentaciones asociadas'
+                            }}</small
+                          >
                         </td>
-                        <td class="nowrap">{{ etiquetaPresentacion(fila.presentacion) }}</td>
+                        <td class="nowrap">
+                          {{ etiquetaGrupoEnvase(fila)
+                          }}<small>{{ fila.tecnologias.join(' / ') }}</small>
+                        </td>
                         <td class="num price">
-                          @if (fila.precio !== null) {
-                            ${{ fila.precio | number: '1.4-4' }}
+                          @if (fila.precioMin !== null) {
+                            ${{ fila.precioMin | number: '1.4-4' }}
+                            @if (fila.precioMax !== fila.precioMin) {
+                              – ${{ fila.precioMax | number: '1.4-4' }}
+                            }
+                            @if (fila.pendientes > 0) {
+                              <small class="pending-text">{{ fila.pendientes }} sin dato</small>
+                            }
                           } @else {
                             <span class="pending-text">Pendiente</span>
                           }
@@ -321,28 +342,87 @@
                         <td>
                           <span
                             class="status-tag"
-                            [class.status-tag--pending]="fila.empaque.estado === 'sin_dato'"
-                            [class.status-tag--confirmed]="fila.empaque.estado === 'confirmado'"
+                            [class.status-tag--pending]="fila.pendientes > 0"
+                            [class.status-tag--confirmed]="
+                              fila.pendientes === 0 && !fila.referencia
+                            "
                             >{{
-                              fila.empaque.estado === 'confirmado'
-                                ? 'Confirmado'
-                                : fila.empaque.estado === 'sin_dato'
-                                  ? 'Sin dato'
-                                  : 'Referencia'
+                              fila.pendientes === fila.registros.length
+                                ? 'Sin dato'
+                                : fila.pendientes > 0
+                                  ? 'Datos parciales'
+                                  : fila.referencia
+                                    ? 'Referencia'
+                                    : 'Confirmado'
                             }}</span
                           >
                         </td>
                         <td>
                           <button
-                            class="row-action"
+                            class="group-toggle"
                             type="button"
-                            [attr.aria-label]="'Ver costos de ' + fila.presentacion.nombreSku"
-                            (click)="abrirEnvase(fila)"
+                            [attr.aria-label]="
+                              'Ver productos de ' +
+                              (fila.tipo === 'Tap' ? 'Tapa' : fila.tipo) +
+                              ' ' +
+                              etiquetaGrupoEnvase(fila)
+                            "
+                            [attr.aria-expanded]="grupoEnvaseAbierto() === fila.id"
+                            (click)="alternarGrupoEnvase(fila.id)"
                           >
-                            <mat-icon>arrow_forward</mat-icon>
+                            <mat-icon>{{
+                              grupoEnvaseAbierto() === fila.id ? 'expand_less' : 'expand_more'
+                            }}</mat-icon>
                           </button>
                         </td>
                       </tr>
+                      @if (grupoEnvaseAbierto() === fila.id) {
+                        <tr class="group-detail">
+                          <td colspan="6">
+                            <div class="group-detail-heading">
+                              {{ fila.tipo === 'Tap' ? 'Tapa' : fila.tipo }} ·
+                              {{ etiquetaGrupoEnvase(fila) }}<span>Precio de cada producto</span>
+                            </div>
+                            <div class="group-detail-list">
+                              @for (registro of fila.registros; track registro.empaque.id) {
+                                <div class="group-detail-item">
+                                  <div>
+                                    <strong>{{ registro.producto.nombre }}</strong
+                                    ><small
+                                      >{{ etiquetaPresentacion(registro.presentacion) }} ·
+                                      {{ registro.producto.marca }}</small
+                                    >
+                                  </div>
+                                  <div class="detail-price">
+                                    @if (registro.precio !== null) {
+                                      ${{ registro.precio | number: '1.4-4' }}
+                                    } @else {
+                                      <span class="pending-text">Pendiente</span>
+                                    }
+                                    <small>{{
+                                      registro.empaque.estado === 'confirmado'
+                                        ? 'Confirmado'
+                                        : registro.empaque.estado === 'sin_dato'
+                                          ? 'Sin dato'
+                                          : 'Referencia'
+                                    }}</small>
+                                  </div>
+                                  <button
+                                    class="row-action"
+                                    type="button"
+                                    [attr.aria-label]="
+                                      'Ver costos de ' + registro.presentacion.nombreSku
+                                    "
+                                    (click)="abrirEnvase(registro)"
+                                  >
+                                    <mat-icon>arrow_forward</mat-icon>
+                                  </button>
+                                </div>
+                              }
+                            </div>
+                          </td>
+                        </tr>
+                      }
                     } @empty {
                       <tr>
                         <td colspan="6" class="empty-cell">
@@ -358,7 +438,10 @@
               <span>{{
                 tipoMaterial() === 'ingredientes'
                   ? materiasPrimasFiltradas().length + ' ingredientes'
-                  : envasesFiltrados().length + ' envases y empaques'
+                  : gruposEnvasesFiltrados().length +
+                    ' grupos · ' +
+                    envasesFiltrados().length +
+                    ' registros por producto'
               }}</span>
               @if (tipoMaterial() === 'envases' && paginasEnvases() > 1) {
                 <div class="pagination">

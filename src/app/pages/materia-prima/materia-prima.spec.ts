@@ -74,6 +74,12 @@ describe('Materia prima con ingredientes y envases', () => {
   };
 
   beforeEach(async () => {
+    datos.productos.set([producto]);
+    datos.empaques.set([
+      envase(1, 'Botella', 0.1, 'confirmado'),
+      envase(2, 'Tap', 0, 'confirmado'),
+      envase(3, 'Cartón', 0, 'sin_dato'),
+    ]);
     await TestBed.configureTestingModule({
       imports: [MateriaPrima],
       providers: [
@@ -131,6 +137,8 @@ describe('Materia prima con ingredientes y envases', () => {
   it('abre el producto y la presentación asociados al envase', () => {
     mostrarEnvases();
     const navegar = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    (fixture.nativeElement.querySelector('.group-toggle') as HTMLButtonElement).click();
+    fixture.detectChanges();
     (fixture.nativeElement.querySelector('.row-action') as HTMLButtonElement).click();
     expect(navegar).toHaveBeenCalledWith(['/materia-prima']);
     expect(TestBed.inject(SelectionService).presentacionSeleccionada()?.id).toBe(1);
@@ -146,5 +154,37 @@ describe('Materia prima con ingredientes y envases', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
     expect(fixture.nativeElement.querySelector('tbody')?.textContent).toContain('Tapa');
+  });
+
+  it('unifica botellas del mismo tamaño y permite consultar los dos precios originales', () => {
+    const otroSku: Presentacion = { ...sku, id: 2, productoId: 'otro', tecnologia: 'UHT' };
+    datos.productos.set([
+      producto,
+      { ...producto, id: 'otro', nombre: 'Otra marca de coco', presentaciones: [otroSku] },
+    ]);
+    datos.empaques.update((actual) => [
+      ...actual,
+      {
+        ...envase(4, 'Botella', 0.12, 'confirmado'),
+        presentacionId: 2,
+        productoId: 'otro',
+        tecnologia: 'UHT',
+      },
+    ]);
+    mostrarEnvases();
+    expect(fixture.nativeElement.querySelectorAll('.group-toggle').length).toBe(3);
+    const resumen = fixture.nativeElement.querySelector('tbody tr') as HTMLTableRowElement;
+    expect(resumen.textContent).toContain('2 productos');
+    expect(resumen.textContent).toContain('$0.1000');
+    expect(resumen.textContent).toContain('$0.1200');
+    (resumen.querySelector('.group-toggle') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.group-detail-item').length).toBe(2);
+    expect(fixture.nativeElement.querySelector('.group-detail')?.textContent).toContain(
+      'Otra marca de coco',
+    );
+    expect(fixture.nativeElement.querySelector('.group-detail')?.textContent).toContain('UHT');
+    expect(datos.empaques().length).toBe(4);
+    expect(producto.presentaciones[0].totalCosto).toBe(0.8);
   });
 });

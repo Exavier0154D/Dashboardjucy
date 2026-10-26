@@ -9,7 +9,7 @@ import { CATEGORIAS_PRODUCTO, Presentacion, Producto } from '../../models/produc
 import { DataService } from '../../core/data.service';
 import { SelectionService } from '../../core/selection.service';
 import { coincideBusqueda } from '../../core/busqueda-texto';
-import { catalogoEnvases } from '../../core/catalogo-envases';
+import { agruparEnvases, catalogoEnvases, GrupoEnvase } from '../../core/catalogo-envases';
 import { TIPOS_EMPAQUE } from '../../models/empaque.model';
 import { Estandar } from '../estandar/estandar';
 import { HistoricoCostos } from '../../shared/historico-costos/historico-costos';
@@ -50,6 +50,8 @@ export class MateriaPrima {
   readonly mostrarAnalisis = signal(false);
   readonly tiposEnvase = TIPOS_EMPAQUE;
   readonly envases = computed(() => catalogoEnvases(this.productos(), this.data.empaques()));
+  readonly gruposEnvases = computed(() => agruparEnvases(this.envases()));
+  readonly grupoEnvaseAbierto = signal<string | null>(null);
   readonly envasesPendientes = computed(
     () => this.envases().filter((e) => e.precio === null).length,
   );
@@ -71,17 +73,25 @@ export class MateriaPrima {
     ),
   );
   readonly paginasEnvases = computed(() =>
-    Math.max(1, Math.ceil(this.envasesFiltrados().length / 20)),
+    Math.max(1, Math.ceil(this.gruposEnvasesFiltrados().length / 20)),
   );
   readonly paginaEnvasesActual = computed(() =>
     Math.min(this.paginaEnvases(), this.paginasEnvases()),
   );
   readonly envasesPagina = computed(() =>
-    this.envasesFiltrados().slice(
+    this.gruposEnvasesFiltrados().slice(
       (this.paginaEnvasesActual() - 1) * 20,
       this.paginaEnvasesActual() * 20,
     ),
   );
+  readonly gruposEnvasesFiltrados = computed(() => agruparEnvases(this.envasesFiltrados()));
+
+  alternarGrupoEnvase(id: string): void {
+    this.grupoEnvaseAbierto.update((actual) => (actual === id ? null : id));
+  }
+  etiquetaGrupoEnvase(grupo: GrupoEnvase): string {
+    return `${Number((grupo.litros * 1000).toFixed(3)).toLocaleString('es-EC', { maximumFractionDigits: 3 })} ml`;
+  }
 
   constructor() {
     if (this.route.snapshot.data['vista'] === 'materias') {
@@ -94,11 +104,13 @@ export class MateriaPrima {
     this.tipoMaterial.set(tipo);
     this.textoBusqueda.set('');
     this.paginaEnvases.set(1);
+    this.grupoEnvaseAbierto.set(null);
   }
   filtrarEnvases(tipo: string, estado: string): void {
     this.tipoEnvase.set(tipo);
     this.estadoEnvase.set(estado);
     this.paginaEnvases.set(1);
+    this.grupoEnvaseAbierto.set(null);
   }
   abrirEnvase(fila: ReturnType<typeof catalogoEnvases>[number]): void {
     this.selectionService.seleccionarProducto(fila.producto, fila.presentacion);
@@ -241,6 +253,7 @@ export class MateriaPrima {
   buscarMateriaPrima(valor: string): void {
     this.textoBusqueda.set(valor);
     this.paginaEnvases.set(1);
+    this.grupoEnvaseAbierto.set(null);
   }
   limpiarBusquedaMateriaPrima(): void {
     this.textoBusqueda.set('');
