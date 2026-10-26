@@ -54,6 +54,10 @@
               ],
               "outputHashing": "all"
             },
+            "github-pages": {
+              "outputMode": "static",
+              "baseHref": "/Dashboardjucy/"
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
