@@ -1,6 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -22,7 +21,6 @@ type Vista = 'productos' | 'materias';
   selector: 'app-materia-prima',
   imports: [
     DecimalPipe,
-    FormsModule,
     RouterLink,
     MatIconModule,
     MatButtonModule,

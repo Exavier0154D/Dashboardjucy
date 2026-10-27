@@ -96,7 +96,11 @@
             <div class="filter-row" aria-label="Período de costos">
               <label
                 >Año de costos
-                <select [ngModel]="anioConsulta()" (ngModelChange)="cambiarAnioConsulta($event)">
+                <select
+                  #anioCostos
+                  [value]="anioConsulta()"
+                  (change)="cambiarAnioConsulta(anioCostos.value)"
+                >
                   @for (anio of aniosConsulta(); track anio) {
                     <option [value]="anio">{{ anio }}</option>
                   }
@@ -105,15 +109,15 @@
               <label
                 >Mes de costos
                 <select
-                  [ngModel]="numeroMesConsulta()"
-                  (ngModelChange)="cambiarMesConsulta($event)"
+                  #mesCostos
+                  [value]="numeroMesConsulta()"
+                  (change)="cambiarMesConsulta(mesCostos.value)"
                 >
                   @for (mes of mesesConsulta; track mes.numero) {
                     <option [value]="mes.numero">{{ mes.nombre }}</option>
                   }
                 </select>
               </label>
-              <span>.</span>
             </div>
           </div>
           <div class="results-heading" role="status">
