@@ -261,11 +261,6 @@ export class MateriaPrima {
       null
     );
   }
-  tituloTarjeta(producto: Producto): string {
-    return /pithaya|pitahaya/i.test(producto.variante)
-      ? `${producto.categoria} y Pitahaya`
-      : producto.categoria;
-  }
   elegirPresentacionTarjeta(producto: Producto, presentacion: Presentacion): void {
     if (!producto.presentaciones.some((s) => s.id === presentacion.id)) return;
     this.seleccionTarjetas.update((actual) => ({ ...actual, [producto.id]: presentacion.id }));
