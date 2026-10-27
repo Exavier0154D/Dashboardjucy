@@ -43,15 +43,15 @@ function tablas(litros: number, costo: number, estado = 'confirmado'): TablasCat
 
 describe('Precios de envase por unidad', () => {
   it.each([0.2395, 0.24, 0.355, 0.999999])(
-    'divide un paquete menor de 1 litro (%s L) entre 12',
+    'conserva el precio unitario menor de 1 litro (%s L)',
     (litros) => {
-      expect(unidadesPaqueteEnvase(litros)).toBe(12);
-      expect(precioUnitarioEnvase(12, litros)).toBe(1);
+      expect(unidadesPaqueteEnvase(litros)).toBe(1);
+      expect(precioUnitarioEnvase(0.105, litros)).toBe(0.105);
     },
   );
-  it.each([1, 1.000001, 2, 5, 6])('divide un paquete desde 1 litro (%s L) entre 6', (litros) => {
-    expect(unidadesPaqueteEnvase(litros)).toBe(6);
-    expect(precioUnitarioEnvase(12, litros)).toBe(2);
+  it.each([1, 1.000001, 2, 5, 6])('conserva el precio unitario desde 1 litro (%s L)', (litros) => {
+    expect(unidadesPaqueteEnvase(litros)).toBe(1);
+    expect(precioUnitarioEnvase(0.2, litros)).toBe(0.2);
   });
 
   it.each([0.355, 1, 2])(
@@ -66,10 +66,10 @@ describe('Precios de envase por unidad', () => {
         litros,
         ['Botella'],
       );
-      expect(costo).toBeCloseTo(1.2 / (litros >= 1 ? 6 : 12), 12);
+      expect(costo).toBeCloseTo(1.2, 12);
       expect(produccion.costo).toBeCloseTo(costo, 12);
       expect(catalogo.empaques[0].costoPaquete).toBe(1.2);
-      expect(catalogo.empaques[0].unidadesPaquete).toBe(litros >= 1 ? 6 : 12);
+      expect(catalogo.empaques[0].unidadesPaquete).toBe(1);
       expect(origen.empaques[0].costo).toBe(1.2);
       expect(mapearCatalogo(origen).empaques[0].costo).toBe(costo);
     },
@@ -85,28 +85,28 @@ describe('Precios de envase por unidad', () => {
       estado: 'confirmado',
       producto_origen_id: null,
     }));
-    expect(mapearCatalogo(origen).empaques.map((e) => e.costo)).toEqual([1, 1, 1, 1]);
+    expect(mapearCatalogo(origen).empaques.map((e) => e.costo)).toEqual([12, 12, 12, 12]);
     expect(
       calcularEmpaque(
         origen.empaques.map((e) => ({ ...e })),
         1,
         0.355,
       ).costo,
-    ).toBe(3);
+    ).toBe(36);
     expect(
       calcularEmpaque(
         origen.empaques.map((e) => ({ ...e })),
         1,
         1,
       ).costo,
-    ).toBe(6);
+    ).toBe(36);
     const separado = calcularEmpaque(
       origen.empaques.map((e) => ({ ...e })),
       1,
       0.355,
     );
-    expect(separado.carton).toBe(1);
-    expect(separado.costo + separado.carton).toBe(4);
+    expect(separado.carton).toBe(12);
+    expect(separado.costo + separado.carton).toBe(48);
   });
 
   it('conserva un cero confirmado y mantiene pendiente el precio sin dato', () => {

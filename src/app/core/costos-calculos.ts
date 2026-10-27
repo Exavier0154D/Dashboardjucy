@@ -163,7 +163,7 @@ export interface ResumenEmpaque {
 }
 
 /**
- * Lee precios de paquete de la base de datos y suma sus valores unitarios por SKU.
+ * Lee precios unitarios de la base de datos y los suma por SKU.
  */
 export function calcularEmpaque(
   filas: Record<string, unknown>[],

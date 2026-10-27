@@ -642,7 +642,7 @@
               >
               <label class="field"
                 ><span class="field__label"
-                  >Precio del paquete
+                  >Precio por unidad
                   @if (
                     unidadesPaqueteEmpaque(formEmpaque.controls.presentacion_id.value);
                     as unidades
@@ -661,9 +661,8 @@
               >
             </fieldset>
             <p class="hint">
-              Registra el precio del paquete: 12 unidades para presentaciones menores de 1 litro y 6
-              unidades para 1 litro o más. El precio por unidad se calcula automáticamente. «Sin
-              dato» indica un precio pendiente.
+              Registra el precio de una unidad de empaque. unidades para 1 litro o más. El precio
+              por unidad se calcula automáticamente. «Sin dato» indica un precio pendiente.
             </p>
             <div class="panel__actions">
               <button class="btn" type="button" (click)="cancelar()" [disabled]="guardando()">
@@ -684,7 +683,7 @@
                 <tr>
                   <th>SKU</th>
                   <th>Tipo</th>
-                  <th class="num">Precio del paquete</th>
+                  <th class="num">Precio por unidad</th>
                   <th class="num">Precio por unidad</th>
                   <th>Estado</th>
                   <th>Acciones</th>
@@ -701,7 +700,7 @@
                       } @else {
                         $ {{ e.costo | number: '1.4-6' }}
                       }
-                      <small>{{ unidadesPaqueteEmpaque(e.presentacion_id) }} unidades</small>
+                      <small>Unidad individual</small>
                     </td>
                     <td class="num">
                       @let unitario = precioUnitarioEmpaque(e);

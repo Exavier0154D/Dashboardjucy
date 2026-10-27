@@ -227,15 +227,15 @@ export function mapearCatalogo(tablas: TablasCatalogo): Catalogo {
       throw new Error('Un empaque apunta a un SKU inexistente.');
     const sku = skusVisibles.get(presentacionId);
     if (!sku) continue;
-    const costoPaquete = numero(e.costo, 'precio del paquete de empaque');
+    const costoUnitario = numero(e.costo, 'precio unitario de empaque');
     empaques.push({
       id: id(e.id),
       presentacionId,
       productoId: sku.productoId,
       tipo: unico<TipoEmpaque>(e.tipo, TIPOS_EMPAQUE, 'Tipo de empaque'),
-      costo: precioUnitarioEnvase(costoPaquete, sku.litros),
-      costoPaquete,
-      unidadesPaquete: unidadesPaqueteEnvase(sku.litros),
+      costo: precioUnitarioEnvase(costoUnitario, sku.litros),
+      costoPaquete: costoUnitario,
+      unidadesPaquete: 1,
       unidad: 'Unidad',
       litros: sku.litros,
       tecnologia: sku.tecnologia,
