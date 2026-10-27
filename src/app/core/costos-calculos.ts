@@ -1,5 +1,5 @@
 import { TIPOS_EMPAQUE, TIPOS_EMPAQUE_BASE, TipoEmpaque } from '../models/empaque.model';
-import { precioUnitarioEnvase, unidadesPaqueteEnvase } from './precio-envase';
+import { precioUnitarioCarton, precioUnitarioEnvase, unidadesPaqueteEnvase } from './precio-envase';
 
 export interface ManoObraMensual {
   mes: string;
@@ -163,7 +163,7 @@ export interface ResumenEmpaque {
 }
 
 /**
- * Lee precios unitarios de la base de datos y los suma por SKU.
+ * Lee precios unitarios de envases y precios por cartón de la base de datos.
  */
 export function calcularEmpaque(
   filas: Record<string, unknown>[],
@@ -220,7 +220,7 @@ export function calcularEmpaque(
     }
 
     if (tipo === 'Cartón') {
-      carton += precioUnitarioEnvase(Number(valor), litros);
+      carton += precioUnitarioCarton(Number(valor), litros);
       cartonEstimado ||= estado === 'referencia_producto';
       cartonSinDato ||= estado === 'sin_dato';
     } else {

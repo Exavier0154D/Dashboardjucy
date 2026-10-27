@@ -642,12 +642,17 @@
               >
               <label class="field"
                 ><span class="field__label"
-                  >Precio por unidad
+                  >{{ formEmpaque.controls.tipo.value === 'Cartón' ? 'Precio por cartón' : 'Precio por unidad' }}
                   @if (
-                    unidadesPaqueteEmpaque(formEmpaque.controls.presentacion_id.value);
+                    unidadesPaqueteEmpaque(
+                      formEmpaque.controls.presentacion_id.value,
+                      formEmpaque.controls.tipo.value
+                    );
                     as unidades
                   ) {
-                    ({{ unidades }} unidades)
+                    @if (formEmpaque.controls.tipo.value === 'Cartón') {
+                      ({{ unidades }} unidades)
+                    }
                   }</span
                 ><input type="number" formControlName="costo" min="0" step="any" required
               /></label>
@@ -661,8 +666,9 @@
               >
             </fieldset>
             <p class="hint">
-              Registra el precio de una unidad de empaque. unidades para 1 litro o más. El precio
-              por unidad se calcula automáticamente. «Sin dato» indica un precio pendiente.
+              Registra el precio del cartón completo; se divide entre 12 unidades si el SKU es menor
+              de 1 litro y entre 6 si es de 1 litro o más. Los otros empaques se registran por unidad.
+              «Sin dato» indica un precio pendiente.
             </p>
             <div class="panel__actions">
               <button class="btn" type="button" (click)="cancelar()" [disabled]="guardando()">
@@ -683,7 +689,7 @@
                 <tr>
                   <th>SKU</th>
                   <th>Tipo</th>
-                  <th class="num">Precio por unidad</th>
+                  <th class="num">Precio registrado</th>
                   <th class="num">Precio por unidad</th>
                   <th>Estado</th>
                   <th>Acciones</th>
@@ -700,7 +706,7 @@
                       } @else {
                         $ {{ e.costo | number: '1.4-6' }}
                       }
-                      <small>Unidad individual</small>
+                      <small>{{ e.tipo === 'Cartón' ? 'Cartón completo' : 'Unidad individual' }}</small>
                     </td>
                     <td class="num">
                       @let unitario = precioUnitarioEmpaque(e);

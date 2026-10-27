@@ -190,6 +190,41 @@ describe('Materia prima con ingredientes y envases', () => {
     ).toBe('2025');
   });
 
+  it('cambia los nombres de las tarjetas solo para Agua de Coco', async () => {
+    datos.productos.set([
+      producto,
+      {
+        ...producto,
+        id: 'pitahaya',
+        nombre: 'Agua de coco con pitahaya Prunus',
+        marca: 'Prunus',
+        variante: 'Y Pitahaya',
+        presentaciones: [{ ...sku, id: 2, productoId: 'pitahaya' }],
+      },
+      {
+        ...producto,
+        id: 'cafe',
+        nombre: 'Café Frío Sweet & Coffee',
+        categoria: 'Lacteos',
+        marca: 'Sweet & Coffee',
+        variante: 'Café Frío',
+        presentaciones: [{ ...sku, id: 3, productoId: 'cafe' }],
+      },
+    ]);
+    fixture.componentInstance.cambiarVista('productos');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const tarjetas = fixture.nativeElement.querySelectorAll('.product-card') as NodeListOf<HTMLElement>;
+    expect(tarjetas.length).toBe(3);
+    expect(tarjetas[0].querySelector('h2')?.textContent).toBe('Agua de Coco');
+    expect(tarjetas[0].querySelector('.product-name')?.textContent).toBe('Agua de Coco · Jucy');
+    expect(tarjetas[1].querySelector('h2')?.textContent).toBe('Agua de Coco y Pitahaya');
+    expect(tarjetas[1].querySelector('.product-name')?.textContent).toBe('Agua de Coco · Prunus');
+    expect(tarjetas[2].querySelector('h2')?.textContent).toBe('Café Frío');
+    expect(tarjetas[2].querySelector('.product-name')?.textContent).toBe('Café Frío Sweet & Coffee');
+  });
+
   it('unifica botellas del mismo tamaño y permite consultar los dos precios originales', () => {
     const otroSku: Presentacion = { ...sku, id: 2, productoId: 'otro', tecnologia: 'UHT' };
     datos.productos.set([

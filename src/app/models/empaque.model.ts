@@ -32,11 +32,11 @@ export interface Empaque {
   productoId: string;
   tipo: TipoEmpaque;
   unidad: string;
-  /** Precio por unidad registrado en la base de datos. */
+  /** Costo por unidad del SKU, con el precio del cartón dividido por sus unidades. */
   costo: number;
   /** Precio original registrado en la base de datos, antes de la conversión. */
   costoPaquete?: number;
-  unidadesPaquete?: 1;
+  unidadesPaquete?: 1 | 6 | 12;
   litros: number;
   tecnologia: string;
   estado: EstadoEmpaque;

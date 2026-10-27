@@ -16,7 +16,8 @@
     <a routerLink="/insumos">Materia prima</a>.
   </p>
   <p class="card-sub">
-    Los precios registrados corresponden a una unidad individual de empaque o cartón.
+    Los envases se registran por unidad. El precio registrado de cada cartón se divide entre 12
+    unidades para presentaciones menores de 1 litro y entre 6 para las de 1 litro o más.
   </p>
   @if (errorCarga()) {
     <p class="error" role="alert">{{ errorCarga() }}</p>

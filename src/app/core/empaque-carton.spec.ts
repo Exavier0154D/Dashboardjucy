@@ -33,8 +33,8 @@ describe('Cartón por presentación', () => {
       tiposEmpaqueRequeridos(productoCoco),
     );
     expect(resumen.costo).toBeCloseTo(0.15);
-    expect(resumen.carton).toBeCloseTo(0.2);
-    expect(resumen.costo + resumen.carton).toBeCloseTo(0.35);
+    expect(resumen.carton).toBeCloseTo(0.2 / 12);
+    expect(resumen.costo + resumen.carton).toBeCloseTo(0.15 + 0.2 / 12);
     expect(resumen.sinDato).toBe(false);
     expect(resumen.estimado).toBe(false);
   });

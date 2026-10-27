@@ -14,3 +14,14 @@ export function precioUnitarioEnvase(precioUnitario: number, litros: number): nu
   unidadesPaqueteEnvase(litros);
   return precioUnitario;
 }
+
+/** Los cartones contienen 12 unidades bajo 1 litro y 6 desde 1 litro. */
+export function unidadesPorCarton(litros: number): 6 | 12 {
+  unidadesPaqueteEnvase(litros);
+  return litros < 1 ? 12 : 6;
+}
+
+/** Convierte el precio registrado por cartón al costo de una unidad del SKU. */
+export function precioUnitarioCarton(precioCarton: number, litros: number): number {
+  return precioUnitarioEnvase(precioCarton, litros) / unidadesPorCarton(litros);
+}

@@ -10,7 +10,7 @@ import {
   TecnologiaProducto,
 } from '../models/producto.model';
 import { Empaque, EstadoEmpaque, TipoEmpaque, TIPOS_EMPAQUE } from '../models/empaque.model';
-import { precioUnitarioEnvase, unidadesPaqueteEnvase } from './precio-envase';
+import { precioUnitarioCarton, precioUnitarioEnvase, unidadesPorCarton } from './precio-envase';
 
 type Numero = number | string;
 export interface MateriaPrimaDb {
@@ -227,15 +227,19 @@ export function mapearCatalogo(tablas: TablasCatalogo): Catalogo {
       throw new Error('Un empaque apunta a un SKU inexistente.');
     const sku = skusVisibles.get(presentacionId);
     if (!sku) continue;
-    const costoUnitario = numero(e.costo, 'precio unitario de empaque');
+    const costoRegistrado = numero(e.costo, 'precio de empaque o cartón');
+    const tipo = unico<TipoEmpaque>(e.tipo, TIPOS_EMPAQUE, 'Tipo de empaque');
     empaques.push({
       id: id(e.id),
       presentacionId,
       productoId: sku.productoId,
-      tipo: unico<TipoEmpaque>(e.tipo, TIPOS_EMPAQUE, 'Tipo de empaque'),
-      costo: precioUnitarioEnvase(costoUnitario, sku.litros),
-      costoPaquete: costoUnitario,
-      unidadesPaquete: 1,
+      tipo,
+      costo:
+        tipo === 'Cartón'
+          ? precioUnitarioCarton(costoRegistrado, sku.litros)
+          : precioUnitarioEnvase(costoRegistrado, sku.litros),
+      costoPaquete: costoRegistrado,
+      unidadesPaquete: tipo === 'Cartón' ? unidadesPorCarton(sku.litros) : 1,
       unidad: 'Unidad',
       litros: sku.litros,
       tecnologia: sku.tecnologia,

@@ -4,7 +4,12 @@ import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } fr
 import { MatIconModule } from '@angular/material/icon';
 import { DataService } from '../../core/data.service';
 import { TIPOS_EMPAQUE } from '../../models/empaque.model';
-import { precioUnitarioEnvase, unidadesPaqueteEnvase } from '../../core/precio-envase';
+import {
+  precioUnitarioCarton,
+  precioUnitarioEnvase,
+  unidadesPaqueteEnvase,
+  unidadesPorCarton,
+} from '../../core/precio-envase';
 import {
   CatalogoAdminService,
   CatalogoAdmin,
@@ -403,14 +408,19 @@ export class Administracion implements OnInit, OnDestroy {
       estado: e?.estado ?? 'confirmado',
     });
   }
-  unidadesPaqueteEmpaque(presentacionId: number | null): number | null {
+  unidadesPaqueteEmpaque(presentacionId: number | null, tipo: string): number | null {
     const sku = presentacionId === null ? null : this.skuPorId().get(presentacionId);
-    return sku ? unidadesPaqueteEnvase(Number(sku.litros)) : null;
+    if (!sku) return null;
+    return tipo === 'Cartón'
+      ? unidadesPorCarton(Number(sku.litros))
+      : unidadesPaqueteEnvase(Number(sku.litros));
   }
   precioUnitarioEmpaque(empaque: EmpaqueDB): number | null {
     const sku = this.skuPorId().get(empaque.presentacion_id);
     if (!sku || empaque.estado === 'sin_dato') return null;
-    return precioUnitarioEnvase(Number(empaque.costo), Number(sku.litros));
+    return empaque.tipo === 'Cartón'
+      ? precioUnitarioCarton(Number(empaque.costo), Number(sku.litros))
+      : precioUnitarioEnvase(Number(empaque.costo), Number(sku.litros));
   }
   async guardarEmpaque(): Promise<void> {
     this.formEmpaque.markAllAsTouched();
