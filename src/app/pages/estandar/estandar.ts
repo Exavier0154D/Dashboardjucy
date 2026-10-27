@@ -209,7 +209,7 @@ export class Estandar {
   });
   readonly cargandoCostos = signal(false);
   readonly errorCostos = signal<string | null>(null);
-  readonly mesSeleccionado = signal('');
+  readonly mesSeleccionado = this.selectionService.mesCostosSeleccionado;
   private readonly indiceSemana = signal(0);
   readonly semanas = computed(() => {
     const presentacion = this.presentacionActual();
@@ -230,6 +230,7 @@ export class Estandar {
     const presentacion = this.presentacionActual();
     return [
       ...new Set([
+        ...(this.mesSeleccionado() ? [this.mesSeleccionado()] : []),
         ...(this.costosActuales()?.meses ?? []),
         ...(presentacion ? this.data.mesesMateriaPrima(presentacion) : []),
       ]),
@@ -343,7 +344,7 @@ export class Estandar {
       const costos = await this.costosService.cargar(presentacionId);
       if (solicitud !== this.solicitudCostos) return;
       this.costos.set(costos);
-      if (!costos.meses.includes(this.mesSeleccionado())) {
+      if (!this.mesSeleccionado()) {
         const actual = mesActualEcuador();
         const ultimoConGastos = costos.gastosIndirectos
           .map((g) => g.mes.slice(0, 7))

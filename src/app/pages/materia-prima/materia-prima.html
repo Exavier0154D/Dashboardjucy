@@ -93,6 +93,28 @@
                 Limpiar filtros
               </button>
             </div>
+            <div class="filter-row" aria-label="Período de costos">
+              <label
+                >Año de costos
+                <select [ngModel]="anioConsulta()" (ngModelChange)="cambiarAnioConsulta($event)">
+                  @for (anio of aniosConsulta(); track anio) {
+                    <option [value]="anio">{{ anio }}</option>
+                  }
+                </select>
+              </label>
+              <label
+                >Mes de costos
+                <select
+                  [ngModel]="numeroMesConsulta()"
+                  (ngModelChange)="cambiarMesConsulta($event)"
+                >
+                  @for (mes of mesesConsulta; track mes.numero) {
+                    <option [value]="mes.numero">{{ mes.nombre }}</option>
+                  }
+                </select>
+              </label>
+              <span>Los productos se abrirán con los costos del año y mes elegidos.</span>
+            </div>
           </div>
           <div class="results-heading" role="status">
             <span

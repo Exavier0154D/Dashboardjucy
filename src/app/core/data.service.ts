@@ -65,6 +65,10 @@ export class DataService {
     );
   }
 
+  mesesPreciosDisponibles(): string[] {
+    return [...new Set(this.preciosHistoricos().map((p) => p.semana.slice(0, 7)))].sort();
+  }
+
   mesesMateriaPrima(presentacion: Presentacion): string[] {
     const ids = new Set(presentacion.items.map((i) => i.materiaPrimaId));
     return [

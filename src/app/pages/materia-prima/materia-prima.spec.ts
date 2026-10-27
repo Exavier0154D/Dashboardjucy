@@ -71,6 +71,7 @@ describe('Materia prima con ingredientes y envases', () => {
     cargado: signal(true),
     error: signal<string | null>(null),
     actualizarAhora: vi.fn().mockResolvedValue(true),
+    mesesPreciosDisponibles: () => ['2025-12', '2026-01'],
   };
 
   beforeEach(async () => {
@@ -154,6 +155,39 @@ describe('Materia prima con ingredientes y envases', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
     expect(fixture.nativeElement.querySelector('tbody')?.textContent).toContain('Tapa');
+  });
+
+  it('permite elegir año y mes desde la búsqueda y conserva el período al abrir y volver', async () => {
+    fixture.componentInstance.cambiarVista('productos');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const selects = fixture.nativeElement.querySelectorAll(
+      '[aria-label="Período de costos"] select',
+    ) as NodeListOf<HTMLSelectElement>;
+    selects[0].value = '2025';
+    selects[0].dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    selects[1].value = '12';
+    selects[1].dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    expect(fixture.componentInstance.mesConsulta()).toBe('2025-12');
+    expect(fixture.componentInstance.productosFiltrados()).toEqual([producto]);
+    fixture.componentInstance.seleccionarProducto(producto);
+    const seleccion = TestBed.inject(SelectionService);
+    expect(seleccion.mesCostosSeleccionado()).toBe('2025-12');
+    expect(seleccion.presentacionSeleccionada()?.id).toBe(sku.id);
+    fixture.componentInstance.volverProductos();
+    fixture.componentInstance.limpiarFiltrosProducto();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.mesConsulta()).toBe('2025-12');
+    expect(
+      (
+        fixture.nativeElement.querySelector(
+          '[aria-label="Período de costos"] select',
+        ) as HTMLSelectElement
+      ).value,
+    ).toBe('2025');
   });
 
   it('unifica botellas del mismo tamaño y permite consultar los dos precios originales', () => {

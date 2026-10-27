@@ -74,9 +74,11 @@ describe('Períodos visibles y cálculo del estándar', () => {
       ],
     });
     TestBed.inject(SelectionService).seleccionarProducto(producto);
+    TestBed.inject(SelectionService).seleccionarMesCostos('2026-01');
     const fixture = TestBed.createComponent(Estandar);
     const component = fixture.componentInstance;
     await fixture.whenStable();
+    expect(component.mesSeleccionado()).toBe('2026-01');
     component.mesSeleccionado.set('2026-10');
     await fixture.whenStable();
     // El valor del modelo existe antes de que lleguen las opciones del selector.

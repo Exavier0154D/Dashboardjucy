@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,6 +10,7 @@ import { CATEGORIAS_PRODUCTO, Presentacion, Producto } from '../../models/produc
 import { DataService } from '../../core/data.service';
 import { SelectionService } from '../../core/selection.service';
 import { coincideBusqueda } from '../../core/busqueda-texto';
+import { mesActualEcuador } from '../../core/costos-calculos';
 import { agruparEnvases, catalogoEnvases, GrupoEnvase } from '../../core/catalogo-envases';
 import { TIPOS_EMPAQUE } from '../../models/empaque.model';
 import { Estandar } from '../estandar/estandar';
@@ -20,6 +22,7 @@ type Vista = 'productos' | 'materias';
   selector: 'app-materia-prima',
   imports: [
     DecimalPipe,
+    FormsModule,
     RouterLink,
     MatIconModule,
     MatButtonModule,
@@ -42,6 +45,35 @@ export class MateriaPrima {
   readonly errorCarga = this.data.error.asReadonly();
   readonly productoSeleccionado = this.selectionService.productoSeleccionado;
   readonly presentacionSeleccionada = this.selectionService.presentacionSeleccionada;
+  readonly mesConsulta = computed(
+    () => this.selectionService.mesCostosSeleccionado() || mesActualEcuador(),
+  );
+  readonly anioConsulta = computed(() => this.mesConsulta().slice(0, 4));
+  readonly numeroMesConsulta = computed(() => this.mesConsulta().slice(5, 7));
+  readonly aniosConsulta = computed(() => {
+    const anios = [
+      ...this.data.mesesPreciosDisponibles(),
+      this.mesConsulta(),
+      mesActualEcuador(),
+    ].map((mes) => Number(mes.slice(0, 4)));
+    return Array.from({ length: Math.max(...anios) - Math.min(...anios) + 1 }, (_, indice) =>
+      String(Math.min(...anios) + indice),
+    ).reverse();
+  });
+  readonly mesesConsulta = Array.from({ length: 12 }, (_, indice) => ({
+    numero: String(indice + 1).padStart(2, '0'),
+    nombre: new Intl.DateTimeFormat('es-EC', { month: 'long', timeZone: 'UTC' }).format(
+      new Date(Date.UTC(2026, indice, 1)),
+    ),
+  }));
+
+  cambiarAnioConsulta(anio: string): void {
+    this.selectionService.seleccionarMesCostos(`${anio}-${this.numeroMesConsulta()}`);
+  }
+
+  cambiarMesConsulta(mes: string): void {
+    this.selectionService.seleccionarMesCostos(`${this.anioConsulta()}-${mes}`);
+  }
   readonly vista = signal<Vista>('productos');
   readonly tipoMaterial = signal<'ingredientes' | 'envases'>('ingredientes');
   readonly tipoEnvase = signal('Todos');
@@ -240,6 +272,7 @@ export class MateriaPrima {
   seleccionarProducto(producto: Producto): void {
     const sku = this.presentacionTarjeta(producto);
     if (!sku) return;
+    this.selectionService.seleccionarMesCostos(this.mesConsulta());
     this.selectionService.seleccionarProducto(producto, sku);
     this.vista.set('productos');
   }
