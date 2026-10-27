@@ -184,7 +184,7 @@
           } @else if (costosActuales(); as detalle) {
             <div class="cost-lines">
               <div class="cost-line">
-                <span class="cost-line__label">Materia prima actual</span>
+                <span class="cost-line__label">Materia prima del mes</span>
                 <span class="cost-line__value">
                   @if (costoMateriaPrima() !== null) {
                     ${{ costoMateriaPrima() | number: '1.4-4' }}
@@ -246,6 +246,11 @@
                 </span>
               </div>
             </div>
+            <p class="cost-note">
+              Materia prima: kg por ingrediente × último precio registrado hasta el cierre del mes.
+              Sin cambios, se conserva el precio anterior; antes del primer registro se usa el
+              precio base histórico.
+            </p>
             @if (manoObraVigente(); as mo) {
               @if (mo.mes.slice(0, 7) !== mesSeleccionado()) {
                 <p class="cost-note">
@@ -296,7 +301,8 @@
             }
             <p class="cost-note">
               El mes determina la mano de obra vigente y los gastos indirectos registrados en ese
-              mes. Materia prima, empaque y cartón usan sus valores actuales.
+              mes. La materia prima usa el historial al cierre del mes; empaque y cartón usan sus
+              valores actuales.
             </p>
           }
         </mat-card-content>

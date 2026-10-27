@@ -15,6 +15,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData } from 'chart.js';
 
 import { SelectionService } from '../../core/selection.service';
+import { DataService } from '../../core/data.service';
 
 import { Ingrediente, Presentacion } from '../../models/producto.model';
 
@@ -44,6 +45,7 @@ export class Estandar {
   private readonly selectionService = inject(SelectionService);
 
   private readonly costosService = inject(CostosProduccionService);
+  private readonly data = inject(DataService);
   private readonly navegador = isPlatformBrowser(inject(PLATFORM_ID));
   private solicitudCostos = 0;
 
@@ -189,7 +191,7 @@ export class Estandar {
   });
 
   readonly totalCosto = computed(() => {
-    return this.presentacionActual()?.totalCosto ?? null;
+    return this.costoMateriaPrima();
   });
 
   readonly hayFormula = computed(
@@ -206,10 +208,23 @@ export class Estandar {
   readonly cargandoCostos = signal(false);
   readonly errorCostos = signal<string | null>(null);
   readonly mesSeleccionado = signal('');
-  readonly meses = computed(() => this.costosActuales()?.meses ?? []);
+  readonly meses = computed(() => {
+    const presentacion = this.presentacionActual();
+    return [
+      ...new Set([
+        ...(this.costosActuales()?.meses ?? []),
+        ...(presentacion ? this.data.mesesMateriaPrima(presentacion) : []),
+      ]),
+    ].sort();
+  });
   readonly costoEmpaque = computed(() => this.costosActuales()?.costoEmpaque ?? null);
   readonly costoCarton = computed(() => this.costosActuales()?.costoCarton ?? null);
-  readonly costoMateriaPrima = computed(() => this.presentacionActual()?.totalCosto ?? null);
+  readonly costoMateriaPrima = computed(() => {
+    const presentacion = this.presentacionActual();
+    return presentacion
+      ? (this.data.materiaPrimaDelMes(presentacion, this.mesSeleccionado())?.costo ?? null)
+      : null;
+  });
   readonly costoPreliminar = computed(() => {
     const materia = this.costoMateriaPrima(),
       empaque = this.costoEmpaque(),
@@ -287,9 +302,13 @@ export class Estandar {
     }).format(new Date(`${mes}-01T00:00:00Z`));
   }
 
-  actualizarCostos(): void {
+  async actualizarCostos(): Promise<void> {
     const presentacion = this.presentacionActual();
     if (!this.navegador || !presentacion) return;
+    if (!(await this.data.actualizarAhora())) {
+      this.errorCostos.set(this.data.error() ?? 'No se pudieron cargar los precios históricos.');
+      return;
+    }
     void this.cargarCostos(presentacion.id, ++this.solicitudCostos);
   }
 

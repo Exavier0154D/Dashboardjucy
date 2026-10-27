@@ -5,7 +5,9 @@
       <h1>Reporte comparativo</h1>
       <p>
         Materia prima, empaque, cartón, mano de obra y gastos indirectos de fabricación de todos los
-        productos del catálogo.
+        productos del catálogo. La materia prima usa los kg de cada ingrediente y su último precio
+        hasta el cierre de cada mes; sin cambios conserva el anterior, y antes del primer registro
+        usa el precio base histórico.
       </p>
     </div>
     <button
@@ -145,9 +147,9 @@
       <p class="scope-note">
         <mat-icon>info</mat-icon>
         <span>
-          En cada mes se usa la mano de obra vigente y se suman los GIF registrados para ese mes.
-          Materia prima, empaque y cartón usan sus valores actuales en todo el rango. Si faltan GIF
-          o mano de obra, el total queda pendiente.
+          En cada mes se usa la mano de obra vigente y se suman los GIF registrados para ese mes. La
+          materia prima usa el historial de precios de cada mes. Empaque y cartón usan sus valores
+          actuales. Si faltan GIF o mano de obra, el total queda pendiente.
         </span>
       </p>
     </mat-card>
@@ -216,18 +218,16 @@
                 <th scope="col" rowspan="2" class="product-column">Producto / SKU</th>
                 <th scope="col" rowspan="2">Presentación</th>
                 <th scope="col" rowspan="2">Marca</th>
-                <th scope="col" rowspan="2" class="numeric">
-                  Materia prima actual<br />USD/unidad
-                </th>
                 <th scope="col" rowspan="2" class="numeric">Empaque actual<br />USD/unidad</th>
                 <th scope="col" rowspan="2" class="numeric">Cartón actual<br />USD/unidad</th>
                 @for (mes of mesesDelRango(); track mes) {
-                  <th scope="colgroup" colspan="5" class="month-heading">{{ etiquetaMes(mes) }}</th>
+                  <th scope="colgroup" colspan="6" class="month-heading">{{ etiquetaMes(mes) }}</th>
                 }
               </tr>
               <tr class="month-subheaders">
                 @for (mes of mesesDelRango(); track mes) {
-                  <th scope="col" class="numeric month-start">Mano de obra<br />USD/unidad</th>
+                  <th scope="col" class="numeric month-start">Materia prima<br />USD/unidad</th>
+                  <th scope="col" class="numeric">Mano de obra<br />USD/unidad</th>
                   <th scope="col" class="numeric">Gastos indirectos<br />USD/unidad</th>
                   <th scope="col" class="numeric total">Costo calculado<br />USD/unidad</th>
                   <th scope="col" class="numeric total">Costo calculado<br />USD/litro</th>
@@ -246,14 +246,6 @@
                   </th>
                   <td>{{ etiqueta(f.presentacion) }}</td>
                   <td>{{ f.producto.marca || 'Sin marca' }}</td>
-
-                  <td class="numeric">
-                    @if (f.materiaPrima !== null) {
-                      ${{ f.materiaPrima | number: '1.4-4' }}
-                    } @else {
-                      <span class="missing">Pendiente</span>
-                    }
-                  </td>
 
                   <td class="numeric">
                     @if (f.empaque !== null) {
@@ -276,6 +268,13 @@
                   </td>
                   @for (mensual of grupo.meses; track mensual.mes) {
                     <td class="numeric month-start">
+                      @if (mensual.materiaPrima !== null) {
+                        ${{ mensual.materiaPrima | number: '1.4-4' }}
+                      } @else {
+                        <span class="missing">Pendiente</span>
+                      }
+                    </td>
+                    <td class="numeric">
                       @if (mensual.manoObra !== null) {
                         ${{ mensual.manoObra | number: '1.4-4'
                         }}<small>Desde {{ etiquetaMes(mensual.mesAplicado!) }}</small>
@@ -331,7 +330,7 @@
                 </tr>
 
                 <tr class="formula-row">
-                  <td [attr.colspan]="6 + mesesDelRango().length * 5">
+                  <td [attr.colspan]="5 + mesesDelRango().length * 6">
                     <details class="formula-details">
                       <summary>
                         Ver fórmula · {{ f.formula.length }} ingredientes ·
@@ -341,7 +340,7 @@
                         <p class="formula-caption">
                           <strong>{{ f.presentacion.nombreSku }}</strong> · Estado de formulación:
                           {{ f.presentacion.estadoFormulacion }}. Cantidades y costos de materia
-                          prima por una unidad de esta presentación.
+                          prima por una unidad de esta presentación, para {{ etiquetaMes(f.mes) }}.
                         </p>
                         @if (f.formula.length) {
                           <div class="formula-scroll">
@@ -403,7 +402,8 @@
                           <p class="formula-caption">
                             Los porcentajes usan la escala 0–100. Un cero registrado se muestra como
                             cero; una cantidad ausente se muestra como «Sin dato». Los costos
-                            corresponden a la materia prima vigente.
+                            corresponden al cierre del primer mes del rango:
+                            {{ etiquetaMes(f.mes) }}.
                           </p>
                         } @else {
                           <p class="missing">

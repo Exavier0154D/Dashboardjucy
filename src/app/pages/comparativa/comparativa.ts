@@ -146,7 +146,8 @@ export class Comparativa {
       this.opcionesFiltradas().map((o) => {
         const carga = registros[o.presentacion.id];
         const datos = carga?.datos;
-        const mp = o.presentacion.totalCosto;
+        const valoracion = this.data.materiaPrimaDelMes(o.presentacion, mes);
+        const mp = valoracion?.costo ?? null;
         const materiaPrima = mp !== null && Number.isFinite(mp) && mp >= 0 ? mp : null;
         const mano = datos ? resolverManoObra(datos.manoObra, `${mes}-01`) : null;
         const empaque = datos?.costoEmpaque ?? null;
@@ -187,7 +188,7 @@ export class Comparativa {
         return {
           ...o,
           mes,
-          formula: this.formulaSku(o.presentacion),
+          formula: this.formulaSku(o.presentacion, valoracion?.porMateria),
           materiaPrima,
           empaque,
           carton,
@@ -343,7 +344,7 @@ export class Comparativa {
     this.usarRangoDisponible();
   }
 
-  private formulaSku(p: Presentacion): FilaFormula[] {
+  private formulaSku(p: Presentacion, costos?: Map<number, number>): FilaFormula[] {
     const ids = new Set([
       ...p.ingredientes.map((i) => i.materiaPrimaId),
       ...p.items.map((i) => i.materiaPrimaId),
@@ -367,7 +368,7 @@ export class Comparativa {
             : null,
         kg: sumar('kg'),
         litros: sumar('litros'),
-        costo: sumar('costo'),
+        costo: costos?.get(materiaPrimaId) ?? null,
       };
     });
   }

@@ -89,6 +89,7 @@ describe('Comparativa', () => {
             cargando: signal(false),
             cargado: signal(true),
             error: signal(null),
+            materiaPrimaDelMes: () => ({ costo: 1, porMateria: new Map() }),
           },
         },
         { provide: CostosProduccionService, useValue: { cargar } },
@@ -137,6 +138,24 @@ describe('Comparativa', () => {
     expect(component.mesesDelRango()).toEqual(['2025-12', '2026-01', '2026-02']);
     component.mesDesde.set('2026-02');
     expect(component.filas().length).toBe(1);
+  });
+
+  it('muestra materia prima y totales propios de cada mes en las columnas del reporte', async () => {
+    vi.spyOn(TestBed.inject(DataService), 'materiaPrimaDelMes').mockImplementation((_sku, mes) => ({
+      costo: mes === '2026-01' ? 1 : 0.8,
+      porMateria: new Map(),
+    }));
+    component.mesDesde.set('2026-01');
+    component.mesHasta.set('2026-02');
+    await fixture.whenStable();
+    expect(component.filas().map((f) => f.materiaPrima)).toEqual([1, 0.8]);
+    expect(component.filas()[1].totalUnidad).toBeCloseTo(1.5);
+    const celdas = fixture.nativeElement.querySelectorAll(
+      '.monthly-report > tbody > tr:first-child > td.month-start',
+    );
+    expect(celdas.length).toBe(2);
+    expect(celdas[0].textContent).toContain('1.0000');
+    expect(celdas[1].textContent).toContain('0.8000');
   });
 
   it('no genera filas para rangos invertidos, vacíos o inválidos', async () => {

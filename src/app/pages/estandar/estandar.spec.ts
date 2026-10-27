@@ -4,6 +4,7 @@ import { CostosPresentacion, CostosProduccionService } from '../../core/costos-p
 import { SelectionService } from '../../core/selection.service';
 import { Presentacion } from '../../models/producto.model';
 import { Estandar } from './estandar';
+import { DataService } from '../../core/data.service';
 
 describe('Costo final del estándar', () => {
   let component: Estandar;
@@ -32,6 +33,13 @@ describe('Costo final del estándar', () => {
       providers: [
         { provide: PLATFORM_ID, useValue: 'server' },
         { provide: CostosProduccionService, useValue: {} },
+        {
+          provide: DataService,
+          useValue: {
+            materiaPrimaDelMes: () => ({ costo: 1 }),
+            mesesMateriaPrima: () => [],
+          },
+        },
       ],
     });
     TestBed.overrideComponent(Estandar, { set: { template: '' } });
@@ -80,6 +88,21 @@ describe('Costo final del estándar', () => {
   it('no aplica los gastos cargados de otra presentación', () => {
     component.costos.set({ ...costos, presentacionId: 2 });
     expect(component.costoFinal()).toBeNull();
+  });
+
+  it('revalora la materia prima y el total al cambiar de mes', () => {
+    const valorar = vi
+      .spyOn(TestBed.inject(DataService), 'materiaPrimaDelMes')
+      .mockImplementation((_sku, mes) => ({
+        costo: mes === '2026-01' ? 1 : 0.8,
+        porMateria: new Map(),
+      }));
+    expect(component.costoMateriaPrima()).toBe(1);
+    component.cambiarMes('2026-02');
+    expect(component.costoMateriaPrima()).toBe(0.8);
+    expect(component.totalCosto()).toBe(0.8);
+    expect(component.costoFinal()).toBeCloseTo(1.3);
+    expect(valorar).toHaveBeenLastCalledWith(component.presentacionActual(), '2026-02');
   });
 
   it('presenta cartón aparte y lo suma una sola vez al total', () => {

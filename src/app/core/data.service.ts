@@ -4,6 +4,12 @@ import { Empaque } from '../models/empaque.model';
 import { SupabaseService } from './supabase.service';
 import { SelectionService } from './selection.service';
 import {
+  calcularSerie,
+  MaterialBase,
+  PrecioSemanal,
+} from '../shared/historico-costos/historico-calculos';
+import { calcularMateriaPrimaMensual } from './materia-prima-calculos';
+import {
   EmpaqueDb,
   FormulaDb,
   ItemDb,
@@ -23,6 +29,8 @@ export class DataService {
   readonly cargando = signal(false);
   readonly cargado = signal(false);
   readonly error = signal<string | null>(null);
+  private readonly materialesHistoricos = signal<MaterialBase[]>([]);
+  private readonly preciosHistoricos = signal<PrecioSemanal[]>([]);
   private pendiente: Promise<boolean> | null = null;
 
   constructor() {
@@ -41,6 +49,27 @@ export class DataService {
 
   actualizarAhora(): Promise<boolean> {
     return this.cargarDatos();
+  }
+
+  materiaPrimaDelMes(presentacion: Presentacion, mes: string) {
+    if (!this.cargado() || !mes) return null;
+    return calcularMateriaPrimaMensual(
+      presentacion,
+      mes,
+      this.materialesHistoricos(),
+      this.preciosHistoricos(),
+    );
+  }
+
+  mesesMateriaPrima(presentacion: Presentacion): string[] {
+    const ids = new Set(presentacion.items.map((i) => i.materiaPrimaId));
+    return [
+      ...new Set(
+        this.preciosHistoricos()
+          .filter((p) => ids.has(p.materia_prima_id))
+          .map((p) => p.semana.slice(0, 7)),
+      ),
+    ].sort();
   }
 
   empaquesDePresentacion(presentacionId: number): Empaque[] {
@@ -71,7 +100,7 @@ export class DataService {
     this.cargando.set(true);
     this.error.set(null);
     try {
-      const [materiasPrimas, productos, presentaciones, formulas, items, empaques] =
+      const [materiasPrimas, productos, presentaciones, formulas, items, empaques, precios] =
         await Promise.all([
           this.leer<MateriaPrimaDb>(
             'materia_prima',
@@ -103,7 +132,23 @@ export class DataService {
             'id,presentacion_id,tipo,costo,estado,producto_origen_id',
             ['id'],
           ),
+          this.leer<PrecioSemanal>('precio_historico', 'materia_prima_id,semana,costo_kg', ['id']),
         ]);
+      const materialesHistoricos = materiasPrimas.map((m) => ({
+        id: Number(m.id),
+        nombre: m.nombre,
+        costo_kg: Number(m.costo_base_historico ?? m.costo_kg),
+      }));
+      const preciosHistoricos = precios.map((p) => {
+        if (p.costo_kg == null || String(p.costo_kg).trim() === '')
+          throw new Error('Hay un precio histórico sin costo.');
+        return {
+          materia_prima_id: Number(p.materia_prima_id),
+          semana: p.semana,
+          costo_kg: Number(p.costo_kg),
+        };
+      });
+      calcularSerie([], [], materialesHistoricos, preciosHistoricos);
       const catalogo = mapearCatalogo({
         materiasPrimas,
         productos,
@@ -118,6 +163,8 @@ export class DataService {
       this.materiasPrimas.set(catalogo.materiasPrimas);
       this.productos.set(catalogo.productos);
       this.empaques.set(catalogo.empaques);
+      this.materialesHistoricos.set(materialesHistoricos);
+      this.preciosHistoricos.set(preciosHistoricos);
       if (productoId) {
         const producto = catalogo.productos.find((p) => p.id === productoId);
         if (producto)
