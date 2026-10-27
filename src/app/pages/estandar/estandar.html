@@ -159,13 +159,26 @@
             <label
               >Mes de costos de fabricación
               <select
-                #mes
-                [value]="mesSeleccionado()"
+                [ngModel]="mesSeleccionado()"
                 [disabled]="cargandoCostos() || meses().length === 0"
-                (change)="cambiarMes(mes.value)"
+                (ngModelChange)="cambiarMes($event)"
               >
                 @for (m of meses(); track m) {
                   <option [value]="m">{{ nombreMes(m) }}</option>
+                }
+              </select>
+            </label>
+            <label
+              >Semana de precios
+              <select
+                [ngModel]="semanaSeleccionada()"
+                [disabled]="cargandoCostos() || !semanas().length"
+                (ngModelChange)="cambiarSemana($event)"
+              >
+                @for (fecha of semanas(); track fecha; let i = $index) {
+                  <option [value]="fecha">
+                    Semana {{ i + 1 }} · {{ fecha | date: 'dd/MM/yyyy' : 'UTC' }}
+                  </option>
                 }
               </select>
             </label>
@@ -184,7 +197,7 @@
           } @else if (costosActuales(); as detalle) {
             <div class="cost-lines">
               <div class="cost-line">
-                <span class="cost-line__label">Materia prima del mes</span>
+                <span class="cost-line__label">Materia prima de la semana</span>
                 <span class="cost-line__value">
                   @if (costoMateriaPrima() !== null) {
                     ${{ costoMateriaPrima() | number: '1.4-4' }}
@@ -247,10 +260,22 @@
               </div>
             </div>
             <p class="cost-note">
-              Materia prima: kg por ingrediente × último precio registrado hasta el cierre del mes.
-              Sin cambios, se conserva el precio anterior; antes del primer registro se usa el
-              precio base histórico.
+              Materia prima: kg necesarios por ingrediente × precio por kg vigente en la semana
+              seleccionada. Sin cambios, se conserva el precio anterior; antes del primer registro
+              se usa el precio base histórico.
             </p>
+            @for (ingrediente of valoracionMateriaPrima()?.detalle ?? []; track $index) {
+              <p class="cost-note">
+                {{ ingrediente.nombre }}: {{ ingrediente.kg | number: '1.3-6' }} kg × ${{
+                  ingrediente.precioKg | number: '1.4-6'
+                }}/kg
+                @if (ingrediente.fechaPrecio) {
+                  (precio del {{ ingrediente.fechaPrecio | date: 'dd/MM/yyyy' : 'UTC' }})
+                } @else {
+                  (precio base histórico)
+                }
+              </p>
+            }
             @if (manoObraVigente(); as mo) {
               @if (mo.mes.slice(0, 7) !== mesSeleccionado()) {
                 <p class="cost-note">
@@ -301,7 +326,7 @@
             }
             <p class="cost-note">
               El mes determina la mano de obra vigente y los gastos indirectos registrados en ese
-              mes. La materia prima usa el historial al cierre del mes; empaque y cartón usan sus
+              mes. La materia prima usa el historial de la semana elegida; empaque y cartón usan sus
               valores actuales.
             </p>
           }

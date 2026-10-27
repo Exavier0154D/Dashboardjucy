@@ -10,6 +10,7 @@ import { mesActualEcuador, resolverManoObra, sumarCostoFinal } from '../../core/
 import { Producto, Presentacion } from '../../models/producto.model';
 import { coincideBusqueda } from '../../core/busqueda-texto';
 import { resolverGastosIndirectos } from '../../core/gastos-indirectos-calculos';
+import { fechaCierreMes } from '../../core/materia-prima-calculos';
 
 interface OpcionSku {
   producto: Producto;
@@ -30,6 +31,7 @@ interface FilaFormula {
 }
 interface FilaReporte extends OpcionSku {
   mes: string;
+  fecha: string;
   formula: FilaFormula[];
   materiaPrima: number | null;
   empaque: number | null;
@@ -71,6 +73,8 @@ export class Comparativa {
   readonly tecnologiaSeleccionada = signal('Todas');
   readonly mesDesde = signal(mesActualEcuador());
   readonly mesHasta = signal(mesActualEcuador());
+  readonly frecuencia = signal('semanal');
+  readonly semanaFiltro = signal('todas');
   private rangoManual = false;
   readonly orden = signal('producto');
   readonly cargando = computed(
@@ -140,13 +144,35 @@ export class Comparativa {
     return meses;
   });
 
+  readonly periodosDelRango = computed(() =>
+    this.mesesDelRango().flatMap((mes) => {
+      if (this.frecuencia() === 'mensual')
+        return [{ mes, fecha: fechaCierreMes(mes), etiqueta: this.etiquetaMes(mes) }];
+      return this.data
+        .semanasMateriaPrima(
+          this.opcionesFiltradas().map((o) => o.presentacion),
+          mes,
+        )
+        .map((fecha, indice) => ({
+          mes,
+          fecha,
+          indice,
+          etiqueta: `${this.etiquetaMes(mes)} · Semana ${indice + 1} · ${fecha.split('-').reverse().join('/')}`,
+        }))
+        .filter((p) => this.semanaFiltro() === 'todas' || p.indice === Number(this.semanaFiltro()));
+    }),
+  );
+
   readonly filas = computed<FilaReporte[]>(() => {
     const registros = this.registros();
-    const filas = this.mesesDelRango().flatMap((mes) =>
+    const filas = this.periodosDelRango().flatMap(({ mes, fecha }) =>
       this.opcionesFiltradas().map((o) => {
         const carga = registros[o.presentacion.id];
         const datos = carga?.datos;
-        const valoracion = this.data.materiaPrimaDelMes(o.presentacion, mes);
+        const valoracion =
+          this.frecuencia() === 'mensual'
+            ? this.data.materiaPrimaDelMes(o.presentacion, mes)
+            : this.data.materiaPrimaEnFecha(o.presentacion, fecha);
         const mp = valoracion?.costo ?? null;
         const materiaPrima = mp !== null && Number.isFinite(mp) && mp >= 0 ? mp : null;
         const mano = datos ? resolverManoObra(datos.manoObra, `${mes}-01`) : null;
@@ -188,6 +214,7 @@ export class Comparativa {
         return {
           ...o,
           mes,
+          fecha,
           formula: this.formulaSku(o.presentacion, valoracion?.porMateria),
           materiaPrima,
           empaque,
@@ -209,7 +236,7 @@ export class Comparativa {
 
     const orden = this.orden();
     return filas.sort((a, b) => {
-      const porMes = a.mes.localeCompare(b.mes);
+      const porMes = a.fecha.localeCompare(b.fecha);
       if (porMes) return porMes;
       if (orden !== 'producto') {
         const x = orden === 'unidad' ? a.totalUnidad : a.totalLitro;

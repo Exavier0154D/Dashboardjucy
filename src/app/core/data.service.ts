@@ -8,7 +8,11 @@ import {
   MaterialBase,
   PrecioSemanal,
 } from '../shared/historico-costos/historico-calculos';
-import { calcularMateriaPrimaMensual } from './materia-prima-calculos';
+import {
+  calcularMateriaPrimaMensual,
+  calcularMateriaPrimaEnFecha,
+  semanasDePrecios,
+} from './materia-prima-calculos';
 import {
   EmpaqueDb,
   FormulaDb,
@@ -70,6 +74,24 @@ export class DataService {
           .map((p) => p.semana.slice(0, 7)),
       ),
     ].sort();
+  }
+
+  materiaPrimaEnFecha(presentacion: Presentacion, fecha: string) {
+    if (!this.cargado() || !fecha) return null;
+    return calcularMateriaPrimaEnFecha(
+      presentacion,
+      fecha,
+      this.materialesHistoricos(),
+      this.preciosHistoricos(),
+    );
+  }
+
+  semanasMateriaPrima(presentaciones: Presentacion[], mes: string): string[] {
+    return semanasDePrecios(
+      mes,
+      this.preciosHistoricos(),
+      new Set(presentaciones.flatMap((p) => p.items.map((i) => i.materiaPrimaId))),
+    );
   }
 
   empaquesDePresentacion(presentacionId: number): Empaque[] {

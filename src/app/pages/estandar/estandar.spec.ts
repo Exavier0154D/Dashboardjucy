@@ -36,7 +36,9 @@ describe('Costo final del estándar', () => {
         {
           provide: DataService,
           useValue: {
-            materiaPrimaDelMes: () => ({ costo: 1 }),
+            materiaPrimaEnFecha: () => ({ costo: 1, detalle: [] }),
+            semanasMateriaPrima: (_skus: Presentacion[], mes: string) =>
+              mes ? ['01', '08', '15', '22'].map((dia) => `${mes}-${dia}`) : [],
             mesesMateriaPrima: () => [],
           },
         },
@@ -92,17 +94,35 @@ describe('Costo final del estándar', () => {
 
   it('revalora la materia prima y el total al cambiar de mes', () => {
     const valorar = vi
-      .spyOn(TestBed.inject(DataService), 'materiaPrimaDelMes')
-      .mockImplementation((_sku, mes) => ({
-        costo: mes === '2026-01' ? 1 : 0.8,
+      .spyOn(TestBed.inject(DataService), 'materiaPrimaEnFecha')
+      .mockImplementation((_sku, fecha) => ({
+        costo: fecha.startsWith('2026-01') ? 1 : 0.8,
         porMateria: new Map(),
+        detalle: [],
       }));
     expect(component.costoMateriaPrima()).toBe(1);
     component.cambiarMes('2026-02');
     expect(component.costoMateriaPrima()).toBe(0.8);
     expect(component.totalCosto()).toBe(0.8);
     expect(component.costoFinal()).toBeCloseTo(1.3);
-    expect(valorar).toHaveBeenLastCalledWith(component.presentacionActual(), '2026-02');
+    expect(valorar).toHaveBeenLastCalledWith(component.presentacionActual(), '2026-02-01');
+  });
+
+  it('recalcula el costo final al elegir otra semana del mismo mes', () => {
+    vi.spyOn(TestBed.inject(DataService), 'materiaPrimaEnFecha').mockImplementation(
+      (_sku, fecha) => ({
+        costo: fecha.endsWith('-08') ? 0.8 : 1,
+        porMateria: new Map(),
+        detalle: [],
+      }),
+    );
+    expect(component.costoFinal()).toBeCloseTo(1.65);
+    component.cambiarSemana('2026-01-08');
+    expect(component.costoMateriaPrima()).toBe(0.8);
+    expect(component.costoFinal()).toBeCloseTo(1.45);
+    expect(component.costoGastosIndirectos()).toBeCloseTo(0.15);
+    component.cambiarMes('2026-02');
+    expect(component.semanaSeleccionada()).toBe('2026-02-01');
   });
 
   it('presenta cartón aparte y lo suma una sola vez al total', () => {

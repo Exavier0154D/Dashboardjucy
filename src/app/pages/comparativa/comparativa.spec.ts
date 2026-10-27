@@ -90,6 +90,9 @@ describe('Comparativa', () => {
             cargado: signal(true),
             error: signal(null),
             materiaPrimaDelMes: () => ({ costo: 1, porMateria: new Map() }),
+            materiaPrimaEnFecha: () => ({ costo: 1, porMateria: new Map(), detalle: [] }),
+            semanasMateriaPrima: (_skus: Presentacion[], mes: string) =>
+              ['01', '08', '15', '22'].map((dia) => `${mes}-${dia}`),
           },
         },
         { provide: CostosProduccionService, useValue: { cargar } },
@@ -98,6 +101,7 @@ describe('Comparativa', () => {
 
     fixture = TestBed.createComponent(Comparativa);
     component = fixture.componentInstance;
+    component.frecuencia.set('mensual');
     await fixture.whenStable();
   });
 
@@ -144,6 +148,7 @@ describe('Comparativa', () => {
     vi.spyOn(TestBed.inject(DataService), 'materiaPrimaDelMes').mockImplementation((_sku, mes) => ({
       costo: mes === '2026-01' ? 1 : 0.8,
       porMateria: new Map(),
+      detalle: [],
     }));
     component.mesDesde.set('2026-01');
     component.mesHasta.set('2026-02');
@@ -185,5 +190,36 @@ describe('Comparativa', () => {
     component.reintentarCostos();
     await fixture.whenStable();
     expect(component.mesesDelRango()).toEqual(['2026-02', '2026-03']);
+  });
+
+  it('compara las cuatro semanas de un mes y permite seleccionar una sola', async () => {
+    vi.spyOn(TestBed.inject(DataService), 'materiaPrimaEnFecha').mockImplementation(
+      (_sku, fecha) => ({
+        costo: Number(fecha.slice(-2)) / 10,
+        porMateria: new Map(),
+        detalle: [],
+      }),
+    );
+    component.mesDesde.set('2026-01');
+    component.mesHasta.set('2026-01');
+    component.frecuencia.set('semanal');
+    await fixture.whenStable();
+    expect(component.filas().map((f) => f.fecha)).toEqual([
+      '2026-01-01',
+      '2026-01-08',
+      '2026-01-15',
+      '2026-01-22',
+    ]);
+    expect(component.filas().map((f) => f.materiaPrima)).toEqual([0.1, 0.8, 1.5, 2.2]);
+    expect(component.filas()[1].totalUnidad).toBeCloseTo(1.4);
+    expect(fixture.nativeElement.querySelectorAll('.month-heading').length).toBe(4);
+    component.semanaFiltro.set('1');
+    await fixture.whenStable();
+    expect(component.filas().length).toBe(1);
+    expect(component.filas()[0].fecha).toBe('2026-01-08');
+    const tabla = fixture.nativeElement.querySelector('.monthly-report');
+    expect(Number(tabla.querySelector('.formula-row > td').getAttribute('colspan'))).toBe(
+      tabla.querySelector('tbody > tr:first-child').children.length,
+    );
   });
 });

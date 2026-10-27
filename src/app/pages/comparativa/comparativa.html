@@ -6,7 +6,7 @@
       <p>
         Materia prima, empaque, cartón, mano de obra y gastos indirectos de fabricación de todos los
         productos del catálogo. La materia prima usa los kg de cada ingrediente y su último precio
-        hasta el cierre de cada mes; sin cambios conserva el anterior, y antes del primer registro
+        vigente en la semana elegida; sin cambios conserva el anterior, y antes del primer registro
         usa el precio base histórico.
       </p>
     </div>
@@ -41,8 +41,8 @@
         <div>
           <h2>Configura tu reporte</h2>
           <p>
-            Elige un rango de meses. Cada presentación aparece una sola vez, con los meses en
-            columnas de izquierda a derecha.
+            Elige un rango de meses y las semanas que quieres comparar. Cada presentación aparece
+            una sola vez, con los períodos en columnas de izquierda a derecha.
           </p>
         </div>
         <button type="button" class="text-button" (click)="limpiarFiltros()">
@@ -133,6 +133,33 @@
         </label>
 
         <label class="select-field">
+          <span>Ver costos por</span>
+          <select
+            #frecuenciaControl
+            [value]="frecuencia()"
+            (change)="frecuencia.set(frecuenciaControl.value)"
+          >
+            <option value="semanal">Semana</option>
+            <option value="mensual">Cierre mensual</option>
+          </select>
+        </label>
+        @if (frecuencia() === 'semanal') {
+          <label class="select-field">
+            <span>Semanas del mes</span>
+            <select
+              #semanasControl
+              [value]="semanaFiltro()"
+              (change)="semanaFiltro.set(semanasControl.value)"
+            >
+              <option value="todas">Todas las semanas registradas</option>
+              <option value="0">Semana 1</option>
+              <option value="1">Semana 2</option>
+              <option value="2">Semana 3</option>
+              <option value="3">Semana 4</option>
+            </select>
+          </label>
+        }
+        <label class="select-field">
           <span>Ordenar por</span>
           <select #ordenar [value]="orden()" (change)="orden.set(ordenar.value)">
             <option value="producto">Producto</option>
@@ -148,8 +175,9 @@
         <mat-icon>info</mat-icon>
         <span>
           En cada mes se usa la mano de obra vigente y se suman los GIF registrados para ese mes. La
-          materia prima usa el historial de precios de cada mes. Empaque y cartón usan sus valores
-          actuales. Si faltan GIF o mano de obra, el total queda pendiente.
+          materia prima usa el precio por kg vigente en la semana elegida y las cantidades de
+          producción registradas. Empaque y cartón usan sus valores actuales. Si faltan GIF o mano
+          de obra, el total queda pendiente.
         </span>
       </p>
     </mat-card>
@@ -162,23 +190,22 @@
         ><span>Presentaciones visibles</span><strong>{{ resumen().sku }}</strong></mat-card
       >
       <mat-card appearance="outlined" class="kpi-card"
-        ><span>Costos mensuales calculados</span
-        ><strong>{{ resumen().calculados }}</strong></mat-card
+        ><span>Costos calculados</span><strong>{{ resumen().calculados }}</strong></mat-card
       >
       <mat-card appearance="outlined" class="kpi-card"
-        ><span>Costos mensuales con observaciones</span
-        ><strong>{{ resumen().observados }}</strong></mat-card
+        ><span>Costos con observaciones</span><strong>{{ resumen().observados }}</strong></mat-card
       >
     </section>
 
     <mat-card appearance="outlined" class="report-card">
       <div class="report-heading">
         <div>
-          <h2>Costos mensuales por SKU</h2>
+          <h2>Costos por per?odo y SKU</h2>
           @if (!rangoInvalido()) {
             <p>
               {{ resumen().sku }} de {{ opciones().length }} presentaciones activas ·
-              {{ mesesDelRango().length }} meses en columnas · USD · {{ etiquetaMes(mesDesde()) }} –
+              {{ periodosDelRango().length }} per?odos en columnas · USD ·
+              {{ etiquetaMes(mesDesde()) }} –
               {{ etiquetaMes(mesHasta()) }}
             </p>
           }
@@ -210,7 +237,7 @@
         >
           <table class="monthly-report">
             <caption class="sr-only">
-              Desglose mensual de costos por unidad y por litro nominal incluyendo gastos
+              Desglose por período de costos por unidad y por litro nominal incluyendo gastos
               indirectos.
             </caption>
             <thead>
@@ -220,12 +247,12 @@
                 <th scope="col" rowspan="2">Marca</th>
                 <th scope="col" rowspan="2" class="numeric">Empaque actual<br />USD/unidad</th>
                 <th scope="col" rowspan="2" class="numeric">Cartón actual<br />USD/unidad</th>
-                @for (mes of mesesDelRango(); track mes) {
-                  <th scope="colgroup" colspan="6" class="month-heading">{{ etiquetaMes(mes) }}</th>
+                @for (periodo of periodosDelRango(); track periodo.fecha) {
+                  <th scope="colgroup" colspan="6" class="month-heading">{{ periodo.etiqueta }}</th>
                 }
               </tr>
               <tr class="month-subheaders">
-                @for (mes of mesesDelRango(); track mes) {
+                @for (periodo of periodosDelRango(); track periodo.fecha) {
                   <th scope="col" class="numeric month-start">Materia prima<br />USD/unidad</th>
                   <th scope="col" class="numeric">Mano de obra<br />USD/unidad</th>
                   <th scope="col" class="numeric">Gastos indirectos<br />USD/unidad</th>
@@ -266,7 +293,7 @@
                       ${{ f.carton | number: '1.4-4' }}
                     }
                   </td>
-                  @for (mensual of grupo.meses; track mensual.mes) {
+                  @for (mensual of grupo.meses; track mensual.fecha) {
                     <td class="numeric month-start">
                       @if (mensual.materiaPrima !== null) {
                         ${{ mensual.materiaPrima | number: '1.4-4' }}
@@ -330,7 +357,7 @@
                 </tr>
 
                 <tr class="formula-row">
-                  <td [attr.colspan]="5 + mesesDelRango().length * 6">
+                  <td [attr.colspan]="5 + periodosDelRango().length * 6">
                     <details class="formula-details">
                       <summary>
                         Ver fórmula · {{ f.formula.length }} ingredientes ·
@@ -340,7 +367,8 @@
                         <p class="formula-caption">
                           <strong>{{ f.presentacion.nombreSku }}</strong> · Estado de formulación:
                           {{ f.presentacion.estadoFormulacion }}. Cantidades y costos de materia
-                          prima por una unidad de esta presentación, para {{ etiquetaMes(f.mes) }}.
+                          prima por una unidad de esta presentación, para
+                          {{ f.fecha.split('-').reverse().join('/') }}.
                         </p>
                         @if (f.formula.length) {
                           <div class="formula-scroll">
@@ -402,8 +430,8 @@
                           <p class="formula-caption">
                             Los porcentajes usan la escala 0–100. Un cero registrado se muestra como
                             cero; una cantidad ausente se muestra como «Sin dato». Los costos
-                            corresponden al cierre del primer mes del rango:
-                            {{ etiquetaMes(f.mes) }}.
+                            corresponden al primer período mostrado:
+                            {{ f.fecha.split('-').reverse().join('/') }}.
                           </p>
                         } @else {
                           <p class="missing">

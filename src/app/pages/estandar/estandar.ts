@@ -1,6 +1,7 @@
 import { Component, computed, effect, inject, signal, PLATFORM_ID } from '@angular/core';
 
 import { DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { CostosProduccionService, CostosPresentacion } from '../../core/costos-produccion.service';
 import { resolverManoObra, sumarCostoFinal, mesActualEcuador } from '../../core/costos-calculos';
 import { resolverGastosIndirectos } from '../../core/gastos-indirectos-calculos';
@@ -27,6 +28,7 @@ import { GastosIndirectos } from '../../shared/gastos-indirectos/gastos-indirect
   imports: [
     DatePipe,
     DecimalPipe,
+    FormsModule,
     MatCardModule,
     MatIconModule,
     MatFormFieldModule,
@@ -208,6 +210,22 @@ export class Estandar {
   readonly cargandoCostos = signal(false);
   readonly errorCostos = signal<string | null>(null);
   readonly mesSeleccionado = signal('');
+  private readonly indiceSemana = signal(0);
+  readonly semanas = computed(() => {
+    const presentacion = this.presentacionActual();
+    return presentacion
+      ? this.data.semanasMateriaPrima([presentacion], this.mesSeleccionado())
+      : [];
+  });
+  readonly semanaSeleccionada = computed(
+    () => this.semanas()[Math.min(this.indiceSemana(), this.semanas().length - 1)] ?? '',
+  );
+  readonly valoracionMateriaPrima = computed(() => {
+    const presentacion = this.presentacionActual();
+    return presentacion && this.semanaSeleccionada()
+      ? this.data.materiaPrimaEnFecha(presentacion, this.semanaSeleccionada())
+      : null;
+  });
   readonly meses = computed(() => {
     const presentacion = this.presentacionActual();
     return [
@@ -220,10 +238,7 @@ export class Estandar {
   readonly costoEmpaque = computed(() => this.costosActuales()?.costoEmpaque ?? null);
   readonly costoCarton = computed(() => this.costosActuales()?.costoCarton ?? null);
   readonly costoMateriaPrima = computed(() => {
-    const presentacion = this.presentacionActual();
-    return presentacion
-      ? (this.data.materiaPrimaDelMes(presentacion, this.mesSeleccionado())?.costo ?? null)
-      : null;
+    return this.valoracionMateriaPrima()?.costo ?? null;
   });
   readonly costoPreliminar = computed(() => {
     const materia = this.costoMateriaPrima(),
@@ -290,7 +305,15 @@ export class Estandar {
   }
 
   cambiarMes(mes: string): void {
-    if (this.meses().includes(mes)) this.mesSeleccionado.set(mes);
+    if (this.meses().includes(mes)) {
+      this.mesSeleccionado.set(mes);
+      this.indiceSemana.set(0);
+    }
+  }
+
+  cambiarSemana(fecha: string): void {
+    const indice = this.semanas().indexOf(fecha);
+    if (indice >= 0) this.indiceSemana.set(indice);
   }
 
   nombreMes(mes: string): string {
