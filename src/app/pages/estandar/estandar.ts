@@ -72,7 +72,9 @@ export class Estandar {
   // INGREDIENTES
 
   readonly ingredientes = computed<Ingrediente[]>(() => {
-    return this.presentacionActual()?.ingredientes ?? [];
+    return [...(this.presentacionActual()?.ingredientes ?? [])].sort(
+      (a, b) => b.porcentaje - a.porcentaje,
+    );
   });
 
   // TABLA DE FORMULACIÓN
@@ -87,7 +89,7 @@ export class Estandar {
       return [];
     }
 
-    return presentacion.ingredientes.map((ingrediente) => {
+    return this.ingredientes().map((ingrediente) => {
       const item = presentacion.items.find(
         (itemPresentacion) => itemPresentacion.materiaPrimaId === ingrediente.materiaPrimaId,
       );
@@ -120,7 +122,7 @@ export class Estandar {
   readonly doughnutChartType = 'doughnut' as const;
 
   readonly doughnutChartData = computed<ChartData<'doughnut'>>(() => {
-    const ingredientes = [...this.ingredientes()].sort((a, b) => b.porcentaje - a.porcentaje);
+    const ingredientes = this.ingredientes();
 
     return {
       labels: ingredientes.map((ingrediente) => ingrediente.nombre),
