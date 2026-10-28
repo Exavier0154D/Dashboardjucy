@@ -120,7 +120,7 @@ export class Estandar {
   readonly doughnutChartType = 'doughnut' as const;
 
   readonly doughnutChartData = computed<ChartData<'doughnut'>>(() => {
-    const ingredientes = this.ingredientes();
+    const ingredientes = [...this.ingredientes()].sort((a, b) => b.porcentaje - a.porcentaje);
 
     return {
       labels: ingredientes.map((ingrediente) => ingrediente.nombre),
