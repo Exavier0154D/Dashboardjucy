@@ -260,12 +260,6 @@ export class MateriaPrima {
     );
   }
   tituloTarjeta(producto: Producto): string {
-    if (producto.categoria !== 'Agua de Coco') return producto.variante;
-    return /pitahaya|pithaya/i.test(producto.variante)
-      ? 'Agua de Coco y Pitahaya'
-      : 'Agua de Coco';
-  }
-  subtituloTarjeta(producto: Producto): string {
     return producto.categoria === 'Agua de Coco'
       ? `Agua de Coco · ${producto.marca}`
       : producto.nombre;

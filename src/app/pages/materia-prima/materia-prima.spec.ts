@@ -190,7 +190,7 @@ describe('Materia prima con ingredientes y envases', () => {
     ).toBe('2025');
   });
 
-  it('cambia los nombres de las tarjetas solo para Agua de Coco', async () => {
+  it('muestra el nombre inferior como título único de cada tarjeta', async () => {
     datos.productos.set([
       producto,
       {
@@ -217,12 +217,10 @@ describe('Materia prima con ingredientes y envases', () => {
 
     const tarjetas = fixture.nativeElement.querySelectorAll('.product-card') as NodeListOf<HTMLElement>;
     expect(tarjetas.length).toBe(3);
-    expect(tarjetas[0].querySelector('h2')?.textContent).toBe('Agua de Coco');
-    expect(tarjetas[0].querySelector('.product-name')?.textContent).toBe('Agua de Coco · Jucy');
-    expect(tarjetas[1].querySelector('h2')?.textContent).toBe('Agua de Coco y Pitahaya');
-    expect(tarjetas[1].querySelector('.product-name')?.textContent).toBe('Agua de Coco · Prunus');
-    expect(tarjetas[2].querySelector('h2')?.textContent).toBe('Café Frío');
-    expect(tarjetas[2].querySelector('.product-name')?.textContent).toBe('Café Frío Sweet & Coffee');
+    expect(tarjetas[0].querySelector('h2')?.textContent).toBe('Agua de Coco · Jucy');
+    expect(tarjetas[1].querySelector('h2')?.textContent).toBe('Agua de Coco · Prunus');
+    expect(tarjetas[2].querySelector('h2')?.textContent).toBe('Café Frío Sweet & Coffee');
+    expect(fixture.nativeElement.querySelector('.product-name')).toBeNull();
   });
 
   it('unifica botellas del mismo tamaño y permite consultar los dos precios originales', () => {
