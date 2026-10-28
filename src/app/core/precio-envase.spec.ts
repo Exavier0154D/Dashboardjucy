@@ -125,6 +125,21 @@ describe('Precios de envase por unidad', () => {
     ).toBe(true);
   });
 
+  it.each(['Jugos y Zumo', 'Limonada', 'Naranja', 'Nectar', 'Bebida', 'P. Temporales y Salsa'])(
+    'excluye cartones antiguos del catálogo de %s aunque contenga coco',
+    (categoria) => {
+      const origen = tablas(0.355, 0.105);
+      origen.productos[0].categoria = categoria;
+      origen.productos[0].variante = 'Con Coco';
+      origen.empaques.push({
+        ...origen.empaques[0], id: 2, tipo: 'Cartón', costo: 12,
+      });
+      const catalogo = mapearCatalogo(origen);
+      expect(catalogo.empaques.map((e) => e.tipo)).toEqual(['Botella']);
+      expect(catalogo.empaques[0].costo).toBe(0.105);
+    },
+  );
+
   it('rechaza tamaños o precios no válidos', () => {
     for (const litros of [0, -1, NaN, Infinity])
       expect(() => precioUnitarioEnvase(12, litros)).toThrow(/tamaño/);

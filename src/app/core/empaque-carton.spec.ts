@@ -11,18 +11,27 @@ const fila = (tipo: string, costo: number, estado = 'confirmado', presentacion_i
 const base = () => [fila('Botella', 0.1), fila('Tap', 0.02), fila('Etiqueta', 0.03)];
 
 describe('Cartón por presentación', () => {
-  it('lo exige en aguas de coco, jugos de coco y todos los lácteos', () => {
+  it('lo aplica solo a aguas de coco y lácteos', () => {
     for (const producto of [
       productoCoco,
       { categoria: 'Lacteos', variante: 'Café Frio' },
-      { categoria: 'Jugos y Zumo', variante: 'De Coco' },
-      { categoria: 'Limonada', variante: 'Con Coco' },
     ]) {
       expect(requiereCarton(producto)).toBe(true);
       expect(tiposEmpaqueRequeridos(producto)).toContain('Cartón');
     }
     expect(requiereCarton({ categoria: 'Limonada', variante: 'Original' })).toBe(false);
     expect(requiereCarton({ categoria: 'Jugos y Zumo', variante: 'De Naranja' })).toBe(false);
+    for (const producto of [
+      { categoria: 'Jugos y Zumo', variante: 'De Coco' },
+      { categoria: 'Limonada', variante: 'Con Coco' },
+      { categoria: 'Naranja', variante: 'Jugo - Original' },
+      { categoria: 'Nectar', variante: 'Mango' },
+      { categoria: 'Bebida', variante: 'Durazno B.' },
+      { categoria: 'P. Temporales y Salsa', variante: 'Guacamole' },
+    ]) {
+      expect(requiereCarton(producto)).toBe(false);
+      expect(tiposEmpaqueRequeridos(producto)).not.toContain('Cartón');
+    }
   });
 
   it('suma el cartón una sola vez al costo unitario del SKU', () => {

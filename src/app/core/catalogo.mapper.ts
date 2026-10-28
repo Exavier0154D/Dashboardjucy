@@ -9,7 +9,7 @@ import {
   Producto,
   TecnologiaProducto,
 } from '../models/producto.model';
-import { Empaque, EstadoEmpaque, TipoEmpaque, TIPOS_EMPAQUE } from '../models/empaque.model';
+import { Empaque, EstadoEmpaque, TipoEmpaque, TIPOS_EMPAQUE, requiereCarton } from '../models/empaque.model';
 import { precioUnitarioCarton, precioUnitarioEnvase, unidadesPorCarton } from './precio-envase';
 
 type Numero = number | string;
@@ -227,8 +227,9 @@ export function mapearCatalogo(tablas: TablasCatalogo): Catalogo {
       throw new Error('Un empaque apunta a un SKU inexistente.');
     const sku = skusVisibles.get(presentacionId);
     if (!sku) continue;
-    const costoRegistrado = numero(e.costo, 'precio de empaque o cartón');
     const tipo = unico<TipoEmpaque>(e.tipo, TIPOS_EMPAQUE, 'Tipo de empaque');
+    if (tipo === 'Cartón' && !requiereCarton(productosPorId.get(sku.productoId)!)) continue;
+    const costoRegistrado = numero(e.costo, 'precio de empaque o cartón');
     empaques.push({
       id: id(e.id),
       presentacionId,

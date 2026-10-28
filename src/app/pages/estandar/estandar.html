@@ -38,26 +38,6 @@
         </div>
       </div>
     </mat-card>
-    <nav class="product-views" aria-label="Vistas del producto">
-      <button
-        type="button"
-        class="product-view-button"
-        [class.active]="vista() === 'estandar'"
-        [attr.aria-pressed]="vista() === 'estandar'"
-        (click)="vista.set('estandar')"
-      >
-        <mat-icon aria-hidden="true">assignment</mat-icon>Estándar y costos
-      </button>
-      <button
-        type="button"
-        class="product-view-button"
-        [class.active]="vista() === 'indirectos'"
-        [attr.aria-pressed]="vista() === 'indirectos'"
-        (click)="vista.set('indirectos')"
-      >
-        <mat-icon aria-hidden="true">factory</mat-icon>Gastos indirectos de fabricación
-      </button>
-    </nav>
     <!-- SELECTOR DE PRESENTACIÓN -->
     @if (presentaciones().length > 0) {
       <div class="presentation-switch">
@@ -75,415 +55,402 @@
         }
       </div>
     }
-    @if (vista() === 'indirectos') {
-      <app-gastos-indirectos
-        [producto]="productoSeleccionado()!"
-        [presentacion]="presentacionActual()"
-        [datos]="costosActuales()"
-        [cargando]="cargandoCostos()"
-        [error]="errorCostos()"
-        [mes]="mesSeleccionado()"
-        (seleccionarMes)="cambiarMes($event)"
-        (actualizar)="actualizarCostos()"
-      />
-    } @else {
-      <!-- RESUMEN -->
-      <div class="summary-grid">
-        <mat-card class="summary-card" appearance="outlined">
-          <div class="summary-icon summary-icon--blue"><mat-icon>local_bar</mat-icon></div>
-          <div class="summary-content">
-            <span class="summary-label">Presentación</span>
-            <strong class="summary-value">
-              @if (presentacionActual(); as presentacion) {
-                {{ etiquetaPresentacion(presentacion) }}
-              } @else {
-                —
-              }
-            </strong>
-          </div>
-        </mat-card>
-        <mat-card class="summary-card" appearance="outlined">
-          <div class="summary-icon summary-icon--amber"><mat-icon>scale</mat-icon></div>
-          <div class="summary-content">
-            <span class="summary-label">Total kg</span>
-            <strong class="summary-value">{{
-              hayFormula() ? (totalKg() | number: '1.3-6') : '—'
-            }}</strong>
-          </div>
-        </mat-card>
-        <mat-card class="summary-card" appearance="outlined">
-          <div class="summary-icon summary-icon--teal"><mat-icon>water_drop</mat-icon></div>
-          <div class="summary-content">
-            <span class="summary-label">Litros de formulación</span>
-            <strong class="summary-value">{{
-              hayFormula() ? (totalLitros() | number: '1.3-6') : '—'
-            }}</strong>
-          </div>
-        </mat-card>
-        <mat-card class="summary-card" appearance="outlined">
-          <div class="summary-icon summary-icon--green"><mat-icon>attach_money</mat-icon></div>
-          <div class="summary-content">
-            <span class="summary-label">Costo de materia prima</span>
-            <strong class="summary-value">
-              @if (totalCosto() !== null) {
-                ${{ totalCosto() | number: '1.4-4' }}
-              } @else {
-                —
-              }
-            </strong>
-          </div>
-        </mat-card>
-      </div>
-      @if (presentacionActual(); as sku) {
-        <div class="sku-meta">
-          <span>{{ sku.nombreSku }}</span
-          ><span>Código: {{ sku.codigoBarras || 'Sin código' }}</span>
-          @if (sku.estadoFormulacion === 'escalada') {
-            <span>Cantidades escaladas desde una presentación de referencia.</span>
-          }
-          @if (sku.estadoFormulacion === 'por_completar') {
-            <span class="formula-warning">Este SKU todavía no tiene una fórmula definida.</span>
-          }
-        </div>
-      }
-      <mat-card class="cost-card" appearance="outlined">
-        <div class="card-header">
-          <h3>Costos por presentación</h3>
-          <p>
-            Materia prima + empaque + cartón + mano de obra + gastos indirectos de fabricación del
-            mes elegido.
-          </p>
-        </div>
-        <mat-card-content>
-          <div class="cost-controls">
-            <label
-              >Mes de costos de fabricación
-              <select
-                [ngModel]="mesSeleccionado()"
-                [disabled]="cargandoCostos() || meses().length === 0"
-                (ngModelChange)="cambiarMes($event)"
-              >
-                @for (m of meses(); track m) {
-                  <option [value]="m">{{ nombreMes(m) }}</option>
-                }
-              </select>
-            </label>
-            <label
-              >Semana de precios
-              <select
-                [ngModel]="semanaSeleccionada()"
-                [disabled]="cargandoCostos() || !semanas().length"
-                (ngModelChange)="cambiarSemana($event)"
-              >
-                @for (fecha of semanas(); track fecha; let i = $index) {
-                  <option [value]="fecha">
-                    Semana {{ i + 1 }} · {{ fecha | date: 'dd/MM/yyyy' : 'UTC' }}
-                  </option>
-                }
-              </select>
-            </label>
-            <button
-              type="button"
-              [disabled]="cargandoCostos() || !presentacionActual()"
-              (click)="actualizarCostos()"
-            >
-              Actualizar costos de fabricación
-            </button>
-          </div>
-          @if (cargandoCostos()) {
-            <p role="status">Cargando costos del SKU…</p>
-          } @else if (errorCostos()) {
-            <p class="cost-error" role="alert">{{ errorCostos() }}</p>
-          } @else if (costosActuales(); as detalle) {
-            <div class="cost-lines">
-              <div class="cost-line">
-                <span class="cost-line__label">Materia prima de la semana</span>
-                <span class="cost-line__value">
-                  @if (costoMateriaPrima() !== null) {
-                    ${{ costoMateriaPrima() | number: '1.4-4' }}
-                  } @else {
-                    Sin fórmula
-                  }
-                </span>
-              </div>
-              <div class="cost-line">
-                <span class="cost-line__label">Empaque: botella, tapa y etiqueta</span>
-                <span class="cost-line__value">${{ costoEmpaque() | number: '1.4-4' }}</span>
-              </div>
-              <div class="cost-line cost-line--carton">
-                <span class="cost-line__label">Cartón por unidad</span>
-                <span class="cost-line__value">
-                  @if (!detalle.cartonAplica) {
-                    No aplica
-                  } @else if (detalle.cartonSinDato) {
-                    Sin dato
-                  } @else {
-                    ${{ costoCarton() | number: '1.4-4' }}
-                  }
-                </span>
-              </div>
-              <div class="cost-line">
-                <span class="cost-line__label">Mano de obra por unidad</span>
-                <span class="cost-line__value">
-                  @if (costoManoObra() !== null) {
-                    ${{ costoManoObra() | number: '1.4-4' }}
-                  } @else {
-                    Sin registro anterior
-                  }
-                </span>
-              </div>
-              <div class="cost-line">
-                <span class="cost-line__label">Gastos indirectos de fabricación por unidad</span>
-                <span class="cost-line__value">
-                  @if (costoGastosIndirectos() !== null) {
-                    ${{ costoGastosIndirectos() | number: '1.4-4' }}
-                  } @else {
-                    Sin registro del mes
-                  }
-                </span>
-              </div>
-              <div class="cost-line cost-line--total">
-                <span class="cost-line__label">{{
-                  costoFinal() === null
-                    ? 'Subtotal disponible: materia prima + empaque + cartón'
-                    : 'Costo calculado por unidad'
-                }}</span>
-                <span class="cost-line__value">
-                  @if (costoFinal() !== null) {
-                    ${{ costoFinal() | number: '1.4-4' }}
-                  } @else if (costoPreliminar() !== null) {
-                    ${{ costoPreliminar() | number: '1.4-4' }}
-                  } @else {
-                    —
-                  }
-                </span>
-              </div>
-            </div>
-            <p class="cost-note">
-              Materia prima: kg necesarios por ingrediente × precio por kg vigente en la semana
-              seleccionada. Sin cambios, se conserva el precio anterior; antes del primer registro
-              se usa el precio base histórico.
-            </p>
-            @for (ingrediente of valoracionMateriaPrima()?.detalle ?? []; track $index) {
-              <p class="cost-note">
-                {{ ingrediente.nombre }}: {{ ingrediente.kg | number: '1.3-6' }} kg × ${{
-                  ingrediente.precioKg | number: '1.4-6'
-                }}/kg
-                @if (ingrediente.fechaPrecio) {
-                  (precio del {{ ingrediente.fechaPrecio | date: 'dd/MM/yyyy' : 'UTC' }})
-                } @else {
-                  (precio base histórico)
-                }
-              </p>
-            }
-            @if (manoObraVigente(); as mo) {
-              @if (mo.mes.slice(0, 7) !== mesSeleccionado()) {
-                <p class="cost-note">
-                  Se mantiene la mano de obra de {{ nombreMes(mo.mes.slice(0, 7)) }} hasta la
-                  siguiente actualización.
-                </p>
-              }
-              @if (mo.estimado) {
-                <p class="cost-note">La mano de obra utilizada está registrada como estimada.</p>
-              }
+    <!-- RESUMEN -->
+    <div class="summary-grid">
+      <mat-card class="summary-card" appearance="outlined">
+        <div class="summary-icon summary-icon--blue"><mat-icon>local_bar</mat-icon></div>
+        <div class="summary-content">
+          <span class="summary-label">Presentación</span>
+          <strong class="summary-value">
+            @if (presentacionActual(); as presentacion) {
+              {{ etiquetaPresentacion(presentacion) }}
             } @else {
-              <p class="cost-note" role="status">
-                No existe mano de obra para este SKU en el mes elegido ni antes. El subtotal
-                disponible no incluye mano de obra.
-              </p>
+              —
             }
-            @if (detalle.empaqueEstimado) {
-              <p class="cost-note">
-                Empaque de referencia copiado del producto anterior. Revisa su costo para este
-                tamaño y tecnología.
-              </p>
-            }
-            @if (detalle.empaqueSinDato) {
-              <p class="cost-note">
-                Faltan datos de empaque: los tipos sin dato aportan 0 al subtotal.
-              </p>
-            }
-            @if (detalle.cartonEstimado) {
-              <p class="cost-note">El cartón utiliza un precio de referencia.</p>
-            }
-            @if (detalle.cartonSinDato) {
-              <p class="cost-note">Falta el precio de cartón; aporta 0 al subtotal disponible.</p>
-            }
-            @if (gastosIndirectosDelMes(); as gif) {
-              <p class="cost-note">
-                Se suman {{ gif.conceptos }} conceptos de gastos indirectos para
-                {{ nombreMes(mesSeleccionado()) }}.
-              </p>
-              @if (gif.estimado) {
-                <p class="cost-note">Los gastos indirectos incluyen valores estimados.</p>
-              }
-            } @else {
-              <p class="cost-note" role="status">
-                Faltan gastos indirectos de fabricación para este SKU en el mes elegido. El costo
-                final queda pendiente; el subtotal disponible incluye materia prima, empaque y
-                cartón.
-              </p>
-            }
-            <p class="cost-note">
-              El mes determina la mano de obra vigente y los gastos indirectos registrados en ese
-              mes. La materia prima usa el historial de la semana elegida; empaque y cartón usan sus
-              valores actuales.
-            </p>
-          }
-        </mat-card-content>
-      </mat-card>
-      <app-historico-costos
-        modo="producto"
-        [producto]="productoSeleccionado()"
-        [presentacion]="presentacionActual()"
-      >
-      </app-historico-costos>
-      <!-- FÓRMULA + GRÁFICO -->
-      <div class="content-grid">
-        <mat-card class="table-card" appearance="outlined">
-          <div class="card-header">
-            <h3>Fórmula estándar</h3>
-            <p>Composición de la presentación seleccionada</p>
-            @if (hayFormula() && (sumaPorcentajes() < 99.9999 || sumaPorcentajes() > 100.0001)) {
-              <p class="formula-warning">
-                La fórmula original suma {{ sumaPorcentajes() | number: '1.2-4' }} %. Se conserva
-                sin normalizar.
-              </p>
-            }
-          </div>
-          <mat-card-content>
-            <div class="table-container">
-              <table mat-table [dataSource]="formulacion()">
-                <ng-container matColumnDef="componente">
-                  <th mat-header-cell *matHeaderCellDef>Componente</th>
-                  <td mat-cell *matCellDef="let item" class="cell-name">{{ item.componente }}</td>
-                </ng-container>
-                <ng-container matColumnDef="unidad">
-                  <th mat-header-cell *matHeaderCellDef>Unidad</th>
-                  <td mat-cell *matCellDef="let item">
-                    <span class="unit-chip">{{ item.unidad }}</span>
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="porcentaje">
-                  <th mat-header-cell *matHeaderCellDef class="num">Formulación %</th>
-                  <td mat-cell *matCellDef="let item" class="num">
-                    {{ item.porcentaje.toFixed(2) }} %
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="kg">
-                  <th mat-header-cell *matHeaderCellDef class="num">Kg</th>
-                  <td mat-cell *matCellDef="let item" class="num">
-                    {{ item.kg === null ? '—' : (item.kg | number: '1.3-6') }}
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="litros">
-                  <th mat-header-cell *matHeaderCellDef class="num">Litros</th>
-                  <td mat-cell *matCellDef="let item" class="num">
-                    {{ item.litros === null ? '—' : (item.litros | number: '1.3-6') }}
-                  </td>
-                </ng-container>
-                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-              </table>
-              @if (formulacion().length === 0) {
-                <div class="empty-state">
-                  <mat-icon>table_chart</mat-icon>
-                  <p>No hay formulación disponible</p>
-                  <span>Los datos del estándar se agregarán manualmente posteriormente.</span>
-                </div>
-              }
-            </div>
-          </mat-card-content>
-        </mat-card>
-        <mat-card class="chart-card" appearance="outlined">
-          <div class="card-header">
-            <h3>Composición del producto</h3>
-            <p>Distribución porcentual de componentes</p>
-          </div>
-          <mat-card-content>
-            <div class="chart-container">
-              <canvas
-                baseChart
-                [type]="doughnutChartType"
-                [data]="doughnutChartData()"
-                [options]="doughnutChartOptions"
-              ></canvas>
-              @if (doughnutChartData().labels?.length === 0) {
-                <div class="chart-empty">
-                  <mat-icon>donut_large</mat-icon>
-                  <p>No hay datos para mostrar</p>
-                  <span>La composición aparecerá cuando agreguemos el estándar.</span>
-                </div>
-              }
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
-      <!-- CALCULADORA DE BATCH -->
-      <mat-card class="batch-card" appearance="outlined">
-        <div class="card-header">
-          <h3>Calculadora de batch</h3>
-          <p>Escala las cantidades usando los litros nominales de la presentación.</p>
+          </strong>
         </div>
-        <mat-card-content>
-          <div class="batch-input">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
-              <mat-label>Litros a producir</mat-label>
-              <input
-                matInput
-                type="number"
-                min="0"
-                step="1"
-                placeholder="Ej. 500"
-                #batch
-                [value]="litrosBatch() || ''"
-                [disabled]="!hayFormula()"
-                (input)="cambiarLitrosBatch(batch.value)"
-              />
-              <span matTextSuffix>L</span>
-            </mat-form-field>
-          </div>
-          @if (batchCalculado().length > 0) {
-            <div class="table-container">
-              <table mat-table [dataSource]="batchCalculado()">
-                <ng-container matColumnDef="ingrediente">
-                  <th mat-header-cell *matHeaderCellDef>Ingrediente</th>
-                  <td mat-cell *matCellDef="let item" class="cell-name">{{ item.ingrediente }}</td>
-                </ng-container>
-                <ng-container matColumnDef="kg">
-                  <th mat-header-cell *matHeaderCellDef class="num">Kg requeridos</th>
-                  <td mat-cell *matCellDef="let item" class="num">
-                    {{ item.kg === null ? '—' : (item.kg | number: '1.3-6') }}
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="litros">
-                  <th mat-header-cell *matHeaderCellDef class="num">Litros</th>
-                  <td mat-cell *matCellDef="let item" class="num">
-                    {{ item.litros === null ? '—' : (item.litros | number: '1.3-6') }}
-                  </td>
-                </ng-container>
-                <tr
-                  mat-header-row
-                  *matHeaderRowDef="['ingrediente', 'kg', 'litros']; sticky: true"
-                ></tr>
-                <tr mat-row *matRowDef="let row; columns: ['ingrediente', 'kg', 'litros']"></tr>
-              </table>
-            </div>
-          } @else {
-            <div class="empty-state batch-empty">
-              <mat-icon>calculate</mat-icon>
-              <p>
-                {{
-                  hayFormula()
-                    ? 'Ingresa los litros a producir'
-                    : 'Este SKU no tiene cantidades para calcular el batch'
-                }}
-              </p>
-              <span>Las cantidades de cada componente se calcularán automáticamente.</span>
-            </div>
-          }
-        </mat-card-content>
       </mat-card>
+      <mat-card class="summary-card" appearance="outlined">
+        <div class="summary-icon summary-icon--amber"><mat-icon>scale</mat-icon></div>
+        <div class="summary-content">
+          <span class="summary-label">Total kg de formulación</span>
+          <strong class="summary-value">{{
+            hayFormula() ? (totalKg() | number: '1.3-6') : '—'
+          }}</strong>
+        </div>
+      </mat-card>
+      <mat-card class="summary-card" appearance="outlined">
+        <div class="summary-icon summary-icon--teal"><mat-icon>water_drop</mat-icon></div>
+        <div class="summary-content">
+          <span class="summary-label">Litros de formulación</span>
+          <strong class="summary-value">{{
+            hayFormula() ? (totalLitros() | number: '1.3-6') : '—'
+          }}</strong>
+        </div>
+      </mat-card>
+      <mat-card class="summary-card" appearance="outlined">
+        <div class="summary-icon summary-icon--green"><mat-icon>attach_money</mat-icon></div>
+        <div class="summary-content">
+          <span class="summary-label">Costo de materia prima</span>
+          <strong class="summary-value">
+            @if (totalCosto() !== null) {
+              ${{ totalCosto() | number: '1.4-4' }}
+            } @else {
+              —
+            }
+          </strong>
+        </div>
+      </mat-card>
+    </div>
+    @if (presentacionActual(); as sku) {
+      <div class="sku-meta">
+        <span>{{ sku.nombreSku }}</span
+        ><span>Código: {{ sku.codigoBarras || 'Sin código' }}</span>
+        @if (sku.estadoFormulacion === 'escalada') {
+          <span>Cantidades escaladas desde una presentación de referencia.</span>
+        }
+        @if (sku.estadoFormulacion === 'por_completar') {
+          <span class="formula-warning">Este SKU todavía no tiene una fórmula definida.</span>
+        }
+      </div>
     }
+    <mat-card class="cost-card" appearance="outlined">
+      <div class="card-header">
+        <h3>Costos por presentación</h3>
+        <p>
+          Materia prima + empaque + cartón + mano de obra + gastos indirectos de fabricación del
+          mes elegido.
+        </p>
+      </div>
+      <mat-card-content>
+        <div class="cost-controls">
+          <label
+            >Mes de costos de fabricación
+            <select
+              [ngModel]="mesSeleccionado()"
+              [disabled]="cargandoCostos() || meses().length === 0"
+              (ngModelChange)="cambiarMes($event)"
+            >
+              @for (m of meses(); track m) {
+                <option [value]="m">{{ nombreMes(m) }}</option>
+              }
+            </select>
+          </label>
+          <label
+            >Semana de precios
+            <select
+              [ngModel]="semanaSeleccionada()"
+              [disabled]="cargandoCostos() || !semanas().length"
+              (ngModelChange)="cambiarSemana($event)"
+            >
+              @for (fecha of semanas(); track fecha; let i = $index) {
+                <option [value]="fecha">
+                  Semana {{ i + 1 }} · {{ fecha | date: 'dd/MM/yyyy' : 'UTC' }}
+                </option>
+              }
+            </select>
+          </label>
+          <button
+            type="button"
+            [disabled]="cargandoCostos() || !presentacionActual()"
+            (click)="actualizarCostos()"
+          >
+            Actualizar costos de fabricación
+          </button>
+        </div>
+        @if (cargandoCostos()) {
+          <p role="status">Cargando costos del SKU…</p>
+        } @else if (errorCostos()) {
+          <p class="cost-error" role="alert">{{ errorCostos() }}</p>
+        } @else if (costosActuales(); as detalle) {
+          <div class="cost-lines">
+            <div class="cost-line">
+              <span class="cost-line__label">Materia prima de la semana</span>
+              <span class="cost-line__value">
+                @if (costoMateriaPrima() !== null) {
+                  ${{ costoMateriaPrima() | number: '1.4-4' }}
+                } @else {
+                  Sin fórmula
+                }
+              </span>
+            </div>
+            <div class="cost-line">
+              <span class="cost-line__label">Empaque: botella, tapa y etiqueta</span>
+              <span class="cost-line__value">${{ costoEmpaque() | number: '1.4-4' }}</span>
+            </div>
+            <div class="cost-line cost-line--carton">
+              <span class="cost-line__label">Cartón por unidad</span>
+              <span class="cost-line__value">
+                @if (!detalle.cartonAplica) {
+                  No aplica
+                } @else if (detalle.cartonSinDato) {
+                  Sin dato
+                } @else {
+                  ${{ costoCarton() | number: '1.4-4' }}
+                }
+              </span>
+            </div>
+            <div class="cost-line">
+              <span class="cost-line__label">Mano de obra por unidad</span>
+              <span class="cost-line__value">
+                @if (costoManoObra() !== null) {
+                  ${{ costoManoObra() | number: '1.4-4' }}
+                } @else {
+                  Sin registro anterior
+                }
+              </span>
+            </div>
+            <div class="cost-line">
+              <span class="cost-line__label">Gastos indirectos de fabricación por unidad</span>
+              <span class="cost-line__value">
+                @if (costoGastosIndirectos() !== null) {
+                  ${{ costoGastosIndirectos() | number: '1.4-4' }}
+                } @else {
+                  Sin registro del mes
+                }
+              </span>
+            </div>
+            <div class="cost-line cost-line--total">
+              <span class="cost-line__label">{{
+                costoFinal() === null
+                  ? 'Subtotal disponible: materia prima + empaque + cartón'
+                  : 'Costo calculado por unidad'
+              }}</span>
+              <span class="cost-line__value">
+                @if (costoFinal() !== null) {
+                  ${{ costoFinal() | number: '1.4-4' }}
+                } @else if (costoPreliminar() !== null) {
+                  ${{ costoPreliminar() | number: '1.4-4' }}
+                } @else {
+                  —
+                }
+              </span>
+            </div>
+          </div>
+          <p class="cost-note">
+            Materia prima: kg necesarios por ingrediente × precio por kg vigente en la semana
+            seleccionada. Sin cambios, se conserva el precio anterior; antes del primer registro
+            se usa el precio base histórico.
+          </p>
+          @for (ingrediente of valoracionMateriaPrima()?.detalle ?? []; track $index) {
+            <p class="cost-note">
+              {{ ingrediente.nombre }}: {{ ingrediente.kg | number: '1.3-6' }} kg × ${{
+                ingrediente.precioKg | number: '1.4-6'
+              }}/kg
+              @if (ingrediente.fechaPrecio) {
+                (precio del {{ ingrediente.fechaPrecio | date: 'dd/MM/yyyy' : 'UTC' }})
+              } @else {
+                (precio base histórico)
+              }
+            </p>
+          }
+          @if (manoObraVigente(); as mo) {
+            @if (mo.mes.slice(0, 7) !== mesSeleccionado()) {
+              <p class="cost-note">
+                Se mantiene la mano de obra de {{ nombreMes(mo.mes.slice(0, 7)) }} hasta la
+                siguiente actualización.
+              </p>
+            }
+            @if (mo.estimado) {
+              <p class="cost-note">La mano de obra utilizada está registrada como estimada.</p>
+            }
+          } @else {
+            <p class="cost-note" role="status">
+              No existe mano de obra para este SKU en el mes elegido ni antes. El subtotal
+              disponible no incluye mano de obra.
+            </p>
+          }
+          @if (detalle.empaqueEstimado) {
+            <p class="cost-note">
+              Empaque de referencia copiado del producto anterior. Revisa su costo para este
+              tamaño y tecnología.
+            </p>
+          }
+          @if (detalle.empaqueSinDato) {
+            <p class="cost-note">
+              Faltan datos de empaque: los tipos sin dato aportan 0 al subtotal.
+            </p>
+          }
+          @if (detalle.cartonEstimado) {
+            <p class="cost-note">El cartón utiliza un precio de referencia.</p>
+          }
+          @if (detalle.cartonSinDato) {
+            <p class="cost-note">Falta el precio de cartón; aporta 0 al subtotal disponible.</p>
+          }
+          @if (gastosIndirectosDelMes(); as gif) {
+            <p class="cost-note">
+              Se suman {{ gif.conceptos }} conceptos de gastos indirectos para
+              {{ nombreMes(mesSeleccionado()) }}.
+            </p>
+            @if (gif.estimado) {
+              <p class="cost-note">Los gastos indirectos incluyen valores estimados.</p>
+            }
+          } @else {
+            <p class="cost-note" role="status">
+              Faltan gastos indirectos de fabricación para este SKU en el mes elegido. El costo
+              final queda pendiente; el subtotal disponible incluye materia prima, empaque y
+              cartón.
+            </p>
+          }
+          <p class="cost-note">
+            El mes determina la mano de obra vigente y los gastos indirectos registrados en ese
+            mes. La materia prima usa el historial de la semana elegida; empaque y cartón usan sus
+            valores actuales.
+          </p>
+        }
+      </mat-card-content>
+    </mat-card>
+    <app-historico-costos
+      modo="producto"
+      [producto]="productoSeleccionado()"
+      [presentacion]="presentacionActual()"
+    >
+    </app-historico-costos>
+    <!-- FÓRMULA + GRÁFICO -->
+    <div class="content-grid">
+      <mat-card class="table-card" appearance="outlined">
+        <div class="card-header">
+          <h3>Fórmula estándar</h3>
+          <p>Composición de la presentación seleccionada</p>
+          @if (hayFormula() && (sumaPorcentajes() < 99.9999 || sumaPorcentajes() > 100.0001)) {
+            <p class="formula-warning">
+              La fórmula original suma {{ sumaPorcentajes() | number: '1.2-4' }} %. Se conserva
+              sin normalizar.
+            </p>
+          }
+        </div>
+        <mat-card-content>
+          <div class="table-container">
+            <table mat-table [dataSource]="formulacion()">
+              <ng-container matColumnDef="componente">
+                <th mat-header-cell *matHeaderCellDef>Componente</th>
+                <td mat-cell *matCellDef="let item" class="cell-name">{{ item.componente }}</td>
+              </ng-container>
+              <ng-container matColumnDef="unidad">
+                <th mat-header-cell *matHeaderCellDef>Unidad</th>
+                <td mat-cell *matCellDef="let item">
+                  <span class="unit-chip">{{ item.unidad }}</span>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="porcentaje">
+                <th mat-header-cell *matHeaderCellDef class="num">Formulación %</th>
+                <td mat-cell *matCellDef="let item" class="num">
+                  {{ item.porcentaje.toFixed(2) }} %
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="kg">
+                <th mat-header-cell *matHeaderCellDef class="num">Kg</th>
+                <td mat-cell *matCellDef="let item" class="num">
+                  {{ item.kg === null ? '—' : (item.kg | number: '1.3-6') }}
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="litros">
+                <th mat-header-cell *matHeaderCellDef class="num">Litros</th>
+                <td mat-cell *matCellDef="let item" class="num">
+                  {{ item.litros === null ? '—' : (item.litros | number: '1.3-6') }}
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+            </table>
+            @if (formulacion().length === 0) {
+              <div class="empty-state">
+                <mat-icon>table_chart</mat-icon>
+                <p>No hay formulación disponible</p>
+                <span>Los datos del estándar se agregarán manualmente posteriormente.</span>
+              </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="chart-card" appearance="outlined">
+        <div class="card-header">
+          <h3>Composición del producto</h3>
+          <p>Distribución porcentual de componentes</p>
+        </div>
+        <mat-card-content>
+          <div class="chart-container">
+            <canvas
+              baseChart
+              [type]="doughnutChartType"
+              [data]="doughnutChartData()"
+              [options]="doughnutChartOptions"
+            ></canvas>
+            @if (doughnutChartData().labels?.length === 0) {
+              <div class="chart-empty">
+                <mat-icon>donut_large</mat-icon>
+                <p>No hay datos para mostrar</p>
+                <span>La composición aparecerá cuando agreguemos el estándar.</span>
+              </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <!-- CALCULADORA DE BATCH -->
+    <mat-card class="batch-card" appearance="outlined">
+      <div class="card-header">
+        <h3>Calculadora de batch</h3>
+        <p>Escala las cantidades usando los litros nominales de la presentación.</p>
+      </div>
+      <mat-card-content>
+        <div class="batch-input">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Litros a producir</mat-label>
+            <input
+              matInput
+              type="number"
+              min="0"
+              step="1"
+              placeholder="Ej. 500"
+              #batch
+              [value]="litrosBatch() || ''"
+              [disabled]="!hayFormula()"
+              (input)="cambiarLitrosBatch(batch.value)"
+            />
+            <span matTextSuffix>L</span>
+          </mat-form-field>
+        </div>
+        @if (batchCalculado().length > 0) {
+          <div class="table-container">
+            <table mat-table [dataSource]="batchCalculado()">
+              <ng-container matColumnDef="ingrediente">
+                <th mat-header-cell *matHeaderCellDef>Ingrediente</th>
+                <td mat-cell *matCellDef="let item" class="cell-name">{{ item.ingrediente }}</td>
+              </ng-container>
+              <ng-container matColumnDef="kg">
+                <th mat-header-cell *matHeaderCellDef class="num">Kg requeridos</th>
+                <td mat-cell *matCellDef="let item" class="num">
+                  {{ item.kg === null ? '—' : (item.kg | number: '1.3-6') }}
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="litros">
+                <th mat-header-cell *matHeaderCellDef class="num">Litros</th>
+                <td mat-cell *matCellDef="let item" class="num">
+                  {{ item.litros === null ? '—' : (item.litros | number: '1.3-6') }}
+                </td>
+              </ng-container>
+              <tr
+                mat-header-row
+                *matHeaderRowDef="['ingrediente', 'kg', 'litros']; sticky: true"
+              ></tr>
+              <tr mat-row *matRowDef="let row; columns: ['ingrediente', 'kg', 'litros']"></tr>
+            </table>
+          </div>
+        } @else {
+          <div class="empty-state batch-empty">
+            <mat-icon>calculate</mat-icon>
+            <p>
+              {{
+                hayFormula()
+                  ? 'Ingresa los litros a producir'
+                  : 'Este SKU no tiene cantidades para calcular el batch'
+              }}
+            </p>
+            <span>Las cantidades de cada componente se calcularán automáticamente.</span>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
   }
 </div>

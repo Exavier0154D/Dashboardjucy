@@ -10,12 +10,7 @@ export function requiereCarton(producto: { categoria: string; variante: string }
       .trim()
       .toLowerCase();
   const categoria = normalizar(producto.categoria);
-  return (
-    categoria === 'agua de coco' ||
-    categoria === 'lacteos' ||
-    (['jugos y zumo', 'limonada'].includes(categoria) &&
-      /\bcoco\b/.test(normalizar(producto.variante)))
-  );
+  return categoria === 'agua de coco' || categoria === 'lacteos';
 }
 
 export function tiposEmpaqueRequeridos(producto: {

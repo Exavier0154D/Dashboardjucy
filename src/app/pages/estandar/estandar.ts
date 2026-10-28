@@ -21,7 +21,6 @@ import { DataService } from '../../core/data.service';
 import { Ingrediente, Presentacion } from '../../models/producto.model';
 
 import { HistoricoCostos } from '../../shared/historico-costos/historico-costos';
-import { GastosIndirectos } from '../../shared/gastos-indirectos/gastos-indirectos';
 
 @Component({
   selector: 'app-estandar',
@@ -36,7 +35,6 @@ import { GastosIndirectos } from '../../shared/gastos-indirectos/gastos-indirect
     MatTableModule,
     BaseChartDirective,
     HistoricoCostos,
-    GastosIndirectos,
   ],
   templateUrl: './estandar.html',
   styleUrl: './estandar.css',
@@ -56,9 +54,6 @@ export class Estandar {
   readonly productoSeleccionado = this.selectionService.productoSeleccionado;
 
   readonly presentacionSeleccionada = this.selectionService.presentacionSeleccionada;
-
-  readonly vista = signal<'estandar' | 'indirectos'>('estandar');
-  private readonly productoVistaId = computed(() => this.productoSeleccionado()?.id ?? null);
 
   // PRESENTACIONES
 
@@ -282,11 +277,6 @@ export class Estandar {
   });
 
   constructor() {
-    // Cada producto se abre inicialmente en su estándar.
-    effect(() => {
-      this.productoVistaId();
-      this.vista.set('estandar');
-    });
     effect((onCleanup) => {
       const presentacion = this.presentacionActual();
       const solicitud = ++this.solicitudCostos;

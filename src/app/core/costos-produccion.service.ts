@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import { tiposEmpaqueRequeridos } from '../models/empaque.model';
+import { requiereCarton, tiposEmpaqueRequeridos } from '../models/empaque.model';
 import {
   calcularEmpaque,
   ManoObraMensual,
@@ -79,7 +79,7 @@ export class CostosProduccionService {
     manoObra.sort((a, b) => a.mes.localeCompare(b.mes));
     const gastosIndirectos = leerGastosIndirectos(indirectos, presentacionId);
     const empaque = calcularEmpaque(
-      empaques,
+      empaques.filter((e) => e['tipo'] !== 'Cartón' || requiereCarton(producto)),
       presentacionId,
       Number(datosPresentacion.litros),
       tiposEmpaqueRequeridos(producto),
