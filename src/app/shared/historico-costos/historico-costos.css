@@ -18,3 +18,8 @@ input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visi
 button:disabled{opacity:.6;cursor:default}header strong{overflow-wrap:anywhere}
 
 td small{display:block;color:#64748b;margin-top:3px}
+.chart{height:440px}
+.trend-key{display:flex;flex-wrap:wrap;gap:8px 20px;margin:8px 0 0}
+.trend-up{color:#dc2626;font-weight:600}
+.trend-down{color:#15803d;font-weight:600}
+@media(max-width:700px){.chart{height:340px}}

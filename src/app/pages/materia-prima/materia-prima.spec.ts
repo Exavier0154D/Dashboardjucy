@@ -103,7 +103,7 @@ describe('Materia prima con ingredientes y envases', () => {
   it('abre materia prima directamente con el catálogo antes de los gráficos', () => {
     const html = fixture.nativeElement as HTMLElement;
     expect(html.querySelector('h1')?.textContent).toBe('Materia prima');
-    expect(html.querySelector('table')?.textContent).toContain('Precio por kg');
+    expect(html.querySelector('table')?.textContent).toContain('Precio de formulacion por kg');
     expect(html.querySelector('app-historico-costos')).toBeNull();
     expect(html.querySelector('details')?.open).toBe(false);
   });

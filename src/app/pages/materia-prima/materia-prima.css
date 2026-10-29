@@ -353,6 +353,41 @@ select {
 .table-scroll {
   overflow-x: auto;
 }
+.ingredient-scroll {
+  /* Encabezado de 42 px y diez filas de 56 px. */
+  max-height: 602px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+.ingredient-scroll:focus-visible {
+  outline: 2px solid #258268;
+  outline-offset: -2px;
+}
+.ingredient-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: 42px;
+  box-sizing: border-box;
+}
+.ingredient-scroll tbody tr {
+  height: 56px;
+}
+.ingredient-scroll td {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  white-space: nowrap;
+}
+.ingredient-scroll .usage-text {
+  display: inline-block;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ingredient-scroll small {
+  display: inline-block;
+  margin: 0 0 0 6px;
+}
 table {
   width: 100%;
   border-collapse: collapse;

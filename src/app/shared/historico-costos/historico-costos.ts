@@ -48,6 +48,8 @@ import {
   styleUrl: './historico-costos.css',
 })
 export class HistoricoCostos implements OnInit, OnDestroy {
+  // Ampliar este corte cuando se confirmen los siguientes meses de precios.
+  readonly fechaLimitePrecios = '2026-08-31';
   readonly modo = input<'materia' | 'producto'>('materia');
   readonly producto = input<Producto | null>(null);
   readonly presentacion = input<Presentacion | null>(null);
@@ -105,18 +107,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
       // Incluye los cambios de mes para interrumpir el total cuando no hay GIF.
       fechas.push(...(costos?.meses ?? []).map((m) => `${m}-01`));
     }
-    // Extiende la última tendencia hasta hoy solo si existen registros fechados.
-    if (fechas.length) {
-      const partes = new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'America/Guayaquil',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      }).formatToParts(new Date());
-      const parte = (tipo: string): string => partes.find((p) => p.type === tipo)!.value;
-      fechas.push(`${parte('year')}-${parte('month')}-${parte('day')}`);
-    }
-    return [...new Set(fechas)].sort();
+    return [...new Set(fechas)].filter((fecha) => fecha <= this.fechaLimitePrecios).sort();
   });
   readonly rangoInvalido = computed(
     () =>
@@ -154,7 +145,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
         : this.cantidades();
     const fechas = [...new Set([...this.semanas(), this.desde(), this.hasta()])].sort();
     return calcularSerie(
-      fechas.filter((s) => s >= this.desde() && s <= this.hasta()),
+      fechas.filter((s) => s >= this.desde() && s <= this.hasta() && s <= this.fechaLimitePrecios),
       cantidades,
       this.materiales(),
       this.precios(),
@@ -202,8 +193,15 @@ export class HistoricoCostos implements OnInit, OnDestroy {
         pointBackgroundColor: this.serie().map((p) => (p.conBase > 0 ? '#94a3b8' : '#1d4ed8')),
         pointBorderColor: this.serie().map((p) => (p.conBase > 0 ? '#64748b' : '#1d4ed8')),
         pointRadius: 4,
-        pointHoverRadius: 6,
-        borderWidth: 2,
+        pointHoverRadius: 7,
+        borderWidth: 3,
+        segment: {
+          borderColor: (ctx) => {
+            if (ctx.p1.parsed.y === null || ctx.p0.parsed.y === null) return '#1d4ed8';
+            const cambio = ctx.p1.parsed.y - ctx.p0.parsed.y;
+            return cambio > 0 ? '#dc2626' : cambio < 0 ? '#15803d' : '#1d4ed8';
+          },
+        },
         tension: 0,
         stepped: 'before',
         fill: false,
@@ -211,45 +209,64 @@ export class HistoricoCostos implements OnInit, OnDestroy {
       },
     ],
   }));
-  readonly chartOptions: ChartConfiguration<'line'>['options'] = {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: { mode: 'index', intersect: false },
-    plugins: {
-      legend: { display: true, position: 'bottom' },
-      tooltip: {
-        callbacks: {
-          label: (ctx) =>
-            ctx.parsed.y === null
-              ? `${ctx.dataset.label}: sin dato`
-              : `${ctx.dataset.label}: $${Number(ctx.parsed.y).toFixed(4)}`,
-          afterLabel: (ctx) => {
-            const punto = this.serie()[ctx.dataIndex];
-            if (!punto) return '';
-            return [
-              punto.conBase > 0 ? `${punto.conBase} materia(s) con precio base histórico` : '',
-              punto.conAnterior
-                ? `${punto.conAnterior} materia(s) mantienen un precio anterior vigente`
-                : '',
-              !punto.conBase && !punto.conAnterior ? 'Precios registrados en esta fecha' : '',
-            ].filter(Boolean);
+  readonly chartOptions = computed<ChartConfiguration<'line'>['options']>(() => {
+    const valores = this.serie().map((p) => p.costo);
+    const minimo = valores.length ? Math.min(...valores) : 0;
+    const maximo = valores.length ? Math.max(...valores) : 0;
+    const margen = Math.max((maximo - minimo) * 0.1, maximo * 0.01, 0.0001);
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: true, position: 'bottom' },
+        tooltip: {
+          callbacks: {
+            label: (ctx) =>
+              ctx.parsed.y === null
+                ? `${ctx.dataset.label}: sin dato`
+                : `${ctx.dataset.label}: $${Number(ctx.parsed.y).toFixed(4)}`,
+            afterLabel: (ctx) => {
+              const punto = this.serie()[ctx.dataIndex];
+              if (!punto) return '';
+              const anterior = this.serie()[ctx.dataIndex - 1];
+              const cambio = anterior ? punto.costo - anterior.costo : null;
+              const variacion =
+                cambio === null
+                  ? ''
+                  : `Cambio: ${cambio > 0 ? '+' : ''}$${cambio.toFixed(4)}${
+                      anterior.costo > 0
+                        ? ` (${cambio > 0 ? '+' : ''}${((cambio / anterior.costo) * 100).toFixed(2)} %)`
+                        : ''
+                    } respecto a la fecha anterior`;
+              return [
+                variacion,
+                punto.conBase > 0 ? `${punto.conBase} materia(s) con precio base histórico` : '',
+                punto.conAnterior
+                  ? `${punto.conAnterior} materia(s) mantienen un precio anterior vigente`
+                  : '',
+                !punto.conBase && !punto.conAnterior ? 'Precios registrados en esta fecha' : '',
+              ].filter(Boolean);
+            },
           },
         },
       },
-    },
-    scales: {
-      x: {
-        grid: { display: false },
-        title: { display: true, text: 'Fecha' },
-        ticks: { maxRotation: 45, autoSkip: true },
+      scales: {
+        x: {
+          grid: { display: false },
+          title: { display: true, text: 'Fecha' },
+          ticks: { maxRotation: 45, autoSkip: true },
+        },
+        y: {
+          beginAtZero: false,
+          min: Math.max(0, minimo - margen),
+          max: maximo + margen,
+          title: { display: true, text: 'Costo (USD)' },
+          ticks: { callback: (valor) => `$${valor}` },
+        },
       },
-      y: {
-        beginAtZero: true,
-        title: { display: true, text: 'Costo (USD)' },
-        ticks: { callback: (valor) => `$${valor}` },
-      },
-    },
-  };
+    };
+  });
 
   constructor() {
     effect((onCleanup) => {
@@ -337,11 +354,13 @@ export class HistoricoCostos implements OnInit, OnDestroy {
         nombre: String(m['nombre']),
         costo_kg: Number(m['costo_base_historico'] ?? m['costo_kg']),
       }));
-      const historicos: PrecioSemanal[] = precios.map((p) => ({
-        materia_prima_id: Number(p['materia_prima_id']),
-        semana: String(p['semana']),
-        costo_kg: Number(p['costo_kg']),
-      }));
+      const historicos: PrecioSemanal[] = precios
+        .filter((p) => String(p['semana']) <= this.fechaLimitePrecios)
+        .map((p) => ({
+          materia_prima_id: Number(p['materia_prima_id']),
+          semana: String(p['semana']),
+          costo_kg: Number(p['costo_kg']),
+        }));
       if (
         materiales.some((m) => !Number.isFinite(m.costo_kg) || m.costo_kg < 0) ||
         historicos.some(

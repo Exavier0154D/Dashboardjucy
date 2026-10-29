@@ -273,14 +273,24 @@
                 </p>
               }
             </div>
-            <div class="table-scroll">
+            <div
+              class="table-scroll"
+              [class.ingredient-scroll]="tipoMaterial() === 'ingredientes'"
+              tabindex="0"
+              role="region"
+              [attr.aria-label]="
+                tipoMaterial() === 'ingredientes'
+                  ? 'Lista de ingredientes con desplazamiento'
+                  : 'Lista de envases y cartones'
+              "
+            >
               @if (tipoMaterial() === 'ingredientes') {
                 <table>
                   <thead>
                     <tr>
                       <th>Ingrediente</th>
                       <th>Unidad</th>
-                      <th class="num">Precio por kg</th>
+                      <th class="num">Precio de formulacion por kg</th>
                       <th>Se utiliza en</th>
                     </tr>
                   </thead>

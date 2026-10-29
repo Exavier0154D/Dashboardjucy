@@ -1,464 +1,263 @@
-<div class="page" [attr.aria-busy]="cargando()">
+﻿<div class="page" [attr.aria-busy]="cargando() || actualizando() || catalogoCargando()">
   <header class="page-header">
     <div>
-      <span class="eyebrow">JUCY · COSTOS DE PRODUCCIÓN</span>
-      <h1>Reporte comparativo</h1>
-      <p>
-        Materia prima, empaque, cartón, mano de obra y gastos indirectos de fabricación de todos los
-        productos del catálogo. La materia prima usa los kg de cada ingrediente y su último precio
-        vigente en la semana elegida; sin cambios conserva el anterior, y antes del primer registro
-        usa el precio base histórico.
-      </p>
+      <span class="eyebrow">CONTROL DE COSTOS</span>
+      <h1>Comparativa con el estándar</h1>
+      <p>Compara la base fija del producto con hasta 4 meses registrados.</p>
     </div>
     <button
       type="button"
-      class="primary-button"
-      [disabled]="cargando()"
-      (click)="actualizarAhora()"
+      class="refresh"
+      (click)="actualizar()"
+      [disabled]="cargando() || actualizando() || catalogoCargando()"
     >
       <mat-icon>refresh</mat-icon> Actualizar costos
     </button>
   </header>
-
-  @if (errorCarga()) {
-    <div class="status error" role="alert">
-      {{ errorCarga() }}
-      <button type="button" [disabled]="cargando()" (click)="actualizarAhora()">
-        Reintentar catálogo
-      </button>
-    </div>
+  @if (errorCatalogo() || error()) {
+    <p class="status error" role="alert">{{ error() || errorCatalogo() }}</p>
   }
-  @if (errorActualizacion()) {
-    <p class="status error" role="alert">{{ errorActualizacion() }}</p>
+  @if (catalogoCargando() || cargando() || actualizando()) {
+    <p class="status" role="status">Cargando costos…</p>
   }
-  @if (cargandoCatalogo() && !cargado()) {
-    <p role="status">Cargando catálogo…</p>
-  }
-
-  @if (cargado()) {
-    <mat-card class="filters-card" appearance="outlined">
-      <div class="filters-heading">
+  @if (opcion(); as seleccion) {
+    <section class="panel configuration" aria-labelledby="config-title">
+      <div class="section-heading">
         <div>
-          <h2>Configura tu reporte</h2>
-          <p>
-            Elige un rango de meses y las semanas que quieres comparar. Cada presentación aparece
-            una sola vez, con los períodos en columnas de izquierda a derecha.
-          </p>
+          <h2 id="config-title">Configura la comparación</h2>
+          <p>La misma presentación para todos los períodos.</p>
         </div>
-        <button type="button" class="text-button" (click)="limpiarFiltros()">
-          Limpiar filtros
-        </button>
+        <span class="counter">{{ mesesSeleccionados().length }} / 4 meses</span>
       </div>
-      <div class="filters-grid">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
-          <mat-label>Buscar producto o SKU</mat-label>
-          <mat-icon matPrefix>search</mat-icon>
-          <input
-            matInput
-            #busqueda
-            [value]="textoBusqueda()"
-            (input)="textoBusqueda.set(busqueda.value)"
-            placeholder="Nombre, marca, código o línea"
-          />
-        </mat-form-field>
-
-        <label class="select-field">
-          <span>Categoría</span>
-          <select
-            #categoria
-            [value]="categoriaSeleccionada()"
-            (change)="categoriaSeleccionada.set(categoria.value)"
+      <div class="fields">
+        <label class="product-field"
+          >Producto y presentación
+          <span class="product-search">
+            <mat-icon aria-hidden="true">search</mat-icon>
+            <input
+              #buscadorProducto
+              type="text"
+              autocomplete="off"
+              placeholder="Buscar producto, presentación o SKU"
+              [value]="busquedaProducto() ?? mostrarProducto(seleccion.presentacion.id)"
+              [matAutocomplete]="resultadosProducto"
+              (focus)="buscadorProducto.select()"
+              (input)="busquedaProducto.set(buscadorProducto.value)"
+            />
+          </span>
+          <mat-autocomplete
+            #resultadosProducto="matAutocomplete"
+            [displayWith]="mostrarProducto"
+            (optionSelected)="seleccionarSku($event.option.value)"
+            (closed)="busquedaProducto.set(null)"
           >
-            <option value="Todas">Todas las categorías</option>
-            @for (c of categorias(); track c) {
-              <option [value]="c">{{ c }}</option>
+            @for (o of opcionesFiltradas(); track o.presentacion.id) {
+              <mat-option [value]="o.presentacion.id">
+                {{ o.producto.nombre }} ·
+                {{ o.presentacion.nombreSku || o.presentacion.claveSku }} ·
+                {{ o.presentacion.claveSku }} ·
+                {{ o.presentacion.litros * 1000 | number: '1.0-3' }} ml ·
+                {{ o.presentacion.tecnologia }}
+              </mat-option>
+            } @empty {
+              <mat-option disabled>No se encontraron productos</mat-option>
+            }
+          </mat-autocomplete>
+        </label>
+        <label
+          >Año
+          <select
+            [value]="anioSeleccionado()"
+            (change)="cambiarAnio($any($event.target).value)"
+            [disabled]="!aniosDisponibles().length"
+          >
+            @for (anio of aniosDisponibles(); track anio) {
+              <option [value]="anio">{{ anio }}</option>
             }
           </select>
         </label>
-
-        <label class="select-field">
-          <span>Marca</span>
-          <select
-            #marca
-            [value]="marcaSeleccionada()"
-            (change)="marcaSeleccionada.set(marca.value)"
-          >
-            <option value="Todas">Todas las marcas</option>
-            @for (m of marcas(); track m) {
-              <option [value]="m">{{ m || 'Sin marca' }}</option>
-            }
-          </select>
-        </label>
-
-        <label class="select-field">
-          <span>Tecnología</span>
-          <select
-            #tecnologia
-            [value]="tecnologiaSeleccionada()"
-            (change)="tecnologiaSeleccionada.set(tecnologia.value)"
-          >
-            <option value="Todas">Todas las tecnologías</option>
-            @for (t of tecnologias(); track t) {
-              <option [value]="t">{{ t }}</option>
-            }
-          </select>
-        </label>
-
-        <label class="select-field">
-          <span>Desde el mes</span>
-          <input
-            type="month"
-            #desde
-            [value]="mesDesde()"
-            [max]="mesHasta()"
-            min="0001-01"
-            [attr.aria-invalid]="rangoInvalido()"
-            aria-describedby="rango-meses-error"
-            (input)="cambiarDesde(desde.value)"
-          />
-        </label>
-
-        <label class="select-field">
-          <span>Hasta el mes</span>
-          <input
-            type="month"
-            #hasta
-            [value]="mesHasta()"
-            [min]="mesDesde() || '0001-01'"
-            max="9999-12"
-            [attr.aria-invalid]="rangoInvalido()"
-            aria-describedby="rango-meses-error"
-            (input)="cambiarHasta(hasta.value)"
-          />
-        </label>
-
-        <label class="select-field">
-          <span>Ver costos por</span>
-          <select
-            #frecuenciaControl
-            [value]="frecuencia()"
-            (change)="frecuencia.set(frecuenciaControl.value)"
-          >
-            <option value="semanal">Semana</option>
-            <option value="mensual">Cierre mensual</option>
-          </select>
-        </label>
-        @if (frecuencia() === 'semanal') {
-          <label class="select-field">
-            <span>Semanas del mes</span>
+        <div class="month-entry">
+          <label
+            >Mes para comparar
             <select
-              #semanasControl
-              [value]="semanaFiltro()"
-              (change)="semanaFiltro.set(semanasControl.value)"
+              [value]="mesPendiente()"
+              (change)="mesPendiente.set($any($event.target).value)"
+              [disabled]="
+                cargando() ||
+                !mesesDisponibles().length ||
+                mesesSeleccionados().length >= limiteMeses
+              "
             >
-              <option value="todas">Todas las semanas registradas</option>
-              <option value="0">Semana 1</option>
-              <option value="1">Semana 2</option>
-              <option value="2">Semana 3</option>
-              <option value="3">Semana 4</option>
+              <option value="">Selecciona un mes</option>
+              @for (mes of mesesDisponibles(); track mes) {
+                <option [value]="mes" [disabled]="mesesSeleccionados().includes(mes)">
+                  {{ nombreMes(mes) }}
+                </option>
+              }
             </select>
           </label>
-        }
-        <label class="select-field">
-          <span>Ordenar por</span>
-          <select #ordenar [value]="orden()" (change)="orden.set(ordenar.value)">
-            <option value="producto">Producto</option>
-            <option value="unidad">Menor costo / unidad del primer mes</option>
-            <option value="litro">Menor costo / litro del primer mes</option>
-          </select>
-        </label>
-      </div>
-      <p id="rango-meses-error" class="error" role="alert" [hidden]="!rangoInvalido()">
-        Selecciona ambos meses. El mes inicial debe ser anterior o igual al mes final.
-      </p>
-      <p class="scope-note">
-        <mat-icon>info</mat-icon>
-        <span>
-          En cada mes se usa la mano de obra vigente y se suman los GIF registrados para ese mes. La
-          materia prima usa el precio por kg vigente en la semana elegida y las cantidades de
-          producción registradas. Empaque y cartón usan sus valores actuales. Si faltan GIF o mano
-          de obra, el total queda pendiente.
-        </span>
-      </p>
-    </mat-card>
-
-    <section class="kpi-grid" aria-label="Resumen del reporte filtrado">
-      <mat-card appearance="outlined" class="kpi-card"
-        ><span>Productos visibles</span><strong>{{ resumen().productos }}</strong></mat-card
-      >
-      <mat-card appearance="outlined" class="kpi-card"
-        ><span>Presentaciones visibles</span><strong>{{ resumen().sku }}</strong></mat-card
-      >
-      <mat-card appearance="outlined" class="kpi-card"
-        ><span>Costos calculados</span><strong>{{ resumen().calculados }}</strong></mat-card
-      >
-      <mat-card appearance="outlined" class="kpi-card"
-        ><span>Costos con observaciones</span><strong>{{ resumen().observados }}</strong></mat-card
-      >
-    </section>
-
-    <mat-card appearance="outlined" class="report-card">
-      <div class="report-heading">
-        <div>
-          <h2>Costos por per?odo y SKU</h2>
-          @if (!rangoInvalido()) {
-            <p>
-              {{ resumen().sku }} de {{ opciones().length }} presentaciones activas ·
-              {{ periodosDelRango().length }} per?odos en columnas · USD ·
-              {{ etiquetaMes(mesDesde()) }} –
-              {{ etiquetaMes(mesHasta()) }}
-            </p>
-          }
+          <button
+            type="button"
+            (click)="agregarMes()"
+            [disabled]="cargando() || !mesPendiente() || mesesSeleccionados().length >= limiteMeses"
+          >
+            Agregar mes
+          </button>
         </div>
-        <button
-          type="button"
-          class="text-button"
-          [disabled]="cargando()"
-          (click)="reintentarCostos()"
-        >
-          Recargar costos de fabricación
-        </button>
       </div>
-
-      @if (cargandoCostos()) {
-        <p class="loading" role="status">
-          Cargando costos por presentación… Los resultados se completan progresivamente.
-        </p>
-      }
-
-      @if (rangoInvalido()) {
-        <p class="status" role="status">Corrige el rango de meses para ver el reporte.</p>
-      } @else if (filas().length) {
-        <div
-          class="table-container"
-          tabindex="0"
-          role="region"
-          aria-label="Tabla de costos por SKU; desplázate horizontalmente para ver todas las columnas"
-        >
-          <table class="monthly-report">
-            <caption class="sr-only">
-              Desglose por período de costos por unidad y por litro nominal incluyendo gastos
-              indirectos.
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col" rowspan="2" class="product-column">Producto / SKU</th>
-                <th scope="col" rowspan="2">Presentación</th>
-                <th scope="col" rowspan="2">Marca</th>
-                <th scope="col" rowspan="2" class="numeric">Empaque actual<br />USD/unidad</th>
-                <th scope="col" rowspan="2" class="numeric">Cartón actual<br />USD/unidad</th>
-                @for (periodo of periodosDelRango(); track periodo.fecha) {
-                  <th scope="colgroup" colspan="6" class="month-heading">{{ periodo.etiqueta }}</th>
-                }
-              </tr>
-              <tr class="month-subheaders">
-                @for (periodo of periodosDelRango(); track periodo.fecha) {
-                  <th scope="col" class="numeric month-start">Materia prima<br />USD/unidad</th>
-                  <th scope="col" class="numeric">Mano de obra<br />USD/unidad</th>
-                  <th scope="col" class="numeric">Gastos indirectos<br />USD/unidad</th>
-                  <th scope="col" class="numeric total">Costo calculado<br />USD/unidad</th>
-                  <th scope="col" class="numeric total">Costo calculado<br />USD/litro</th>
-                  <th scope="col">Observaciones</th>
-                }
-              </tr>
-            </thead>
-            <tbody>
-              @for (grupo of filasPorSku(); track grupo.presentacionId) {
-                @let f = grupo.meses[0];
+      <div class="months" aria-label="Meses de comparación">
+        <span class="base-chip"><mat-icon>flag</mat-icon> Base fija del producto</span>
+        @for (mes of mesesSeleccionados(); track mes) {
+          <button
+            type="button"
+            class="month-chip"
+            (click)="quitarMes(mes)"
+            [attr.aria-label]="'Quitar ' + nombreMes(mes)"
+          >
+            {{ nombreMes(mes) }} <mat-icon>close</mat-icon>
+          </button>
+        }
+      </div>
+      <p class="selection-message" aria-live="polite">
+        {{
+          mensajeMes() ||
+            (mesesSeleccionados().length === 4
+              ? 'Has alcanzado el límite de 4 meses. Quita uno para agregar otro.'
+              : 'Puedes elegir meses registrados de distintos años. El estándar no cuenta dentro del límite.')
+        }}
+      </p>
+    </section>
+    @if (!cargando() && !actualizando() && costos()) {
+      <section class="panel report" aria-labelledby="report-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="report-title">{{ seleccion.producto.nombre }}</h2>
+            <p>{{ seleccion.presentacion.nombreSku }} · {{ seleccion.presentacion.claveSku }}</p>
+          </div>
+          <span class="currency">USD · por presentación</span>
+        </div>
+        @if (mesesSeleccionados().length) {
+          <div
+            class="table-scroll"
+            tabindex="0"
+            role="region"
+            aria-label="Costos mensuales frente al estándar"
+          >
+            <table>
+              <caption>
+                Costos en USD. Las diferencias se calculan respecto a la base fija del producto.
+              </caption>
+              <thead>
                 <tr>
-                  <th scope="row" class="product-column">
-                    <strong>{{ f.producto.nombre }}</strong>
-                    <small>{{ f.presentacion.nombreSku }}</small>
-                    <small>{{ f.presentacion.claveSku }}</small>
+                  <th scope="col">Rubro</th>
+                  <th scope="col" class="base-column">
+                    Estándar<small>Base fija del producto</small>
                   </th>
-                  <td>{{ etiqueta(f.presentacion) }}</td>
-                  <td>{{ f.producto.marca || 'Sin marca' }}</td>
-
-                  <td class="numeric">
-                    @if (f.empaque !== null) {
-                      ${{ f.empaque | number: '1.4-4' }}
-                    } @else {
-                      <span class="missing">{{ f.pendiente ? 'Cargando…' : 'Sin dato' }}</span>
-                    }
-                  </td>
-
-                  <td class="numeric">
-                    @if (f.carton === null) {
-                      <span class="missing">{{ f.pendiente ? 'Cargando…' : 'Sin dato' }}</span>
-                    } @else if (!f.cartonAplica) {
-                      No aplica
-                    } @else if (f.cartonSinDato) {
-                      <span class="missing">Sin dato</span>
-                    } @else {
-                      ${{ f.carton | number: '1.4-4' }}
-                    }
-                  </td>
-                  @for (mensual of grupo.meses; track mensual.fecha) {
-                    <td class="numeric month-start">
-                      @if (mensual.materiaPrima !== null) {
-                        ${{ mensual.materiaPrima | number: '1.4-4' }}
-                      } @else {
-                        <span class="missing">Pendiente</span>
-                      }
-                    </td>
-                    <td class="numeric">
-                      @if (mensual.manoObra !== null) {
-                        ${{ mensual.manoObra | number: '1.4-4'
-                        }}<small>Desde {{ etiquetaMes(mensual.mesAplicado!) }}</small>
-                      } @else {
-                        <span class="missing">{{
-                          mensual.pendiente ? 'Cargando…' : 'Sin dato'
-                        }}</span>
-                      }
-                    </td>
-
-                    <td class="numeric">
-                      @if (mensual.gif !== null) {
-                        ${{ mensual.gif | number: '1.4-4' }}
+                  @for (periodo of comparaciones(); track periodo.mes) {
+                    <th scope="col">
+                      {{ nombreMes(periodo.mes) }}<small>Costo / diferencia vs. estándar</small>
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (rubro of rubros; track rubro.clave) {
+                  <tr [class.total-row]="rubro.clave === 'total' || rubro.clave === 'litro'">
+                    <th scope="row">{{ rubro.nombre }}</th>
+                    <td class="base-column">
+                      @if (estandar().valores[rubro.clave] !== null) {
+                        ${{ estandar().valores[rubro.clave] | number: '1.4-4' }}
                       } @else {
                         <span class="missing">Sin dato</span>
                       }
                     </td>
-
-                    <td class="numeric total">
-                      @if (mensual.totalUnidad !== null) {
-                        <strong>${{ mensual.totalUnidad | number: '1.4-4' }}</strong>
-                      } @else {
-                        <span class="missing">{{
-                          mensual.pendiente ? 'Cargando…' : 'Pendiente'
-                        }}</span>
-                      }
-                    </td>
-
-                    <td class="numeric total">
-                      @if (mensual.totalLitro !== null) {
-                        <strong>${{ mensual.totalLitro | number: '1.4-4' }}</strong>
-                      } @else {
-                        <span class="missing">{{
-                          mensual.pendiente ? 'Cargando…' : 'Pendiente'
-                        }}</span>
-                      }
-                    </td>
-
-                    <td class="observations">
-                      @if (mensual.error) {
-                        <p class="error" role="status">{{ mensual.error }}</p>
-                      }
-                      @for (aviso of mensual.avisos; track aviso) {
-                        <p class="warning">{{ aviso }}</p>
-                      }
-                      @if (mensual.pendiente) {
-                        <span class="missing">Cargando costos…</span>
-                      } @else if (!mensual.error && !mensual.avisos.length) {
-                        <span class="ok">Datos disponibles</span>
-                      }
-                    </td>
-                  }
-                </tr>
-
-                <tr class="formula-row">
-                  <td [attr.colspan]="5 + periodosDelRango().length * 6">
-                    <details class="formula-details">
-                      <summary>
-                        Ver fórmula · {{ f.formula.length }} ingredientes ·
-                        {{ etiqueta(f.presentacion) }}
-                      </summary>
-                      <div class="formula-body">
-                        <p class="formula-caption">
-                          <strong>{{ f.presentacion.nombreSku }}</strong> · Estado de formulación:
-                          {{ f.presentacion.estadoFormulacion }}. Cantidades y costos de materia
-                          prima por una unidad de esta presentación, para
-                          {{ f.fecha.split('-').reverse().join('/') }}.
-                        </p>
-                        @if (f.formula.length) {
-                          <div class="formula-scroll">
-                            <table class="formula-table">
-                              <caption class="sr-only">
-                                Fórmula de
-                                {{
-                                  f.presentacion.nombreSku
-                                }}
-                              </caption>
-                              <thead>
-                                <tr>
-                                  <th scope="col">Ingrediente</th>
-                                  <th scope="col">Unidad</th>
-                                  <th scope="col" class="numeric">Porcentaje</th>
-                                  <th scope="col" class="numeric">kg / unidad</th>
-                                  <th scope="col" class="numeric">Litros / unidad</th>
-                                  <th scope="col" class="numeric">MP · USD/unidad</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                @for (i of f.formula; track i.materiaPrimaId) {
-                                  <tr>
-                                    <th scope="row">{{ i.nombre }}</th>
-                                    <td>{{ i.unidad ?? 'Sin dato' }}</td>
-                                    <td class="numeric">
-                                      @if (i.porcentaje !== null) {
-                                        {{ i.porcentaje | number: '1.2-4' }} %
-                                      } @else {
-                                        <span class="missing">Sin dato</span>
-                                      }
-                                    </td>
-                                    <td class="numeric">
-                                      @if (i.kg !== null) {
-                                        {{ i.kg | number: '1.4-6' }}
-                                      } @else {
-                                        <span class="missing">Sin dato</span>
-                                      }
-                                    </td>
-                                    <td class="numeric">
-                                      @if (i.litros !== null) {
-                                        {{ i.litros | number: '1.4-6' }}
-                                      } @else {
-                                        <span class="missing">Sin dato</span>
-                                      }
-                                    </td>
-                                    <td class="numeric">
-                                      @if (i.costo !== null) {
-                                        ${{ i.costo | number: '1.4-4' }}
-                                      } @else {
-                                        <span class="missing">Sin dato</span>
-                                      }
-                                    </td>
-                                  </tr>
-                                }
-                              </tbody>
-                            </table>
-                          </div>
-                          <p class="formula-caption">
-                            Los porcentajes usan la escala 0–100. Un cero registrado se muestra como
-                            cero; una cantidad ausente se muestra como «Sin dato». Los costos
-                            corresponden al primer período mostrado:
-                            {{ f.fecha.split('-').reverse().join('/') }}.
-                          </p>
+                    @for (periodo of comparaciones(); track periodo.mes) {
+                      <td>
+                        @if (periodo.valores[rubro.clave] !== null) {
+                          <strong>${{ periodo.valores[rubro.clave] | number: '1.4-4' }}</strong>
+                          @let delta =
+                            diferencia(
+                              periodo.valores[rubro.clave],
+                              estandar().valores[rubro.clave]
+                            );
+                          @let porcentajeCambio =
+                            porcentaje(
+                              periodo.valores[rubro.clave],
+                              estandar().valores[rubro.clave]
+                            );
+                          @if (delta !== null) {
+                            <small
+                              class="delta"
+                              [class.increase]="delta > 0"
+                              [class.decrease]="delta < 0"
+                              >{{ delta > 0 ? '+' : '' }}{{ delta | number: '1.4-4' }} USD
+                              @if (porcentajeCambio !== null) {
+                                · {{ porcentajeCambio > 0 ? '+' : ''
+                                }}{{ porcentajeCambio | number: '1.2-2' }}%
+                              } @else {
+                                · % no aplica (base cero)
+                              }
+                            </small>
+                          } @else {
+                            <small>Sin base para comparar</small>
+                          }
                         } @else {
-                          <p class="missing">
-                            Esta presentación todavía no tiene ingredientes ni cantidades
-                            registrados.
-                          </p>
+                          <span class="missing">Sin dato</span>
                         }
-                      </div>
-                    </details>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="legend">
+            <span class="increase">+ Aumento del costo</span
+            ><span class="decrease">− Reducción del costo</span><span>0 Sin variación</span>
+          </p>
+        } @else {
+          <div class="empty-state">
+            <mat-icon>compare_arrows</mat-icon>
+            <h3>Agrega el primer mes</h3>
+            <p>
+              Tu referencia es la base fija del producto. Elige hasta 4 meses registrados para ver
+              sus diferencias.
+            </p>
+          </div>
+        }
+        <p class="scope-note">
+          El estándar usa el costo base del producto y los primeros registros de mano de obra e
+          indirectos. La materia prima usa el último precio vigente al cierre de cada mes y mantiene
+          la formulación actual. Empaque y cartón usan los valores actuales en todas las columnas
+          porque no tienen historial mensual.
+        </p>
+        <p class="scope-note">
+          Los totales requieren todos los rubros completos. Un cero registrado es válido; “Sin dato”
+          indica información pendiente.
+        </p>
+        <div class="observations">
+          @for (periodo of periodos(); track periodo.mes) {
+            @if (periodo.avisos.length) {
+              <details>
+                <summary>
+                  {{ nombreMes(periodo.mes) }} · {{ periodo.avisos.length }} observaciones
+                </summary>
+                <ul>
+                  @for (aviso of periodo.avisos; track aviso) {
+                    <li>{{ aviso }}</li>
+                  }
+                </ul>
+              </details>
+            }
+          }
         </div>
-      } @else {
-        <div class="empty-state">
-          <mat-icon>search_off</mat-icon>
-          <h3>No hay presentaciones para estos filtros</h3>
-          <p>Prueba otra búsqueda o limpia los filtros.</p>
-        </div>
-      }
-      <p class="footnote">
-        Costo por litro = costo calculado por unidad ÷ litros nominales. Los empaques o cartones
-        pendientes se identifican en observaciones y aportan 0 en los tipos sin dato. Los importes
-        se calculan sin redondear y se muestran con cuatro decimales.
-      </p>
-    </mat-card>
+      </section>
+    }
+  } @else if (!catalogoCargando()) {
+    <div class="panel empty-state">
+      <mat-icon>inventory_2</mat-icon>
+      <h2>No hay productos disponibles</h2>
+      <p>Agrega un producto con una presentación activa para comenzar.</p>
+    </div>
   }
 </div>

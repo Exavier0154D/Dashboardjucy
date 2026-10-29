@@ -73,13 +73,26 @@
     }
     <label
       >Desde
-      <input #fechaDesde type="date" [value]="desde()" (change)="desde.set(fechaDesde.value)"
+      <input
+        #fechaDesde
+        type="date"
+        [max]="fechaLimitePrecios"
+        [value]="desde()"
+        (change)="desde.set(fechaDesde.value)"
     /></label>
     <label
       >Hasta
-      <input #fechaHasta type="date" [value]="hasta()" (change)="hasta.set(fechaHasta.value)"
+      <input
+        #fechaHasta
+        type="date"
+        [max]="fechaLimitePrecios"
+        [value]="hasta()"
+        (change)="hasta.set(fechaHasta.value)"
     /></label>
   </div>
+  <p class="note">
+    Precios disponibles hasta agosto de 2026. Septiembre en adelante queda pendiente de registro.
+  </p>
   <p class="note">
     La línea mantiene cada precio hasta su próxima actualización. Puntos azules: precios históricos
     vigentes. Puntos grises: alguna materia utiliza el precio base de referencia anterior al primer
@@ -184,8 +197,13 @@
           : 'Evolución semanal del costo del producto'
       "
     >
-      <canvas baseChart [type]="'line'" [data]="chartData()" [options]="chartOptions"></canvas>
+      <canvas baseChart [type]="'line'" [data]="chartData()" [options]="chartOptions()"></canvas>
     </div>
+    <p class="note trend-key">
+      <span class="trend-up">↑ Subida de costo</span>
+      <span class="trend-down">↓ Bajada de costo</span>
+      <span>Escala vertical ajustada al rango de precios.</span>
+    </p>
     <details>
       <summary>Ver valores por fecha</summary>
       <div class="table-scroll">
