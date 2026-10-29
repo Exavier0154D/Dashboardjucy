@@ -47,6 +47,11 @@ p {
   border-radius: 16px;
   min-width: 0;
 }
+.report {
+  width: 100%;
+  max-width: 1120px;
+  justify-self: center;
+}
 button,
 input,
 select {
@@ -191,7 +196,7 @@ select {
 }
 .table-scroll {
   overflow-x: auto;
-  margin-top: 24px;
+  margin-top: 18px;
   border: 1px solid #dce7e2;
   border-radius: 10px;
 }
@@ -199,24 +204,26 @@ table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 13px;
+  font-size: 12px;
 }
 caption {
   text-align: left;
-  padding: 12px 16px;
-  font-size: 12px;
+  padding: 9px 12px;
+  font-size: 11px;
   color: #64748b;
 }
 th,
 td {
-  padding: 18px 16px;
+  padding: 11px 12px;
   text-align: right;
   border-bottom: 1px solid #e2e8f0;
-  min-width: 200px;
+  min-width: 155px;
   font-variant-numeric: tabular-nums;
 }
 thead th {
   background: #f6f9f7;
+  color: #25483d;
+  font-weight: 700;
   text-transform: capitalize;
 }
 th:first-child {
@@ -224,36 +231,61 @@ th:first-child {
   position: sticky;
   left: 0;
   background: white;
-  min-width: 185px;
+  min-width: 155px;
   z-index: 1;
+}
+tbody th {
+  font-weight: 600;
+  color: #25483d;
 }
 thead th:first-child {
   background: #f6f9f7;
 }
 .base-column {
   background: #eef7f1;
-  color: #17664e;
+  color: #12533d;
 }
 thead .base-column {
   background: #e0eee5;
 }
+tbody td {
+  color: #173f35;
+  font-size: 15px;
+  font-weight: 700;
+}
+tbody td.base-column {
+  color: #12533d;
+}
 small {
   display: block;
-  margin-top: 6px;
+  margin-top: 4px;
   font-size: 11px;
   color: #64748b;
   font-weight: 400;
   text-transform: none;
 }
 td strong {
-  font-weight: 500;
+  font-weight: 700;
+}
+td .delta {
+  font-weight: 700;
+}
+td .delta.increase {
+  color: #a34316;
+}
+td .delta.decrease {
+  color: #126943;
 }
 .total-row > * {
   font-weight: 700;
-  background: #f6f9f7;
+  background: #edf4ef;
+  border-top: 1px solid #cbded2;
+}
+.total-row td {
+  font-size: 17px;
 }
 .total-row .base-column {
-  background: #e0eee5;
+  background: #dceee3;
 }
 tbody tr:last-child > * {
   border-bottom: 0;
@@ -348,6 +380,11 @@ li {
     font-size: 25px;
   }
   th:first-child {
+    min-width: 135px;
+  }
+  th,
+  td {
     min-width: 145px;
+    padding: 10px;
   }
 }
