@@ -209,23 +209,6 @@ export class HistoricoCostos implements OnInit, OnDestroy {
         fill: false,
         spanGaps: false,
       },
-      ...(this.modo() === 'producto'
-        ? [
-            {
-              label: 'Costo final estimado USD/presentación',
-              data: this.serieFinal().map((p) => p.total),
-              borderColor: '#15803d',
-              backgroundColor: '#15803d',
-              pointRadius: 3,
-              pointHoverRadius: 6,
-              borderWidth: 2,
-              tension: 0,
-              stepped: 'before' as const,
-              fill: false,
-              spanGaps: false,
-            },
-          ]
-        : []),
     ],
   }));
   readonly chartOptions: ChartConfiguration<'line'>['options'] = {
@@ -243,18 +226,6 @@ export class HistoricoCostos implements OnInit, OnDestroy {
           afterLabel: (ctx) => {
             const punto = this.serie()[ctx.dataIndex];
             if (!punto) return '';
-            if (ctx.datasetIndex === 1) {
-              const final = this.serieFinal()[ctx.dataIndex];
-              return final
-                ? [
-                    `MP: $${final.costo.toFixed(4)}`,
-                    `Empaque actual: $${final.empaque.toFixed(4)}`,
-                    `Cartón actual: $${final.carton.toFixed(4)}`,
-                    `Mano de obra de ${final.mesManoObra?.slice(0, 7) ?? 'sin registro'}: ${final.manoObra === null ? 'sin registro' : '$' + final.manoObra.toFixed(4)}`,
-                    `Gastos indirectos del mes: ${final.indirectos === null ? 'sin registro' : '$' + final.indirectos.toFixed(4)}`,
-                  ]
-                : [];
-            }
             return [
               punto.conBase > 0 ? `${punto.conBase} materia(s) con precio base histórico` : '',
               punto.conAnterior
@@ -274,7 +245,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
       },
       y: {
         beginAtZero: true,
-        title: { display: true, text: 'Precio / costo (USD)' },
+        title: { display: true, text: 'Costo (USD)' },
         ticks: { callback: (valor) => `$${valor}` },
       },
     },

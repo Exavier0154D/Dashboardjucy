@@ -218,7 +218,7 @@ describe('Materia prima con ingredientes y envases', () => {
     const tarjetas = fixture.nativeElement.querySelectorAll('.product-card') as NodeListOf<HTMLElement>;
     expect(tarjetas.length).toBe(3);
     expect(tarjetas[0].querySelector('h2')?.textContent).toBe('Agua de Coco · Jucy');
-    expect(tarjetas[1].querySelector('h2')?.textContent).toBe('Agua de Coco · Prunus');
+    expect(tarjetas[1].querySelector('h2')?.textContent).toBe('Agua de Coco con Pitahaya · Prunus');
     expect(tarjetas[2].querySelector('h2')?.textContent).toBe('Café Frío Sweet & Coffee');
     expect(fixture.nativeElement.querySelector('.product-name')).toBeNull();
   });

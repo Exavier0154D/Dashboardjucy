@@ -304,6 +304,10 @@ export class Estandar {
     }
   }
 
+  esCostoReferencia(mes: string): boolean {
+    return ['2026-09', '2026-10', '2026-11', '2026-12'].includes(mes);
+  }
+
   cambiarSemana(fecha: string): void {
     const indice = this.semanas().indexOf(fecha);
     if (indice >= 0) this.indiceSemana.set(indice);

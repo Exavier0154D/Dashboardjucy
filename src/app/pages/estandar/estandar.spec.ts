@@ -77,6 +77,14 @@ describe('Costo final del estándar', () => {
     expect(component.gastosIndirectosDelMes()?.estimado).toBe(true);
   });
 
+  it('marca como referencia solo septiembre a diciembre de 2026', () => {
+    for (let mes = 1; mes <= 12; mes++) {
+      expect(component.esCostoReferencia(`2026-${String(mes).padStart(2, '0')}`)).toBe(mes >= 9);
+    }
+    expect(component.esCostoReferencia('2025-09')).toBe(false);
+    expect(component.esCostoReferencia('2027-09')).toBe(false);
+  });
+
   it('recalcula al cambiar el mes y conserva un cero registrado', () => {
     component.cambiarMes('2026-02');
     expect(component.costoGastosIndirectos()).toBe(0);

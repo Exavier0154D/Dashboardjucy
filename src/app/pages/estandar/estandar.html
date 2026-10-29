@@ -132,7 +132,9 @@
               (ngModelChange)="cambiarMes($event)"
             >
               @for (m of meses(); track m) {
-                <option [value]="m">{{ nombreMes(m) }}</option>
+                <option [value]="m">
+                  {{ nombreMes(m) }}{{ esCostoReferencia(m) ? ' · Costo de referencia' : '' }}
+                </option>
               }
             </select>
           </label>
@@ -163,6 +165,12 @@
         } @else if (errorCostos()) {
           <p class="cost-error" role="alert">{{ errorCostos() }}</p>
         } @else if (costosActuales(); as detalle) {
+          @if (esCostoReferencia(mesSeleccionado())) {
+            <p class="cost-note" role="status">
+              Costo de referencia: los costos están actualizados hasta agosto de 2026.
+              El costo de {{ nombreMes(mesSeleccionado()) }} está pendiente de actualización.
+            </p>
+          }
           <div class="cost-lines">
             <div class="cost-line">
               <span class="cost-line__label">Materia prima de la semana</span>
@@ -213,8 +221,12 @@
             <div class="cost-line cost-line--total">
               <span class="cost-line__label">{{
                 costoFinal() === null
-                  ? 'Subtotal disponible: materia prima + empaque + cartón'
-                  : 'Costo calculado por unidad'
+                  ? esCostoReferencia(mesSeleccionado())
+                    ? 'Subtotal de referencia: materia prima + empaque + cartón'
+                    : 'Subtotal disponible: materia prima + empaque + cartón'
+                  : esCostoReferencia(mesSeleccionado())
+                    ? 'Costo de referencia por unidad'
+                    : 'Costo calculado por unidad'
               }}</span>
               <span class="cost-line__value">
                 @if (costoFinal() !== null) {
