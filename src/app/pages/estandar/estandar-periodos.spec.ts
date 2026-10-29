@@ -101,7 +101,7 @@ describe('Períodos visibles y cálculo del estándar', () => {
     const selects = fixture.nativeElement.querySelectorAll(
       '.cost-controls select',
     ) as NodeListOf<HTMLSelectElement>;
-    expect(selects[0].value).toBe('2026-10');
+    expect(selects[0].value).toBe('2026-01');
     expect(selects[1].value).toBe(component.semanaSeleccionada());
     selects[0].value = '2026-01';
     selects[0].dispatchEvent(new Event('change'));

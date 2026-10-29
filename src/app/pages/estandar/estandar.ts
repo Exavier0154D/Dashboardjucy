@@ -342,13 +342,9 @@ export class Estandar {
       this.costos.set(costos);
       if (!this.mesSeleccionado()) {
         const actual = mesActualEcuador();
-        const ultimoConGastos = costos.gastosIndirectos
-          .map((g) => g.mes.slice(0, 7))
-          .filter((mes) => mes <= actual)
-          .sort()
-          .at(-1);
+        const enero = `${actual.slice(0, 4)}-01`;
         this.mesSeleccionado.set(
-          ultimoConGastos ?? (costos.meses.includes(actual) ? actual : (costos.meses.at(-1) ?? '')),
+          costos.meses.includes(enero) ? enero : (costos.meses.at(0) ?? enero),
         );
       }
     } catch (error: unknown) {
