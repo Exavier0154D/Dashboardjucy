@@ -52,20 +52,20 @@ describe('Corte de precios del gráfico histórico', () => {
     return fixture.componentInstance;
   }
 
-  it('termina en agosto aunque existan filas posteriores y no extiende la línea hasta hoy', async () => {
+  it('termina en septiembre aunque existan filas posteriores y no extiende la línea hasta hoy', async () => {
     const component = await crear();
-    expect(component.semanas()).toEqual(['2026-01-01', '2026-08-22']);
-    expect(component.hasta()).toBe('2026-08-22');
-    expect(component.serie().map((p) => p.costo)).toEqual([0.23, 0.29]);
-    expect(component.chartData().labels).toEqual(['01/01/2026', '22/08/2026']);
+    expect(component.semanas()).toEqual(['2026-01-01', '2026-08-22', '2026-09-01']);
+    expect(component.hasta()).toBe('2026-09-01');
+    expect(component.serie().map((p) => p.costo)).toEqual([0.23, 0.29, 9]);
+    expect(component.chartData().labels).toEqual(['01/01/2026', '22/08/2026', '01/09/2026']);
   });
 
   it('excluye fechas posteriores incluso al introducir manualmente otro rango', async () => {
     const component = await crear();
     component.hasta.set('2026-12-31');
-    expect(component.serie().map((p) => p.semana)).toEqual(['2026-01-01', '2026-08-22']);
-    expect(component.resumen()?.ultimo).toBe(0.29);
-    component.desde.set('2026-09-01');
+    expect(component.serie().map((p) => p.semana)).toEqual(['2026-01-01', '2026-08-22', '2026-09-01']);
+    expect(component.resumen()?.ultimo).toBe(9);
+    component.desde.set('2026-12-01');
     expect(component.serie()).toEqual([]);
     expect(component.resumen()).toBeNull();
   });

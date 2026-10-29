@@ -49,7 +49,7 @@ import {
 })
 export class HistoricoCostos implements OnInit, OnDestroy {
   // Ampliar este corte cuando se confirmen los siguientes meses de precios.
-  readonly fechaLimitePrecios = '2026-08-31';
+  readonly fechaLimitePrecios = '2026-09-30';
   readonly modo = input<'materia' | 'producto'>('materia');
   readonly producto = input<Producto | null>(null);
   readonly presentacion = input<Presentacion | null>(null);
