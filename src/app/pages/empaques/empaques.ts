@@ -14,6 +14,12 @@ import {
 } from '../../models/empaque.model';
 import { coincideBusqueda } from '../../core/busqueda-texto';
 
+const COLORES_EMPAQUE: Record<(typeof TIPOS_EMPAQUE_BASE)[number], string> = {
+  Botella: '#2563eb',
+  Tap: '#059669',
+  Etiqueta: '#f59e0b',
+};
+
 @Component({
   selector: 'app-empaques',
   imports: [DecimalPipe, RouterLink, BaseChartDirective, MatIconModule],
@@ -141,14 +147,19 @@ export class Empaques {
         {
           label: 'Botella',
           data: top.map((r) => r.botella),
-          backgroundColor: '#1d4ed8',
+          backgroundColor: COLORES_EMPAQUE.Botella,
           borderRadius: 3,
         },
-        { label: 'Tapa', data: top.map((r) => r.tap), backgroundColor: '#3b82f6', borderRadius: 3 },
+        {
+          label: 'Tapa',
+          data: top.map((r) => r.tap),
+          backgroundColor: COLORES_EMPAQUE.Tap,
+          borderRadius: 3,
+        },
         {
           label: 'Etiqueta',
           data: top.map((r) => r.etiqueta),
-          backgroundColor: '#93c5fd',
+          backgroundColor: COLORES_EMPAQUE.Etiqueta,
           borderRadius: 3,
         },
       ],
@@ -196,7 +207,7 @@ export class Empaques {
             .filter((e) => e.tipo === tipo)
             .reduce((n, e) => n + e.costo, 0),
         ),
-        backgroundColor: ['#1d4ed8', '#3b82f6', '#93c5fd'],
+        backgroundColor: this.tiposEmpaque.map((tipo) => COLORES_EMPAQUE[tipo]),
         borderColor: '#fff',
         borderWidth: 2,
         hoverOffset: 6,
