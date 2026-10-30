@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BaseChartDirective } from 'ng2-charts';
+import { MatIconModule } from '@angular/material/icon';
 import { ChartConfiguration, ChartData } from 'chart.js';
 import { DataService } from '../../core/data.service';
 import { Presentacion } from '../../models/producto.model';
@@ -15,7 +16,7 @@ import { coincideBusqueda } from '../../core/busqueda-texto';
 
 @Component({
   selector: 'app-empaques',
-  imports: [DecimalPipe, RouterLink, BaseChartDirective],
+  imports: [DecimalPipe, RouterLink, BaseChartDirective, MatIconModule],
   templateUrl: './empaques.html',
   styleUrl: './empaques.css',
 })
@@ -137,9 +138,19 @@ export class Empaques {
     return {
       labels: top.map((r) => `${r.nombre} · ${this.etiqueta(r.presentacion)}`),
       datasets: [
-        { label: 'Botella', data: top.map((r) => r.botella), backgroundColor: '#1d4ed8' },
-        { label: 'Tap', data: top.map((r) => r.tap), backgroundColor: '#16a34a' },
-        { label: 'Etiqueta', data: top.map((r) => r.etiqueta), backgroundColor: '#f59e0b' },
+        {
+          label: 'Botella',
+          data: top.map((r) => r.botella),
+          backgroundColor: '#1d4ed8',
+          borderRadius: 3,
+        },
+        { label: 'Tapa', data: top.map((r) => r.tap), backgroundColor: '#3b82f6', borderRadius: 3 },
+        {
+          label: 'Etiqueta',
+          data: top.map((r) => r.etiqueta),
+          backgroundColor: '#93c5fd',
+          borderRadius: 3,
+        },
       ],
     };
   });
@@ -147,11 +158,37 @@ export class Empaques {
     responsive: true,
     maintainAspectRatio: false,
     indexAxis: 'y',
-    scales: { x: { stacked: true, beginAtZero: true }, y: { stacked: true } },
+    animation:
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+        ? false
+        : { duration: 450 },
+    plugins: {
+      legend: { position: 'bottom', labels: { usePointStyle: true, padding: 18 } },
+      tooltip: {
+        backgroundColor: '#172554',
+        borderColor: '#60a5fa',
+        borderWidth: 1,
+        padding: 14,
+        cornerRadius: 9,
+        callbacks: {
+          label: (ctx) => ` ${ctx.dataset.label}: $${Number(ctx.parsed.x).toFixed(4)} / unidad`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        stacked: true,
+        beginAtZero: true,
+        border: { display: false },
+        grid: { color: '#eef2f6' },
+      },
+      y: { stacked: true, border: { display: false }, grid: { display: false } },
+    },
   };
   readonly doughnutType = 'doughnut' as const;
   readonly doughnutData = computed<ChartData<'doughnut'>>(() => ({
-    labels: [...this.tiposEmpaque],
+    labels: this.tiposEmpaque.map((tipo) => (tipo === 'Tap' ? 'Tapa' : tipo)),
     datasets: [
       {
         data: this.tiposEmpaque.map((tipo) =>
@@ -159,8 +196,32 @@ export class Empaques {
             .filter((e) => e.tipo === tipo)
             .reduce((n, e) => n + e.costo, 0),
         ),
-        backgroundColor: ['#1d4ed8', '#16a34a', '#f59e0b'],
+        backgroundColor: ['#1d4ed8', '#3b82f6', '#93c5fd'],
+        borderColor: '#fff',
+        borderWidth: 2,
+        hoverOffset: 6,
       },
     ],
   }));
+  readonly doughnutOptions: ChartConfiguration<'doughnut'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '72%',
+    animation:
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+        ? false
+        : { duration: 450 },
+    plugins: {
+      legend: { position: 'bottom', labels: { usePointStyle: true, padding: 18 } },
+      tooltip: {
+        backgroundColor: '#172554',
+        borderColor: '#60a5fa',
+        borderWidth: 1,
+        padding: 14,
+        cornerRadius: 9,
+        callbacks: { label: (ctx) => ` ${ctx.label}: $${Number(ctx.parsed).toFixed(4)}` },
+      },
+    },
+  };
 }

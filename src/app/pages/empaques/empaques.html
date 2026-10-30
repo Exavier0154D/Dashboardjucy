@@ -1,25 +1,31 @@
-<div class="empaques-container" [attr.aria-busy]="cargando()">
-  <div class="encabezado">
-    <h1>Empaque y cartón</h1>
-    <p>Consulta el costo del empaque y del cartón como rubros separados.</p>
+<div class="empaques-container jucy-dashboard" [attr.aria-busy]="cargando()">
+  <header class="encabezado">
+    <div>
+      <span class="page-kicker">CONTROL DE COSTOS / MATERIALES</span>
+      <h1>Empaque y cartón</h1>
+      <p>Consulta el costo del empaque y del cartón como rubros separados.</p>
+    </div>
     <button
       class="btn btn-principal"
       type="button"
       [disabled]="cargando()"
       (click)="actualizarAhora()"
     >
-      {{ cargando() ? 'Actualizando…' : 'Actualizar datos' }}
+      <mat-icon aria-hidden="true">refresh</mat-icon
+      >{{ cargando() ? 'Actualizando…' : 'Actualizar datos' }}
     </button>
+  </header>
+  <div class="empaque-info">
+    <p class="card-sub">
+      Las botellas, tapas, etiquetas y cartones también están en
+      <a routerLink="/insumos">Materia prima</a>.
+    </p>
+    <p class="card-sub">
+      Los envases se registran por unidad. El precio registrado de cada cartón se divide entre 12
+      unidades para presentaciones menores de 1 litro y entre 6 para las de 1 litro o más. El cartón
+      aplica únicamente a Agua de Coco y Lácteos.
+    </p>
   </div>
-  <p class="card-sub">
-    Las botellas, tapas, etiquetas y cartones también están en
-    <a routerLink="/insumos">Materia prima</a>.
-  </p>
-  <p class="card-sub">
-    Los envases se registran por unidad. El precio registrado de cada cartón se divide entre 12
-    unidades para presentaciones menores de 1 litro y entre 6 para las de 1 litro o más.
-    El cartón aplica únicamente a Agua de Coco y Lácteos.
-  </p>
   @if (errorCarga()) {
     <p class="error" role="alert">{{ errorCarga() }}</p>
   }
@@ -29,12 +35,21 @@
   @if (cargado()) {
     <div class="kpi-grid">
       <div class="card kpi">
+        <span class="kpi-icon kpi-icon--green"
+          ><mat-icon aria-hidden="true">inventory_2</mat-icon></span
+        >
         <span>Presentaciones</span><strong>{{ resumen().length }}</strong>
       </div>
       <div class="card kpi">
+        <span class="kpi-icon kpi-icon--blue"
+          ><mat-icon aria-hidden="true">category</mat-icon></span
+        >
         <span>Componentes de empaque</span><strong>{{ totalRegistros() }}</strong>
       </div>
       <div class="card kpi kpi--alerta">
+        <span class="kpi-icon kpi-icon--amber"
+          ><mat-icon aria-hidden="true">pending_actions</mat-icon></span
+        >
         <span>Precios por completar</span><strong>{{ sinCosto() }}</strong
         ><small>Presentaciones con componentes pendientes.</small>
       </div>
@@ -84,7 +99,12 @@
             @for (r of resumenFiltrado(); track r.id) {
               <tr [class.seleccionado]="r.id === presentacionDetalleId()">
                 <td>
-                  <button class="sku-link" type="button" (click)="elegirPresentacion(r.id)">
+                  <button
+                    class="sku-link"
+                    type="button"
+                    [attr.aria-pressed]="r.id === presentacionDetalleId()"
+                    (click)="elegirPresentacion(r.id)"
+                  >
                     {{ r.nombre }}</button
                   ><small>{{ r.producto.marca }}</small>
                 </td>
@@ -124,7 +144,8 @@
       </div>
     </div>
     @if (detalle(); as d) {
-      <div class="card">
+      <div class="card detalle-card" aria-live="polite">
+        <span class="page-kicker">DETALLE DE PRESENTACIÓN</span>
         <h2>{{ d.nombre }} · {{ etiqueta(d.presentacion) }}</h2>
         <p class="card-sub">Código: {{ d.presentacion.codigoBarras || 'Sin código' }}</p>
         <div class="tabla-contenedor">
@@ -191,21 +212,41 @@
       </div>
     }
     <details class="analysis-panel" #graficos (toggle)="mostrarGraficos.set(graficos.open)">
-      <summary>Ver gráficos de empaque</summary>
+      <summary>
+        <span class="analysis-icon"><mat-icon aria-hidden="true">insights</mat-icon></span
+        ><span class="analysis-copy"
+          ><strong>Gráficos de empaque</strong
+          ><small>Analiza los costos por presentación y tipo de material.</small></span
+        ><mat-icon class="analysis-chevron" aria-hidden="true">expand_more</mat-icon>
+      </summary>
       @if (mostrarGraficos()) {
         <div class="charts-grid">
           <div class="card">
             <h2>Empaque por presentación</h2>
             <p class="card-sub">Los 15 costos unitarios más altos.</p>
             <div class="chart-box">
-              <canvas baseChart [type]="barType" [data]="barData()" [options]="barOptions"></canvas>
+              <canvas
+                baseChart
+                [type]="barType"
+                [data]="barData()"
+                [options]="barOptions"
+                role="img"
+                aria-label="Costos de empaque de las quince presentaciones más caras"
+              ></canvas>
             </div>
           </div>
           <div class="card">
             <h2>Distribución por tipo</h2>
             <p class="card-sub">Suma de precios unitarios; no representa gasto de producción.</p>
             <div class="chart-box">
-              <canvas baseChart [type]="doughnutType" [data]="doughnutData()"></canvas>
+              <canvas
+                baseChart
+                [type]="doughnutType"
+                [data]="doughnutData()"
+                [options]="doughnutOptions"
+                role="img"
+                aria-label="Suma de precios unitarios por tipo de empaque"
+              ></canvas>
             </div>
           </div>
         </div>

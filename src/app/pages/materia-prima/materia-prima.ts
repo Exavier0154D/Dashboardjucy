@@ -47,7 +47,6 @@ export class MateriaPrima {
   readonly cargado = this.data.cargado.asReadonly();
   readonly errorCarga = this.data.error.asReadonly();
   readonly productoSeleccionado = this.selectionService.productoSeleccionado;
-  readonly presentacionSeleccionada = this.selectionService.presentacionSeleccionada;
   readonly mesConsulta = computed(
     () => this.selectionService.mesCostosSeleccionado() || mesActualEcuador(),
   );
@@ -87,9 +86,6 @@ export class MateriaPrima {
   readonly envases = computed(() => catalogoEnvases(this.productos(), this.data.empaques()));
   readonly gruposEnvases = computed(() => agruparEnvases(this.envases()));
   readonly grupoEnvaseAbierto = signal<string | null>(null);
-  readonly envasesPendientes = computed(
-    () => this.envases().filter((e) => e.precio === null).length,
-  );
   readonly envasesFiltrados = computed(() =>
     this.envases().filter(
       (e) =>
@@ -167,9 +163,6 @@ export class MateriaPrima {
   readonly categoriasIngredientes = computed(() =>
     [...new Set(this.productos().map((p) => p.categoria))].sort((a, b) => a.localeCompare(b, 'es')),
   );
-  readonly ingredientesActivos = computed(
-    () => this.materiasPrimas().filter((m) => m.activo).length,
-  );
   variacionMateria(materia: Insumo): number | null {
     const base = materia.costoBaseHistorico;
     return base !== null && base > 0 ? ((materia.costoKg - base) / base) * 100 : null;
@@ -178,15 +171,6 @@ export class MateriaPrima {
     if (!materia.activo) return 'Inactivo';
     return (this.variacionMateria(materia) ?? 0) > 10 ? 'Alerta de costo' : 'Activo';
   }
-  readonly alertasCosto = computed(
-    () => this.materiasPrimas().filter((m) => this.estadoMateria(m) === 'Alerta de costo').length,
-  );
-  readonly variacionPromedio = computed(() => {
-    const variaciones = this.materiasPrimas()
-      .map((m) => this.variacionMateria(m))
-      .filter((v): v is number => v !== null);
-    return variaciones.length ? variaciones.reduce((a, b) => a + b, 0) / variaciones.length : null;
-  });
   limpiarFiltrosMateria(): void {
     this.textoBusqueda.set('');
     this.estadoIngrediente.set('Todos');
@@ -312,14 +296,6 @@ export class MateriaPrima {
     this.marcaSeleccionada.set('Todas');
     this.tecnologiaSeleccionada.set('Todas');
   }
-  claseCategoria(categoria: string): string {
-    return `cat-${
-      Math.max(
-        CATEGORIAS_PRODUCTO.findIndex((c) => c === categoria),
-        0,
-      ) % 6
-    }`;
-  }
   presentacionesVisibles(producto: Producto): Presentacion[] {
     return producto.presentaciones.filter(
       (s) =>
@@ -385,9 +361,6 @@ export class MateriaPrima {
     this.selectionService.seleccionarProducto(producto, sku);
     this.vista.set('productos');
   }
-  elegirPresentacionSeleccionada(presentacion: Presentacion): void {
-    this.selectionService.seleccionarPresentacion(presentacion);
-  }
   volverProductos(): void {
     this.selectionService.limpiarSeleccion();
     this.vista.set('productos');
@@ -396,9 +369,6 @@ export class MateriaPrima {
     this.textoBusqueda.set(valor);
     this.paginaEnvases.set(1);
     this.grupoEnvaseAbierto.set(null);
-  }
-  limpiarBusquedaMateriaPrima(): void {
-    this.textoBusqueda.set('');
   }
   readonly materiasPrimasFiltradas = computed(() =>
     this.materiasPrimas()
@@ -448,31 +418,7 @@ export class MateriaPrima {
   listaProductosMateriaPrima(materiaId: number): string[] {
     return this.productosPorMateriaPrima().get(materiaId) ?? [];
   }
-  readonly displayedColumns = ['nombre', 'unidad', 'costoKg', 'productos'];
-
   readonly totalMateriasPrimas = computed(() => this.materiasPrimas().length);
-  readonly costoPromedio = computed(() => {
-    const materias = this.materiasPrimas();
-    if (materias.length === 0) {
-      return 0;
-    }
-    const total = materias.reduce((sum, materia) => sum + materia.costoKg, 0);
-    return total / materias.length;
-  });
-  readonly materiaPrimaMasCara = computed(() => {
-    const materias = this.materiasPrimas();
-    if (materias.length === 0) {
-      return null;
-    }
-    return materias.reduce((mayor, actual) => (actual.costoKg > mayor.costoKg ? actual : mayor));
-  });
-  readonly materiaPrimaMasBarata = computed(() => {
-    const materias = this.materiasPrimas();
-    if (materias.length === 0) {
-      return null;
-    }
-    return materias.reduce((menor, actual) => (actual.costoKg < menor.costoKg ? actual : menor));
-  });
   // ============================================================
   // BARRA DE COSTO
   // ============================================================

@@ -116,9 +116,6 @@ describe('Materia prima con ingredientes y envases', () => {
     expect(component.estadoMateria({ ...base, costoBaseHistorico: 2, activo: false })).toBe(
       'Inactivo',
     );
-    datos.materiasPrimas.set([base, { ...base, id: 2, costoBaseHistorico: 2 }]);
-    expect(component.variacionPromedio()).toBe(25);
-    expect(component.alertasCosto()).toBe(1);
   });
 
   it('combina búsqueda, categoría asociada y estado, y ordena sin mutar el catálogo', () => {
@@ -312,6 +309,15 @@ describe('Materia prima con ingredientes y envases', () => {
     expect(tarjetas[0].querySelector('h2')?.textContent).toBe('Agua de Coco · Jucy');
     expect(tarjetas[1].querySelector('h2')?.textContent).toBe('Agua de Coco con Pitahaya · Prunus');
     expect(tarjetas[2].querySelector('h2')?.textContent).toBe('Café Frío Sweet & Coffee');
+    expect(tarjetas[0].querySelector('.category-tag')?.getAttribute('data-category')).toBe(
+      'Agua de Coco',
+    );
+    expect(tarjetas[1].querySelector('.category-tag')?.getAttribute('data-category')).toBe(
+      'Agua de Coco',
+    );
+    expect(tarjetas[2].querySelector('.category-tag')?.getAttribute('data-category')).toBe(
+      'Lacteos',
+    );
     expect(fixture.nativeElement.querySelector('.product-name')).toBeNull();
   });
 

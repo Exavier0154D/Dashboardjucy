@@ -34,15 +34,45 @@
   background: #bce68133;
   border: 1px solid #9bc75b40;
 }
-.jucy-workspace.page .product-card:nth-child(3n + 2) .category-tag {
-  color: #a45c10;
-  background: #fbbf2426;
-  border-color: #f59e0b33;
+.jucy-workspace.page .category-tag[data-category='Agua de Coco'] {
+  color: #176b64;
+  background: #d4f3ee;
+  border-color: #a9ded6;
 }
-.jucy-workspace.page .product-card:nth-child(3n) .category-tag {
-  color: #16765d;
-  background: #34d39921;
-  border-color: #10b98133;
+.jucy-workspace.page .category-tag[data-category='Bebida'] {
+  color: #1d4f91;
+  background: #dceafe;
+  border-color: #b5d0f5;
+}
+.jucy-workspace.page .category-tag[data-category='Jugos y Zumo'] {
+  color: #a13f19;
+  background: #ffead9;
+  border-color: #f7c9a8;
+}
+.jucy-workspace.page .category-tag[data-category='Lacteos'] {
+  color: #694494;
+  background: #efe5fb;
+  border-color: #d7c3ee;
+}
+.jucy-workspace.page .category-tag[data-category='Limonada'] {
+  color: #526b12;
+  background: #eff8d0;
+  border-color: #d1e69e;
+}
+.jucy-workspace.page .category-tag[data-category='Naranja'] {
+  color: #99500c;
+  background: #fff0cf;
+  border-color: #f5d49c;
+}
+.jucy-workspace.page .category-tag[data-category='Nectar'] {
+  color: #9e315b;
+  background: #fde4ee;
+  border-color: #f3bdd3;
+}
+.jucy-workspace.page .category-tag[data-category='P. Temporales y Salsa'] {
+  color: #416a2b;
+  background: #e4f2dc;
+  border-color: #bfdcae;
 }
 .jucy-workspace.page .primary-button,
 .jucy-workspace.page .export-button,

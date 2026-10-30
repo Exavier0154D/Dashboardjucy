@@ -1,6 +1,7 @@
-<div class="admin">
+<div class="admin jucy-dashboard">
   <header class="admin-header">
     <div>
+      <span class="page-kicker">ESPACIO DE TRABAJO / CONFIGURACIÓN</span>
       <h1>Administración de catálogo</h1>
       <p>Productos, materias primas, fórmulas por SKU y empaques.</p>
     </div>
@@ -67,6 +68,7 @@
       type="button"
       class="tab"
       [class.active]="pestana() === 'productos'"
+      [attr.aria-pressed]="pestana() === 'productos'"
       (click)="cambiarPestana('productos')"
       [disabled]="guardando()"
     >
@@ -77,6 +79,7 @@
       type="button"
       class="tab"
       [class.active]="pestana() === 'materias'"
+      [attr.aria-pressed]="pestana() === 'materias'"
       (click)="cambiarPestana('materias')"
       [disabled]="guardando()"
     >
@@ -87,6 +90,7 @@
       type="button"
       class="tab"
       [class.active]="pestana() === 'presentaciones'"
+      [attr.aria-pressed]="pestana() === 'presentaciones'"
       (click)="cambiarPestana('presentaciones')"
       [disabled]="guardando()"
     >
@@ -97,6 +101,7 @@
       type="button"
       class="tab"
       [class.active]="pestana() === 'empaques'"
+      [attr.aria-pressed]="pestana() === 'empaques'"
       (click)="cambiarPestana('empaques')"
       [disabled]="guardando()"
     >
@@ -106,6 +111,7 @@
       type="button"
       class="tab"
       [class.active]="pestana() === 'historial'"
+      [attr.aria-pressed]="pestana() === 'historial'"
       (click)="cambiarPestana('historial')"
       [disabled]="guardando()"
     >
@@ -642,7 +648,11 @@
               >
               <label class="field"
                 ><span class="field__label"
-                  >{{ formEmpaque.controls.tipo.value === 'Cartón' ? 'Precio por cartón' : 'Precio por unidad' }}
+                  >{{
+                    formEmpaque.controls.tipo.value === 'Cartón'
+                      ? 'Precio por cartón'
+                      : 'Precio por unidad'
+                  }}
                   @if (
                     unidadesPaqueteEmpaque(
                       formEmpaque.controls.presentacion_id.value,
@@ -667,8 +677,8 @@
             </fieldset>
             <p class="hint">
               Registra el precio del cartón completo; se divide entre 12 unidades si el SKU es menor
-              de 1 litro y entre 6 si es de 1 litro o más. Los otros empaques se registran por unidad.
-              «Sin dato» indica un precio pendiente.
+              de 1 litro y entre 6 si es de 1 litro o más. Los otros empaques se registran por
+              unidad. «Sin dato» indica un precio pendiente.
             </p>
             <div class="panel__actions">
               <button class="btn" type="button" (click)="cancelar()" [disabled]="guardando()">
@@ -706,7 +716,9 @@
                       } @else {
                         $ {{ e.costo | number: '1.4-6' }}
                       }
-                      <small>{{ e.tipo === 'Cartón' ? 'Cartón completo' : 'Unidad individual' }}</small>
+                      <small>{{
+                        e.tipo === 'Cartón' ? 'Cartón completo' : 'Unidad individual'
+                      }}</small>
                     </td>
                     <td class="num">
                       @let unitario = precioUnitarioEmpaque(e);
