@@ -372,7 +372,16 @@ export class MateriaPrima {
   seleccionarProducto(producto: Producto): void {
     const sku = this.presentacionTarjeta(producto);
     if (!sku) return;
-    this.selectionService.seleccionarMesCostos(this.mesConsulta());
+    const mesActual = mesActualEcuador();
+    const mesesConDatos = this.data
+      .mesesPreciosDisponibles()
+      .filter((mes) => mes < mesActual)
+      .sort();
+    const mesSeleccionado = this.selectionService.mesCostosSeleccionado();
+    const mesInicial =
+      (mesSeleccionado && mesSeleccionado < mesActual ? mesSeleccionado : mesesConDatos.at(-1)) ||
+      this.mesConsulta();
+    this.selectionService.seleccionarMesCostos(mesInicial);
     this.selectionService.seleccionarProducto(producto, sku);
     this.vista.set('productos');
   }

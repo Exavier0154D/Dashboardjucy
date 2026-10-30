@@ -356,12 +356,14 @@ export class Estandar {
       const costos = await this.costosService.cargar(presentacionId);
       if (solicitud !== this.solicitudCostos) return;
       this.costos.set(costos);
-      if (!this.mesSeleccionado()) {
-        const actual = mesActualEcuador();
-        const enero = `${actual.slice(0, 4)}-01`;
-        this.mesSeleccionado.set(
-          costos.meses.includes(enero) ? enero : (costos.meses.at(0) ?? enero),
-        );
+      const mesActual = this.mesSeleccionado();
+      const mesesConDatos = costos.meses.filter((mes) => !this.esCostoReferencia(mes));
+      // El mes calendario actual puede ser un período de referencia sin actualización.
+      // En ese caso, mostrar de entrada el último período real disponible evita presentar
+      // octubre como si fuera el último costo confirmado.
+      if (!mesActual || (this.esCostoReferencia(mesActual) && mesesConDatos.length)) {
+        const fallback = mesesConDatos.at(-1) ?? costos.meses.at(-1) ?? mesActualEcuador();
+        this.mesSeleccionado.set(fallback);
       }
     } catch (error: unknown) {
       if (solicitud !== this.solicitudCostos) return;
