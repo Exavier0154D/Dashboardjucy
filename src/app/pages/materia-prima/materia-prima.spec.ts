@@ -5,7 +5,7 @@ import { MateriaPrima } from './materia-prima';
 import { DataService } from '../../core/data.service';
 import { SelectionService } from '../../core/selection.service';
 import { Empaque } from '../../models/empaque.model';
-import { Presentacion, Producto } from '../../models/producto.model';
+import { MateriaPrima as Insumo, Presentacion, Producto } from '../../models/producto.model';
 
 describe('Materia prima con ingredientes y envases', () => {
   let fixture: ComponentFixture<MateriaPrima>;
@@ -59,7 +59,7 @@ describe('Materia prima con ingredientes y envases', () => {
   });
   const datos = {
     productos: signal([producto]),
-    materiasPrimas: signal([
+    materiasPrimas: signal<Insumo[]>([
       { id: 1, nombre: 'Agua', unidad: 'kg', costoKg: 2.5, costoBaseHistorico: null, activo: true },
     ]),
     empaques: signal([
@@ -75,6 +75,9 @@ describe('Materia prima con ingredientes y envases', () => {
   };
 
   beforeEach(async () => {
+    datos.materiasPrimas.set([
+      { id: 1, nombre: 'Agua', unidad: 'kg', costoKg: 2.5, costoBaseHistorico: null, activo: true },
+    ]);
     datos.productos.set([producto]);
     datos.empaques.set([
       envase(1, 'Botella', 0.1, 'confirmado'),
@@ -99,6 +102,93 @@ describe('Materia prima con ingredientes y envases', () => {
     ).click();
     fixture.detectChanges();
   }
+
+  it('calcula variaciones solo con bases positivas y alerta aumentos activos superiores al 10 %', () => {
+    const component = fixture.componentInstance;
+    const base = datos.materiasPrimas()[0];
+    expect(component.variacionMateria(base)).toBeNull();
+    expect(component.variacionMateria({ ...base, costoBaseHistorico: 0 })).toBeNull();
+    expect(component.variacionMateria({ ...base, costoBaseHistorico: 5 })).toBe(-50);
+    expect(component.estadoMateria({ ...base, costoKg: 11, costoBaseHistorico: 10 })).toBe(
+      'Activo',
+    );
+    expect(component.estadoMateria({ ...base, costoBaseHistorico: 2 })).toBe('Alerta de costo');
+    expect(component.estadoMateria({ ...base, costoBaseHistorico: 2, activo: false })).toBe(
+      'Inactivo',
+    );
+    datos.materiasPrimas.set([base, { ...base, id: 2, costoBaseHistorico: 2 }]);
+    expect(component.variacionPromedio()).toBe(25);
+    expect(component.alertasCosto()).toBe(1);
+  });
+
+  it('combina búsqueda, categoría asociada y estado, y ordena sin mutar el catálogo', () => {
+    const component = fixture.componentInstance;
+    const base = datos.materiasPrimas()[0];
+    datos.materiasPrimas.set([base, { ...base, id: 2, nombre: 'Azúcar', costoKg: 4 }]);
+    datos.productos.set([
+      {
+        ...producto,
+        presentaciones: [
+          {
+            ...sku,
+            ingredientes: [{ materiaPrimaId: 2, nombre: 'Azúcar', unidad: 'kg', porcentaje: 100 }],
+          },
+        ],
+      },
+    ]);
+    component.categoriaIngrediente.set('Agua de Coco');
+    component.buscarMateriaPrima('azucar');
+    component.estadoIngrediente.set('Activo');
+    expect(component.materiasPrimasFiltradas().map((m) => m.id)).toEqual([2]);
+    component.estadoIngrediente.set('Alerta de costo');
+    expect(component.materiasPrimasFiltradas()).toEqual([]);
+    component.limpiarFiltrosMateria();
+    component.ordenIngredientes.set('precio-desc');
+    expect(component.materiasPrimasFiltradas().map((m) => m.id)).toEqual([2, 1]);
+    expect(datos.materiasPrimas().map((m) => m.id)).toEqual([1, 2]);
+  });
+
+  it('exporta solo ingredientes filtrados, conserva cero y escapa texto y fórmulas CSV', () => {
+    const component = fixture.componentInstance;
+    const base = datos.materiasPrimas()[0];
+    datos.materiasPrimas.set([base, { ...base, id: 2, nombre: '=Agua,"especial"', costoKg: 0 }]);
+    component.buscarMateriaPrima('especial');
+    let contenido: unknown[] = [];
+    const crearUrl = vi.fn().mockReturnValue('blob:export-test');
+    const urlOriginal = URL;
+    vi.stubGlobal(
+      'URL',
+      class extends urlOriginal {
+        static override createObjectURL = crearUrl;
+        static override revokeObjectURL = vi.fn();
+      },
+    );
+    vi.stubGlobal(
+      'Blob',
+      class {
+        constructor(partes: unknown[]) {
+          contenido = partes;
+        }
+      },
+    );
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    vi.useFakeTimers();
+    try {
+      component.exportarMateriales();
+      const csv = contenido.join('');
+      expect(csv).toContain('"\'=Agua,""especial"""');
+      expect(csv).toContain('"kg","0"');
+      expect(csv).not.toContain('"2.5"');
+      expect(click).toHaveBeenCalledOnce();
+      expect(component.exportacionMensaje()).toBe('1 registros exportados');
+      vi.runAllTimers();
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:export-test');
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+      click.mockRestore();
+    }
+  });
 
   it('abre materia prima directamente con el catálogo antes de los gráficos', () => {
     const html = fixture.nativeElement as HTMLElement;
@@ -215,7 +305,9 @@ describe('Materia prima con ingredientes y envases', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const tarjetas = fixture.nativeElement.querySelectorAll('.product-card') as NodeListOf<HTMLElement>;
+    const tarjetas = fixture.nativeElement.querySelectorAll(
+      '.product-card',
+    ) as NodeListOf<HTMLElement>;
     expect(tarjetas.length).toBe(3);
     expect(tarjetas[0].querySelector('h2')?.textContent).toBe('Agua de Coco · Jucy');
     expect(tarjetas[1].querySelector('h2')?.textContent).toBe('Agua de Coco con Pitahaya · Prunus');

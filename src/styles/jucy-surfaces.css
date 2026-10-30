@@ -1,0 +1,273 @@
+/* Shared visual layer, scoped to the cost workspace and its historical charts. */
+.jucy-workspace.page,
+.jucy-history.history-card {
+  --jucy-emerald: #10895d;
+  --jucy-citrus: #d9ef8b;
+  --jucy-glow: 0 5px 15px #10a66e26;
+}
+
+.jucy-workspace.page > .page-header {
+  padding: 6px 0 6px 16px;
+  border-left: 3px solid #9acb4f;
+}
+.jucy-workspace.page .eyebrow {
+  color: #527f30;
+}
+.jucy-workspace.page .catalog-toolbar {
+  background: radial-gradient(ellipse at 100% 0, #ecf9ce80, transparent 60%), #fff;
+}
+.jucy-workspace.page .product-card {
+  background: linear-gradient(135deg, #fff 50%, #f3fae8);
+  box-shadow: 0 3px 12px #235a2810;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+}
+.jucy-workspace.page .product-card:focus-within {
+  border-color: #8cbe84;
+  box-shadow: 0 0 0 3px #9acb4f1f;
+}
+.jucy-workspace.page .category-tag,
+.jucy-workspace.page .chip {
+  color: #327137;
+  background: #bce68133;
+  border: 1px solid #9bc75b40;
+}
+.jucy-workspace.page .product-card:nth-child(3n + 2) .category-tag {
+  color: #a45c10;
+  background: #fbbf2426;
+  border-color: #f59e0b33;
+}
+.jucy-workspace.page .product-card:nth-child(3n) .category-tag {
+  color: #16765d;
+  background: #34d39921;
+  border-color: #10b98133;
+}
+.jucy-workspace.page .primary-button,
+.jucy-workspace.page .export-button,
+.jucy-workspace.page .cost-controls button {
+  background: linear-gradient(120deg, #16885b, #21764a);
+  border-color: #16885b;
+  box-shadow:
+    var(--jucy-glow),
+    inset 0 1px 0 #ffffff26;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    filter 200ms ease;
+}
+.jucy-workspace.page .refresh-button:not(:disabled) {
+  color: #217348;
+  background: linear-gradient(120deg, #fff, #f1f9df);
+  border-color: #d2e4bb;
+  box-shadow: 0 3px 10px #8cad4b12;
+}
+.jucy-workspace.page .summary-grid .summary-card {
+  background: linear-gradient(125deg, #fff, #eff6ff);
+  border-color: #dce8fa;
+  box-shadow: 0 4px 14px #3b82f611;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease;
+}
+.jucy-workspace.page .summary-grid .summary-card:nth-child(2) {
+  background: linear-gradient(125deg, #fff, #fff8df);
+  border-color: #f3e8bc;
+  box-shadow: 0 4px 14px #d6a11612;
+}
+.jucy-workspace.page .summary-grid .summary-card:nth-child(3) {
+  background: linear-gradient(125deg, #fff, #eafaf6);
+  border-color: #d2eee6;
+  box-shadow: 0 4px 14px #10b98112;
+}
+.jucy-workspace.page .summary-grid .summary-card:nth-child(4) {
+  background: linear-gradient(125deg, #fff, #eff8d9);
+  border-color: #deebbd;
+  box-shadow: 0 4px 14px #82ad281a;
+}
+.jucy-workspace.page .summary-card:last-child .summary-value {
+  color: #28793e;
+  text-shadow: 0 2px 14px #65a30d16;
+}
+.jucy-workspace.page .summary-icon,
+.jucy-workspace.page .product-icon,
+.jucy-workspace.page .ingredient-avatar,
+.jucy-workspace.page .insight-icon,
+.jucy-workspace.page .analysis-symbol {
+  box-shadow:
+    inset 0 1px 0 #ffffffb3,
+    0 3px 9px #486e2510;
+  border-radius: 12px;
+}
+.jucy-workspace.page .summary-icon--blue {
+  background: #3b82f61f;
+  color: #2563eb;
+}
+.jucy-workspace.page .summary-icon--amber {
+  background: #fbbf2429;
+  color: #b56a06;
+}
+.jucy-workspace.page .summary-icon--teal {
+  background: #2dd4bf29;
+  color: #087f72;
+}
+.jucy-workspace.page .summary-icon--green,
+.jucy-workspace.page .ingredient-avatar,
+.jucy-workspace.page .product-icon {
+  color: #3e8834;
+  background: linear-gradient(135deg, #84cc1629, #10b9811a);
+  border-color: #b5d58c66;
+}
+.jucy-workspace.page .insight-card {
+  background:
+    radial-gradient(ellipse at 100% 0, #e3f4a5a6, transparent 70%),
+    linear-gradient(135deg, #f1fae7, #fff);
+  border-color: #dfebc5;
+}
+.jucy-workspace.page .insight-icon {
+  color: #648f1b;
+  background: #d9ef8b59;
+}
+.jucy-workspace.page .ingredient-status,
+.jucy-workspace.page .status-tag--confirmed {
+  color: #13824c;
+  background: #34d3991f;
+  border-color: #10b9813d;
+}
+.jucy-workspace.page .ingredient-status--alert,
+.jucy-workspace.page .status-tag--pending {
+  color: #a75b06;
+  background: #fbbf242e;
+  border-color: #f59e0b47;
+}
+.jucy-workspace.page .ingredient-status--inactive {
+  color: #748078;
+  background: #94a3b815;
+  border-color: #94a3b833;
+}
+.jucy-workspace.page .ingredient-status--alert > span {
+  position: relative;
+  width: 6px;
+  height: 6px;
+}
+.jucy-workspace.page .ingredient-status--alert > span::after,
+.jucy-history.history-card .sync-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.jucy-workspace.page .cost-track > span {
+  background: linear-gradient(90deg, #b5d954, #22a26e);
+}
+.jucy-workspace.page .material-catalog,
+.jucy-workspace.page .analysis-panel,
+.jucy-workspace.page .cost-card {
+  box-shadow: 0 4px 18px #315a3010;
+}
+.jucy-workspace.page .analysis-panel > summary {
+  background: linear-gradient(110deg, #fff, #f5f9eb);
+}
+.jucy-workspace.page .analysis-panel > summary:hover {
+  background: linear-gradient(110deg, #fafff4, #edf6dc);
+}
+.jucy-history.history-card {
+  box-shadow: 0 4px 18px #2563eb0c;
+}
+.jucy-history.history-card .sync-dot {
+  position: relative;
+  color: #3b82f6;
+}
+.jucy-history.history-card .metrics > div {
+  box-shadow: 0 3px 12px #3b82f610;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease;
+}
+.jucy-history.history-card .metrics strong {
+  color: #2563eb;
+}
+.jucy-history.history-card .sync-note button {
+  box-shadow: 0 3px 10px #3b82f614;
+}
+@media (hover: hover) and (pointer: fine) {
+  .jucy-workspace.page .product-card:hover,
+  .jucy-workspace.page .summary-grid .summary-card:hover,
+  .jucy-history.history-card .metrics > div:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px #3478471c;
+  }
+  .jucy-workspace.page .primary-button:hover:not(:disabled),
+  .jucy-workspace.page .export-button:hover:not(:disabled),
+  .jucy-workspace.page .cost-controls button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+    box-shadow: 0 8px 20px #10965f38;
+  }
+  .jucy-workspace.page tbody tr:hover > td {
+    background: #ecf8dc80;
+  }
+  .jucy-workspace.page tbody tr:hover > td:first-child {
+    box-shadow: inset 3px 0 #8ac44b;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .jucy-workspace.page > .page-header,
+  .jucy-workspace.page .catalog-toolbar,
+  .jucy-workspace.page .product-card,
+  .jucy-workspace.page .summary-card,
+  .jucy-workspace.page .material-catalog,
+  .jucy-workspace.page .analytics-grid,
+  .jucy-workspace.page .analysis-panel,
+  .jucy-workspace.page .cost-card,
+  .jucy-workspace.page .content-grid,
+  .jucy-history.history-card {
+    animation: jucy-reveal 440ms cubic-bezier(0.2, 0.65, 0.3, 1) backwards;
+    animation-delay: calc(var(--reveal-order, 0) * 45ms);
+  }
+  .jucy-workspace.page .summary-card:nth-child(2) {
+    --reveal-order: 1;
+  }
+  .jucy-workspace.page .summary-card:nth-child(3) {
+    --reveal-order: 2;
+  }
+  .jucy-workspace.page .summary-card:nth-child(4) {
+    --reveal-order: 3;
+  }
+  .jucy-workspace.page .ingredient-status--alert > span::after,
+  .jucy-history.history-card .sync-dot::after {
+    animation: jucy-ping 2400ms ease-out infinite;
+  }
+  @keyframes jucy-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes jucy-ping {
+    0% {
+      transform: scale(0.55);
+      opacity: 0.65;
+    }
+    75%,
+    100% {
+      transform: scale(1.65);
+      opacity: 0;
+    }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jucy-workspace.page .product-card:hover,
+  .jucy-workspace.page .summary-grid .summary-card:hover,
+  .jucy-workspace.page button:hover,
+  .jucy-history.history-card .metrics > div:hover {
+    transform: none;
+  }
+}

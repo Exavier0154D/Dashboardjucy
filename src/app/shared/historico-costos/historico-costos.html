@@ -1,5 +1,6 @@
-<section class="history-card">
+<section class="history-card jucy-history">
   <header>
+    <span class="eyebrow">ANÁLISIS HISTÓRICO / USD</span>
     <h3>
       {{
         modo() === 'materia'
@@ -21,9 +22,11 @@
       >
     }
   </header>
-  <p class="note">
-    Los costos se comprueban automáticamente cada 15 segundos.
-    <button type="button" (click)="cargarDatos()">Actualizar ahora</button>
+  <p class="note sync-note">
+    <span><span class="sync-dot"></span>Consulta los últimos precios registrados.</span>
+    <button type="button" [disabled]="cargando()" (click)="cargarDatos()">
+      <mat-icon>refresh</mat-icon>{{ cargando() ? 'Actualizando…' : 'Actualizar datos' }}
+    </button>
   </p>
   <div class="filters">
     @if (modo() === 'materia') {
@@ -90,23 +93,29 @@
         (change)="hasta.set(fechaHasta.value)"
     /></label>
   </div>
-  <p class="note">
+  <p class="note availability-note">
     Precios disponibles hasta septiembre de 2026. Octubre en adelante queda pendiente de registro.
   </p>
-  <p class="note">
-    La línea mantiene cada precio hasta su próxima actualización. Puntos azules: precios históricos
-    vigentes. Puntos grises: alguna materia utiliza el precio base de referencia anterior al primer
-    registro (si no hay base histórica conservada, se usa el precio actual como estimación). Se
-    incluyen los límites del rango y las fechas registradas. Los precios de materia prima no se
-    promedian.
-  </p>
-  @if (modo() === 'producto') {
+  <details class="methodology">
+    <summary>Cómo interpretar el histórico<mat-icon>expand_more</mat-icon></summary>
     <p class="note">
-      Azul: materia prima. Verde: costo final estimado. Empaque y cartón actuales se suman por
-      separado en todo el período; no disponemos de su histórico. La mano de obra mantiene el último
-      valor conocido hasta su próxima actualización. Los gastos indirectos se suman únicamente para
-      el mes registrado.
+      La línea mantiene cada precio hasta su próxima actualización. Puntos azules: precios
+      históricos vigentes. Puntos grises: alguna materia utiliza el precio base de referencia
+      anterior al primer registro (si no hay base histórica conservada, se usa el precio actual como
+      estimación). Se incluyen los límites del rango y las fechas registradas. Los precios de
+      materia prima no se promedian.
     </p>
+    @if (modo() === 'producto') {
+      <p class="note">
+        La línea azul representa la materia prima. El detalle por fecha incluye el costo final
+        estimado cuando existen todos sus componentes. Empaque y cartón actuales se suman por
+        separado en todo el período; no disponemos de su histórico. La mano de obra mantiene el
+        último valor conocido hasta su próxima actualización. Los gastos indirectos se suman
+        únicamente para el mes registrado.
+      </p>
+    }
+  </details>
+  @if (modo() === 'producto') {
     @if (costosActuales()?.empaqueEstimado) {
       <p class="note">El empaque de este SKU es una referencia copiada del producto anterior.</p>
     }
@@ -200,9 +209,9 @@
       <canvas baseChart [type]="'line'" [data]="chartData()" [options]="chartOptions()"></canvas>
     </div>
     <p class="note trend-key">
-      <span class="trend-up">↑ Subida de costo</span>
-      <span class="trend-down">↓ Bajada de costo</span>
-      <span>Escala vertical ajustada al rango de precios.</span>
+      <span class="chart-key"><span></span>Precio histórico</span>
+      <span class="chart-key chart-key--base"><span></span>Precio base de referencia</span>
+      <span>Consulta la variación entre fechas en el tooltip.</span>
     </p>
     <details>
       <summary>Ver valores por fecha</summary>

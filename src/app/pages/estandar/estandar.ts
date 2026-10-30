@@ -109,14 +109,14 @@ export class Estandar {
   readonly paleta: string[] = [
     '#1d4ed8',
     '#0ea5e9',
-    '#14b8a6',
-    '#22c55e',
-    '#eab308',
-    '#f97316',
-    '#ef4444',
-    '#ec4899',
-    '#8b5cf6',
-    '#64748b',
+    '#1e40af',
+    '#60a5fa',
+    '#0284c7',
+    '#93c5fd',
+    '#312e81',
+    '#38bdf8',
+    '#818cf8',
+    '#c7d2fe',
   ];
 
   readonly doughnutChartType = 'doughnut' as const;
@@ -132,6 +132,7 @@ export class Estandar {
           backgroundColor: ingredientes.map((_, i) => this.paleta[i % this.paleta.length]),
           borderWidth: 2,
           borderColor: '#ffffff',
+          hoverOffset: 6,
         },
       ],
     };
@@ -140,9 +141,24 @@ export class Estandar {
   readonly doughnutChartOptions: ChartConfiguration<'doughnut'>['options'] = {
     responsive: true,
     maintainAspectRatio: false,
+    animation:
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+        ? false
+        : { duration: 450 },
+    cutout: '72%',
     plugins: {
       legend: {
         position: 'bottom',
+        labels: { usePointStyle: true, pointStyle: 'circle', padding: 18, font: { size: 11 } },
+      },
+      tooltip: {
+        backgroundColor: '#172554',
+        borderColor: '#60a5fa',
+        borderWidth: 1,
+        padding: 14,
+        cornerRadius: 10,
+        callbacks: { label: (ctx) => ` ${ctx.label}: ${Number(ctx.parsed).toFixed(2)} %` },
       },
     },
   };

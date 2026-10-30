@@ -189,22 +189,23 @@ export class HistoricoCostos implements OnInit, OnDestroy {
         label: this.modo() === 'materia' ? 'Precio USD/kg' : 'Costo MP USD/presentación',
         data: this.serie().map((p) => p.costo),
         borderColor: '#1d4ed8',
-        backgroundColor: '#1d4ed8',
+        backgroundColor: (context) => {
+          const area = context.chart.chartArea;
+          if (!area) return 'rgba(59, 130, 246, 0.12)';
+          const gradient = context.chart.ctx.createLinearGradient(0, area.top, 0, area.bottom);
+          gradient.addColorStop(0, 'rgba(59, 130, 246, 0.26)');
+          gradient.addColorStop(1, 'rgba(59, 130, 246, 0.02)');
+          return gradient;
+        },
         pointBackgroundColor: this.serie().map((p) => (p.conBase > 0 ? '#94a3b8' : '#1d4ed8')),
         pointBorderColor: this.serie().map((p) => (p.conBase > 0 ? '#64748b' : '#1d4ed8')),
-        pointRadius: 4,
-        pointHoverRadius: 7,
-        borderWidth: 3,
-        segment: {
-          borderColor: (ctx) => {
-            if (ctx.p1.parsed.y === null || ctx.p0.parsed.y === null) return '#1d4ed8';
-            const cambio = ctx.p1.parsed.y - ctx.p0.parsed.y;
-            return cambio > 0 ? '#dc2626' : cambio < 0 ? '#15803d' : '#1d4ed8';
-          },
-        },
+        pointRadius: 3,
+        pointHoverRadius: 6,
+        pointHitRadius: 16,
+        borderWidth: 2,
         tension: 0,
         stepped: 'before',
-        fill: false,
+        fill: true,
         spanGaps: false,
       },
     ],
@@ -217,10 +218,25 @@ export class HistoricoCostos implements OnInit, OnDestroy {
     return {
       responsive: true,
       maintainAspectRatio: false,
+      animation:
+        typeof window !== 'undefined' &&
+        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+          ? false
+          : { duration: 450 },
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: { display: true, position: 'bottom' },
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: { usePointStyle: true, padding: 22, color: '#64748b', font: { size: 11 } },
+        },
         tooltip: {
+          backgroundColor: '#172554',
+          borderColor: '#60a5fa',
+          borderWidth: 1,
+          padding: 14,
+          cornerRadius: 10,
+          displayColors: false,
           callbacks: {
             label: (ctx) =>
               ctx.parsed.y === null
@@ -253,11 +269,14 @@ export class HistoricoCostos implements OnInit, OnDestroy {
       },
       scales: {
         x: {
+          border: { display: false },
           grid: { display: false },
           title: { display: true, text: 'Fecha' },
           ticks: { maxRotation: 45, autoSkip: true },
         },
         y: {
+          border: { display: false },
+          grid: { color: '#eef2f6' },
           beginAtZero: false,
           min: Math.max(0, minimo - margen),
           max: maximo + margen,

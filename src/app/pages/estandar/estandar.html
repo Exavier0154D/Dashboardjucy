@@ -1,8 +1,9 @@
-<div class="page">
+<div class="page jucy-workspace">
   <!-- ENCABEZADO -->
   <header class="page-header">
-    <h1>Estándar</h1>
-    <p>Formulación y estándar de producción</p>
+    <span class="eyebrow">PRODUCCIÓN / FICHA DEL PRODUCTO</span>
+    <h1>Formulación y costos</h1>
+    <p>Explora cada presentación, su fórmula y el detalle de fabricación.</p>
   </header>
   @if (!productoSeleccionado()) {
     <!-- SIN PRODUCTO -->
@@ -41,7 +42,7 @@
     <!-- SELECTOR DE PRESENTACIÓN -->
     @if (presentaciones().length > 0) {
       <div class="presentation-switch">
-        <span class="presentation-label">Presentación y tecnología:</span>
+        <span class="presentation-label">Presentación y tecnología</span>
         @for (p of presentaciones(); track p.id) {
           <button
             type="button"
@@ -116,10 +117,11 @@
     }
     <mat-card class="cost-card" appearance="outlined">
       <div class="card-header">
+        <span class="eyebrow">DESGLOSE DE FABRICACIÓN</span>
         <h3>Costos por presentación</h3>
         <p>
-          Materia prima + empaque + cartón + mano de obra + gastos indirectos de fabricación del
-          mes elegido.
+          Materia prima + empaque + cartón + mano de obra + gastos indirectos de fabricación del mes
+          elegido.
         </p>
       </div>
       <mat-card-content>
@@ -157,7 +159,7 @@
             [disabled]="cargandoCostos() || !presentacionActual()"
             (click)="actualizarCostos()"
           >
-            Actualizar costos de fabricación
+            <mat-icon>refresh</mat-icon>Actualizar costos
           </button>
         </div>
         @if (cargandoCostos()) {
@@ -167,8 +169,8 @@
         } @else if (costosActuales(); as detalle) {
           @if (esCostoReferencia(mesSeleccionado())) {
             <p class="cost-note" role="status">
-              Costo de referencia: los costos están actualizados hasta septiembre de 2026.
-              El costo de {{ nombreMes(mesSeleccionado()) }} está pendiente de actualización.
+              Costo de referencia: los costos están actualizados hasta septiembre de 2026. El costo
+              de {{ nombreMes(mesSeleccionado()) }} está pendiente de actualización.
             </p>
           }
           <div class="cost-lines">
@@ -239,23 +241,31 @@
               </span>
             </div>
           </div>
-          <p class="cost-note">
-            Materia prima: kg necesarios por ingrediente × precio por kg vigente en la semana
-            seleccionada. Sin cambios, se conserva el precio anterior; antes del primer registro
-            se usa el precio base histórico.
-          </p>
-          @for (ingrediente of valoracionMateriaPrima()?.detalle ?? []; track $index) {
+          <details class="calculation-details">
+            <summary>
+              <mat-icon>calculate</mat-icon>Cómo se calcula la materia prima<mat-icon
+                class="details-chevron"
+                >expand_more</mat-icon
+              >
+            </summary>
             <p class="cost-note">
-              {{ ingrediente.nombre }}: {{ ingrediente.kg | number: '1.3-6' }} kg × ${{
-                ingrediente.precioKg | number: '1.4-6'
-              }}/kg
-              @if (ingrediente.fechaPrecio) {
-                (precio del {{ ingrediente.fechaPrecio | date: 'dd/MM/yyyy' : 'UTC' }})
-              } @else {
-                (precio base histórico)
-              }
+              Materia prima: kg necesarios por ingrediente × precio por kg vigente en la semana
+              seleccionada. Sin cambios, se conserva el precio anterior; antes del primer registro
+              se usa el precio base histórico.
             </p>
-          }
+            @for (ingrediente of valoracionMateriaPrima()?.detalle ?? []; track $index) {
+              <p class="cost-note">
+                {{ ingrediente.nombre }}: {{ ingrediente.kg | number: '1.3-6' }} kg × ${{
+                  ingrediente.precioKg | number: '1.4-6'
+                }}/kg
+                @if (ingrediente.fechaPrecio) {
+                  (precio del {{ ingrediente.fechaPrecio | date: 'dd/MM/yyyy' : 'UTC' }})
+                } @else {
+                  (precio base histórico)
+                }
+              </p>
+            }
+          </details>
           @if (manoObraVigente(); as mo) {
             @if (mo.mes.slice(0, 7) !== mesSeleccionado()) {
               <p class="cost-note">
@@ -274,8 +284,8 @@
           }
           @if (detalle.empaqueEstimado) {
             <p class="cost-note">
-              Empaque de referencia copiado del producto anterior. Revisa su costo para este
-              tamaño y tecnología.
+              Empaque de referencia copiado del producto anterior. Revisa su costo para este tamaño
+              y tecnología.
             </p>
           }
           @if (detalle.empaqueSinDato) {
@@ -300,13 +310,12 @@
           } @else {
             <p class="cost-note" role="status">
               Faltan gastos indirectos de fabricación para este SKU en el mes elegido. El costo
-              final queda pendiente; el subtotal disponible incluye materia prima, empaque y
-              cartón.
+              final queda pendiente; el subtotal disponible incluye materia prima, empaque y cartón.
             </p>
           }
           <p class="cost-note">
-            El mes determina la mano de obra vigente y los gastos indirectos registrados en ese
-            mes. La materia prima usa el historial de la semana elegida; empaque y cartón usan sus
+            El mes determina la mano de obra vigente y los gastos indirectos registrados en ese mes.
+            La materia prima usa el historial de la semana elegida; empaque y cartón usan sus
             valores actuales.
           </p>
         }
@@ -326,8 +335,8 @@
           <p>Composición de la presentación seleccionada</p>
           @if (hayFormula() && (sumaPorcentajes() < 99.9999 || sumaPorcentajes() > 100.0001)) {
             <p class="formula-warning">
-              La fórmula original suma {{ sumaPorcentajes() | number: '1.2-4' }} %. Se conserva
-              sin normalizar.
+              La fórmula original suma {{ sumaPorcentajes() | number: '1.2-4' }} %. Se conserva sin
+              normalizar.
             </p>
           }
         </div>

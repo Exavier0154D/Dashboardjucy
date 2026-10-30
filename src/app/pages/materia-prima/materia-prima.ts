@@ -5,7 +5,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData } from 'chart.js';
-import { CATEGORIAS_PRODUCTO, Presentacion, Producto } from '../../models/producto.model';
+import {
+  CATEGORIAS_PRODUCTO,
+  MateriaPrima as Insumo,
+  Presentacion,
+  Producto,
+} from '../../models/producto.model';
 import { DataService } from '../../core/data.service';
 import { SelectionService } from '../../core/selection.service';
 import { coincideBusqueda } from '../../core/busqueda-texto';
@@ -155,6 +160,92 @@ export class MateriaPrima {
   readonly marcaSeleccionada = signal('Todas');
   readonly tecnologiaSeleccionada = signal('Todas');
   readonly textoBusqueda = signal('');
+  readonly estadoIngrediente = signal('Todos');
+  readonly categoriaIngrediente = signal('Todas');
+  readonly ordenIngredientes = signal('nombre');
+  readonly exportacionMensaje = signal('');
+  readonly categoriasIngredientes = computed(() =>
+    [...new Set(this.productos().map((p) => p.categoria))].sort((a, b) => a.localeCompare(b, 'es')),
+  );
+  readonly ingredientesActivos = computed(
+    () => this.materiasPrimas().filter((m) => m.activo).length,
+  );
+  variacionMateria(materia: Insumo): number | null {
+    const base = materia.costoBaseHistorico;
+    return base !== null && base > 0 ? ((materia.costoKg - base) / base) * 100 : null;
+  }
+  estadoMateria(materia: Insumo): string {
+    if (!materia.activo) return 'Inactivo';
+    return (this.variacionMateria(materia) ?? 0) > 10 ? 'Alerta de costo' : 'Activo';
+  }
+  readonly alertasCosto = computed(
+    () => this.materiasPrimas().filter((m) => this.estadoMateria(m) === 'Alerta de costo').length,
+  );
+  readonly variacionPromedio = computed(() => {
+    const variaciones = this.materiasPrimas()
+      .map((m) => this.variacionMateria(m))
+      .filter((v): v is number => v !== null);
+    return variaciones.length ? variaciones.reduce((a, b) => a + b, 0) / variaciones.length : null;
+  });
+  limpiarFiltrosMateria(): void {
+    this.textoBusqueda.set('');
+    this.estadoIngrediente.set('Todos');
+    this.categoriaIngrediente.set('Todas');
+    this.ordenIngredientes.set('nombre');
+  }
+
+  /** Exporta los registros filtrados; protege texto frente a fórmulas de hojas de cálculo. */
+  exportarMateriales(): void {
+    const ingrediente = this.tipoMaterial() === 'ingredientes';
+    const filas: (string | number)[][] = ingrediente
+      ? [
+          [
+            'Ingrediente',
+            'Unidad',
+            'Precio por kg (USD)',
+            'Variación vs. base (%)',
+            'Estado',
+            'Productos',
+          ],
+          ...this.materiasPrimasFiltradas().map((m) => [
+            m.nombre,
+            m.unidad,
+            m.costoKg,
+            this.variacionMateria(m) ?? '',
+            this.estadoMateria(m),
+            this.listaProductosMateriaPrima(m.id).join('; '),
+          ]),
+        ]
+      : [
+          ['Envase', 'Producto', 'Presentación', 'Precio por unidad (USD)', 'Estado'],
+          ...this.envasesFiltrados().map((e) => [
+            e.empaque.tipo === 'Tap' ? 'Tapa' : e.empaque.tipo,
+            e.producto.nombre,
+            this.etiquetaPresentacion(e.presentacion),
+            e.precio ?? '',
+            e.empaque.estado,
+          ]),
+        ];
+    const csv = filas
+      .map((fila) =>
+        fila
+          .map((valor) => {
+            const texto = String(valor);
+            const seguro =
+              typeof valor === 'string' && /^[\s]*[=+@-]/.test(texto) ? `'${texto}` : texto;
+            return `"${seguro.replace(/"/g, '""')}"`;
+          })
+          .join(','),
+      )
+      .join('\r\n');
+    const url = URL.createObjectURL(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8;' }));
+    const enlace = document.createElement('a');
+    enlace.href = url;
+    enlace.download = `jucy-${ingrediente ? 'ingredientes' : 'envases'}.csv`;
+    enlace.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    this.exportacionMensaje.set(`${filas.length - 1} registros exportados`);
+  }
   private readonly seleccionTarjetas = signal<Record<string, number>>({});
 
   readonly totalSku = computed(() =>
@@ -301,13 +392,43 @@ export class MateriaPrima {
     this.textoBusqueda.set('');
   }
   readonly materiasPrimasFiltradas = computed(() =>
-    this.materiasPrimas().filter((m) => coincideBusqueda(this.textoBusqueda(), m.nombre, m.unidad)),
+    this.materiasPrimas()
+      .filter((m) => {
+        if (!coincideBusqueda(this.textoBusqueda(), m.nombre, m.unidad)) return false;
+        if (
+          this.estadoIngrediente() !== 'Todos' &&
+          this.estadoMateria(m) !== this.estadoIngrediente()
+        )
+          return false;
+        return (
+          this.categoriaIngrediente() === 'Todas' ||
+          this.productos().some(
+            (p) =>
+              p.categoria === this.categoriaIngrediente() &&
+              p.presentaciones.some(
+                (s) =>
+                  s.ingredientes.some((i) => i.materiaPrimaId === m.id) ||
+                  s.items.some((i) => i.materiaPrimaId === m.id),
+              ),
+          )
+        );
+      })
+      .sort((a, b) =>
+        this.ordenIngredientes() === 'precio-desc'
+          ? b.costoKg - a.costoKg
+          : this.ordenIngredientes() === 'precio-asc'
+            ? a.costoKg - b.costoKg
+            : a.nombre.localeCompare(b.nombre, 'es'),
+      ),
   );
   readonly productosPorMateriaPrima = computed(() => {
     const resultado = new Map<number, string[]>();
     for (const producto of this.productos()) {
       const materias = new Set(
-        producto.presentaciones.flatMap((s) => s.ingredientes.map((i) => i.materiaPrimaId)),
+        producto.presentaciones.flatMap((s) => [
+          ...s.ingredientes.map((i) => i.materiaPrimaId),
+          ...s.items.map((i) => i.materiaPrimaId),
+        ]),
       );
       for (const materiaId of materias) {
         resultado.set(materiaId, [...(resultado.get(materiaId) ?? []), producto.nombre]);
@@ -357,18 +478,28 @@ export class MateriaPrima {
   // GRÁFICO
   // ============================================================
   readonly barChartType = 'bar' as const;
+  readonly mayoresPrecios = computed(() =>
+    [...this.materiasPrimas()].sort((a, b) => b.costoKg - a.costoKg).slice(0, 6),
+  );
   readonly barChartData = computed<ChartData<'bar'>>(() => {
-    const materias = [...this.materiasPrimas()].sort((a, b) => b.costoKg - a.costoKg).slice(0, 15);
+    const materias = this.mayoresPrecios();
     return {
       labels: materias.map((materia) => materia.nombre),
       datasets: [
         {
           data: materias.map((materia) => materia.costoKg),
           label: 'Costo / kg',
-          backgroundColor: '#1d4ed8',
-          hoverBackgroundColor: '#1e40af',
+          backgroundColor: (context) => {
+            const area = context.chart.chartArea;
+            if (!area) return '#2563eb';
+            const gradient = context.chart.ctx.createLinearGradient(area.left, 0, area.right, 0);
+            gradient.addColorStop(0, '#bfdbfe');
+            gradient.addColorStop(1, '#2563eb');
+            return gradient;
+          },
+          hoverBackgroundColor: '#1d4ed8',
           borderRadius: 6,
-          barThickness: 18,
+          barThickness: 20,
         },
       ],
     };
@@ -376,12 +507,22 @@ export class MateriaPrima {
   readonly barChartOptions: ChartConfiguration<'bar'>['options'] = {
     responsive: true,
     maintainAspectRatio: false,
+    animation:
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+        ? false
+        : { duration: 450 },
     indexAxis: 'y',
     plugins: {
       legend: {
         display: false,
       },
       tooltip: {
+        backgroundColor: '#172554',
+        borderColor: '#60a5fa',
+        borderWidth: 1,
+        padding: 14,
+        cornerRadius: 9,
         callbacks: {
           label: (ctx) => ` $${Number(ctx.parsed.x).toFixed(4)} / kg`,
         },
@@ -389,12 +530,15 @@ export class MateriaPrima {
     },
     scales: {
       x: {
+        border: { display: false },
+        grid: { color: '#eef2f0' },
         beginAtZero: true,
         ticks: {
           callback: (valor) => `$${valor}`,
         },
       },
       y: {
+        border: { display: false },
         grid: {
           display: false,
         },

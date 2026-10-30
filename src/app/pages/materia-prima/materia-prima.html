@@ -1,4 +1,4 @@
-<div class="page" [attr.aria-busy]="cargando()">
+<div class="page jucy-workspace" [attr.aria-busy]="cargando()">
   @if (errorCarga(); as error) {
     <div class="status-banner" role="alert">
       <div>
@@ -21,11 +21,11 @@
       <header class="page-header">
         <div>
           <span class="eyebrow">CATÁLOGO DE PRODUCCIÓN</span>
-          <h1>{{ vista() === 'productos' ? 'Productos' : 'Materia prima' }}</h1>
+          <h1>{{ vista() === 'productos' ? 'Costos de materia prima' : 'Materia prima' }}</h1>
           <p>
             {{
               vista() === 'productos'
-                ? 'Encuentra un producto y consulta sus costos.'
+                ? 'Una visión clara de tus insumos. Mejores decisiones para tu producción.'
                 : 'Consulta ingredientes, envases y cartones en un solo lugar.'
             }}
           </p>
@@ -39,6 +39,24 @@
           <mat-icon>refresh</mat-icon>{{ cargando() ? 'Actualizando…' : 'Actualizar datos' }}
         </button>
       </header>
+      <nav class="view-switch" aria-label="Explorar costos">
+        <button
+          type="button"
+          [class.selected]="vista() === 'productos'"
+          [attr.aria-pressed]="vista() === 'productos'"
+          (click)="cambiarVista('productos')"
+        >
+          <mat-icon>grid_view</mat-icon>Costos por producto
+        </button>
+        <button
+          type="button"
+          [class.selected]="vista() === 'materias'"
+          [attr.aria-pressed]="vista() === 'materias'"
+          (click)="cambiarVista('materias')"
+        >
+          <mat-icon>inventory_2</mat-icon>Catálogo de insumos
+        </button>
+      </nav>
       @if (vista() === 'productos') {
         <section class="section" aria-label="Catálogo de productos">
           <div class="catalog-toolbar surface">
@@ -128,7 +146,7 @@
           <div class="products-grid">
             @for (producto of productosFiltrados(); track producto.id) {
               @let sku = presentacionTarjeta(producto);
-              <article class="product-card surface">
+              <article class="product-card surface" [style.--reveal-order]="$index % 8">
                 <div class="product-top">
                   <span class="category-tag">{{ producto.categoria }}</span
                   ><span class="brand-label">{{ producto.marca }}</span>
@@ -178,32 +196,26 @@
         </section>
       } @else {
         <section class="section" aria-label="Catálogo de materiales">
-          <div class="material-summary">
-            <div>
-              <span class="summary-icon"><mat-icon>eco</mat-icon></span>
-              <div>
-                <strong>{{ totalMateriasPrimas() }}</strong
-                ><span>Ingredientes</span>
-              </div>
-            </div>
-            <div>
-              <span class="summary-icon"><mat-icon>inventory_2</mat-icon></span>
-              <div>
-                <strong>{{ gruposEnvases().length }}</strong
-                ><span>Envases y cartones por presentación</span>
-              </div>
-            </div>
-            <div>
-              <span class="summary-icon summary-icon--amber"
-                ><mat-icon>pending_actions</mat-icon></span
-              >
-              <div>
-                <strong>{{ envasesPendientes() }}</strong
-                ><span>Envases y cartones sin precio</span>
-              </div>
-            </div>
-          </div>
           <div class="surface material-catalog">
+            <div class="catalog-heading">
+              <div>
+                <span class="eyebrow">TU CATÁLOGO</span>
+                <h2>Materiales de producción</h2>
+                <p>Consulta precios, identifica cambios y explora cada insumo.</p>
+              </div>
+              <button
+                class="export-button"
+                type="button"
+                (click)="exportarMateriales()"
+                [disabled]="
+                  tipoMaterial() === 'ingredientes'
+                    ? !materiasPrimasFiltradas().length
+                    : !envasesFiltrados().length
+                "
+              >
+                <mat-icon>file_download</mat-icon>Exportar CSV
+              </button>
+            </div>
             <nav class="material-tabs" aria-label="Tipo de material">
               <button
                 type="button"
@@ -237,6 +249,48 @@
                   [value]="textoBusqueda()"
                   (input)="buscarMateriaPrima(materialQuery.value)"
               /></label>
+              @if (tipoMaterial() === 'ingredientes') {
+                <div class="filter-row ingredient-filters">
+                  <label
+                    >Categoría de producto<select
+                      #categoriaInsumo
+                      [value]="categoriaIngrediente()"
+                      (change)="categoriaIngrediente.set(categoriaInsumo.value)"
+                    >
+                      <option value="Todas">Todas las categorías</option>
+                      @for (categoria of categoriasIngredientes(); track categoria) {
+                        <option [value]="categoria">{{ categoria }}</option>
+                      }
+                    </select></label
+                  >
+                  <label
+                    >Estado<select
+                      #estadoInsumo
+                      [value]="estadoIngrediente()"
+                      (change)="estadoIngrediente.set(estadoInsumo.value)"
+                    >
+                      <option value="Todos">Todos los estados</option>
+                      <option value="Activo">Activo</option>
+                      <option value="Alerta de costo">Alerta de costo</option>
+                      <option value="Inactivo">Inactivo</option>
+                    </select></label
+                  >
+                  <label
+                    >Ordenar por<select
+                      #orden
+                      [value]="ordenIngredientes()"
+                      (change)="ordenIngredientes.set(orden.value)"
+                    >
+                      <option value="nombre">Nombre: A–Z</option>
+                      <option value="precio-desc">Mayor precio</option>
+                      <option value="precio-asc">Menor precio</option>
+                    </select></label
+                  >
+                  <button class="text-button" type="button" (click)="limpiarFiltrosMateria()">
+                    Limpiar filtros
+                  </button>
+                </div>
+              }
               @if (tipoMaterial() === 'envases') {
                 <div class="filter-row">
                   <label
@@ -291,20 +345,60 @@
                       <th>Ingrediente</th>
                       <th>Unidad</th>
                       <th class="num">Precio de formulacion por kg</th>
+                      <th>Variación vs. base*</th>
+                      <th>Estado</th>
                       <th>Se utiliza en</th>
                     </tr>
                   </thead>
                   <tbody>
                     @for (m of materiasPrimasFiltradas(); track m.id) {
                       <tr>
-                        <td class="material-name">{{ m.nombre }}</td>
+                        <td>
+                          <div class="ingredient-identity">
+                            <span class="ingredient-avatar"><mat-icon>eco</mat-icon></span
+                            ><span class="material-name"
+                              >{{ m.nombre
+                              }}<small class="ingredient-id"
+                                >MP-{{ m.id.toString().padStart(3, '0') }}</small
+                              ></span
+                            >
+                          </div>
+                        </td>
                         <td>
                           <span class="unit-tag">{{ m.unidad }}</span>
                         </td>
-                        <td class="num price">${{ m.costoKg | number: '1.4-4' }}</td>
+                        <td class="num price">
+                          ${{ m.costoKg | number: '1.4-4'
+                          }}<span class="cost-track"
+                            ><span [style.width.%]="porcentajeCosto(m.costoKg)"></span
+                          ></span>
+                        </td>
+                        <td>
+                          @let cambio = variacionMateria(m);
+                          @if (cambio !== null) {
+                            <span class="trend" [class.trend--up]="cambio > 0"
+                              ><mat-icon>{{
+                                cambio > 0 ? 'north_east' : cambio < 0 ? 'south_east' : 'east'
+                              }}</mat-icon
+                              >{{ cambio | number: '1.1-1' }} %</span
+                            >
+                          } @else {
+                            <span class="no-baseline">Sin base</span>
+                          }
+                        </td>
+                        <td>
+                          <span
+                            class="ingredient-status"
+                            [class.ingredient-status--alert]="
+                              estadoMateria(m) === 'Alerta de costo'
+                            "
+                            [class.ingredient-status--inactive]="!m.activo"
+                            ><span></span>{{ estadoMateria(m) }}</span
+                          >
+                        </td>
                         <td>
                           @let usados = listaProductosMateriaPrima(m.id);
-                          ><span class="usage-text" [title]="usados.join(', ')">{{
+                          <span class="usage-text" [title]="usados.join(', ')">{{
                             usados.length ? usados[0] : 'Sin productos asociados'
                           }}</span>
                           @if (usados.length > 1) {
@@ -314,7 +408,7 @@
                       </tr>
                     } @empty {
                       <tr>
-                        <td colspan="4" class="empty-cell">
+                        <td colspan="6" class="empty-cell">
                           No encontramos ingredientes con esa búsqueda.
                         </td>
                       </tr>
@@ -512,30 +606,78 @@
               }
             </footer>
           </div>
+          <p class="export-feedback" role="status">{{ exportacionMensaje() }}</p>
           @if (tipoMaterial() === 'ingredientes') {
+            <section class="analytics-grid" aria-label="Análisis del catálogo">
+              <div class="surface chart-card">
+                <div class="chart-heading">
+                  <span class="eyebrow">ANÁLISIS DE PRECIOS</span>
+                  <h2>¿Qué insumos cuestan más?</h2>
+                  <p>Los 6 mayores precios de formulación por kg · USD</p>
+                </div>
+                @if (totalMateriasPrimas()) {
+                  <div class="overview-chart">
+                    <canvas
+                      baseChart
+                      [type]="barChartType"
+                      [data]="barChartData()"
+                      [options]="barChartOptions"
+                      role="img"
+                      aria-label="Comparación de los seis ingredientes de mayor precio por kilogramo"
+                    ></canvas>
+                  </div>
+                  <details class="chart-accessible">
+                    <summary>Ver valores de la gráfica</summary>
+                    <ul>
+                      @for (materia of mayoresPrecios(); track materia.id) {
+                        <li>
+                          {{ materia.nombre }}: ${{ materia.costoKg | number: '1.4-4' }}
+                          / kg
+                        </li>
+                      }
+                    </ul>
+                  </details>
+                } @else {
+                  <p class="empty-cell">Añade ingredientes para visualizar sus precios.</p>
+                }
+              </div>
+              <aside class="surface insight-card">
+                <span class="insight-icon"><mat-icon>lightbulb</mat-icon></span
+                ><span class="eyebrow">EL DETALLE IMPORTA</span>
+                <h2>Del precio a la decisión.</h2>
+                <p>
+                  Un precio alto por kilogramo no siempre implica un mayor costo de producción. La
+                  cantidad en cada fórmula marca la diferencia.
+                </p>
+                <div class="insight-stat">
+                  <strong>{{ totalSku() }}</strong
+                  ><span>presentaciones para analizar</span>
+                </div>
+                <button type="button" class="text-button" (click)="cambiarVista('productos')">
+                  Explorar costos por producto<mat-icon>arrow_forward</mat-icon>
+                </button>
+              </aside>
+            </section>
             <details
               class="analysis-panel surface"
               #analisis
               (toggle)="mostrarAnalisis.set(analisis.open)"
             >
               <summary>
-                <span><mat-icon>insights</mat-icon>Gráficos e histórico de ingredientes</span
-                ><mat-icon class="expand-icon">expand_more</mat-icon>
+                <span class="analysis-intro">
+                  <span class="analysis-symbol"><mat-icon>insights</mat-icon></span>
+                  <span class="analysis-copy"
+                    ><strong>Gráficos e histórico de ingredientes</strong
+                    ><small>Explora la evolución de precios y compara períodos.</small></span
+                  >
+                </span>
+                <span class="analysis-toggle"
+                  ><span>{{ mostrarAnalisis() ? 'Cerrar análisis' : 'Explorar histórico' }}</span
+                  ><mat-icon class="expand-icon">expand_more</mat-icon></span
+                >
               </summary>
               @if (mostrarAnalisis()) {
                 <div class="analysis-content">
-                  <div class="chart-heading">
-                    <h2>Ingredientes de mayor costo</h2>
-                    <p>Los 15 precios más altos por kilogramo.</p>
-                  </div>
-                  <div class="chart-container">
-                    <canvas
-                      baseChart
-                      [type]="barChartType"
-                      [data]="barChartData()"
-                      [options]="barChartOptions"
-                    ></canvas>
-                  </div>
                   <app-historico-costos modo="materia"></app-historico-costos>
                 </div>
               }
