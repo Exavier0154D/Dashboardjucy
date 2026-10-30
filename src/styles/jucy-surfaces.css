@@ -74,6 +74,100 @@
   background: #e4f2dc;
   border-color: #bfdcae;
 }
+.jucy-workspace.page .presentation-picker {
+  gap: 8px;
+}
+.jucy-workspace.page .presentation-label {
+  color: #617168;
+  font-size: 11px;
+  font-weight: 600;
+}
+.jucy-workspace.page .presentation-select {
+  display: flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 0 13px;
+  border: 1px solid #d9e6d8;
+  border-radius: 10px;
+  background: linear-gradient(120deg, #fff, #f8fcf4);
+  box-shadow: 0 2px 6px #315a3009;
+  color: #244c38;
+  font: inherit;
+  font-size: 13px;
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    background-color 200ms ease;
+}
+.jucy-workspace.page .presentation-select:hover:not(.mat-mdc-select-disabled) {
+  border-color: #88b994;
+  box-shadow: 0 3px 10px #36844b14;
+}
+.jucy-workspace.page .presentation-select.mat-focused {
+  border-color: #45956b;
+  outline: 2px solid #d6efda;
+  outline-offset: 2px;
+}
+.jucy-workspace.page .presentation-select.mat-mdc-select-disabled {
+  background: #f6f7f5;
+  opacity: 0.65;
+}
+.jucy-workspace.page .presentation-value {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  font-weight: 600;
+}
+.jucy-workspace.page .presentation-value mat-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: #e5f4df;
+  color: #548c45;
+  font-size: 16px;
+}
+.jucy-workspace.page .presentation-value > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.jucy-workspace.page .presentation-select .mat-mdc-select-arrow {
+  color: #56806a;
+}
+.jucy-presentation-panel.mat-mdc-select-panel {
+  margin-top: 5px;
+  padding: 6px;
+  border: 1px solid #dce9dc;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow:
+    0 12px 30px #163d2724,
+    0 3px 8px #163d2710;
+}
+.jucy-presentation-panel .mat-mdc-option {
+  min-height: 43px;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: #365343;
+  font-family: 'Inter', 'Roboto', sans-serif;
+  font-size: 13px;
+}
+.jucy-presentation-panel .mat-mdc-option:hover:not(.mdc-list-item--disabled),
+.jucy-presentation-panel .mat-mdc-option.mat-mdc-option-active {
+  background: #f1f8ec;
+}
+.jucy-presentation-panel .mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled) {
+  background: #e7f5df;
+  color: #176940;
+  font-weight: 600;
+}
+.jucy-presentation-panel .mat-pseudo-checkbox {
+  --mat-minimal-pseudo-checkbox-selected-checkmark-color: #218354;
+}
 .jucy-workspace.page .primary-button,
 .jucy-workspace.page .export-button,
 .jucy-workspace.page .cost-controls button {

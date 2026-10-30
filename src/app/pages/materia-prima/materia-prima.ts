@@ -3,6 +3,7 @@ import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData } from 'chart.js';
 import {
@@ -29,6 +30,7 @@ type Vista = 'productos' | 'materias';
     RouterLink,
     MatIconModule,
     MatButtonModule,
+    MatSelectModule,
     BaseChartDirective,
     Estandar,
     HistoricoCostos,
@@ -147,7 +149,7 @@ export class MateriaPrima {
     this.selectionService.seleccionarProducto(fila.producto, fila.presentacion);
     void this.router.navigate(['/materia-prima']);
   }
-  elegirPresentacionPorId(producto: Producto, id: string): void {
+  elegirPresentacionPorId(producto: Producto, id: string | number): void {
     const presentacion = producto.presentaciones.find((p) => p.id === Number(id));
     if (presentacion) this.elegirPresentacionTarjeta(producto, presentacion);
   }

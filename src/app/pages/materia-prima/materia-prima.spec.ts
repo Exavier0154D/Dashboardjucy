@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { MateriaPrima } from './materia-prima';
 import { DataService } from '../../core/data.service';
 import { SelectionService } from '../../core/selection.service';
@@ -275,6 +277,31 @@ describe('Materia prima con ingredientes y envases', () => {
         ) as HTMLSelectElement
       ).value,
     ).toBe('2025');
+  });
+
+  it('permite seleccionar una presentación y abrir sus costos', async () => {
+    const segundoSku: Presentacion = {
+      ...sku,
+      id: 2,
+      litros: 1,
+      tecnologia: 'UHT',
+      nombreSku: 'Agua de coco 1000 ml',
+    };
+    datos.productos.set([{ ...producto, presentaciones: [sku, segundoSku] }]);
+    fixture.componentInstance.cambiarVista('productos');
+    fixture.detectChanges();
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const selector = await loader.getHarness(
+      MatSelectHarness.with({ selector: '.presentation-select' }),
+    );
+    await selector.open();
+    await selector.clickOptions({ text: '1.000 ml · UHT' });
+    expect(await selector.getValueText()).toContain('1.000 ml · UHT');
+    const abrir = fixture.nativeElement.querySelector(
+      '.product-card .primary-button',
+    ) as HTMLButtonElement;
+    abrir.click();
+    expect(TestBed.inject(SelectionService).presentacionSeleccionada()?.id).toBe(2);
   });
 
   it('muestra el nombre inferior como título único de cada tarjeta', async () => {

@@ -154,21 +154,28 @@
                   ><span class="brand-label">{{ producto.marca }}</span>
                 </div>
                 <h2>{{ tituloTarjeta(producto) }}</h2>
-                <label class="presentation-picker"
-                  >Presentación<select
-                    #presentacion
-                    [value]="sku?.id ?? ''"
-                    (change)="elegirPresentacionPorId(producto, presentacion.value)"
+                <div class="presentation-picker">
+                  <span class="presentation-label">Presentación</span>
+                  <mat-select
+                    class="presentation-select"
+                    panelClass="jucy-presentation-panel"
+                    [attr.aria-label]="'Presentación de ' + tituloTarjeta(producto)"
+                    [value]="sku?.id"
                     [disabled]="!sku"
+                    placeholder="Sin presentaciones"
+                    (selectionChange)="elegirPresentacionPorId(producto, $event.value)"
                   >
+                    <mat-select-trigger>
+                      <span class="presentation-value">
+                        <mat-icon aria-hidden="true">local_drink</mat-icon>
+                        <span>{{ sku ? etiquetaPresentacion(sku) : 'Sin presentaciones' }}</span>
+                      </span>
+                    </mat-select-trigger>
                     @for (p of presentacionesVisibles(producto); track p.id) {
-                      <option [value]="p.id">{{ etiquetaPresentacion(p) }}</option>
+                      <mat-option [value]="p.id">{{ etiquetaPresentacion(p) }}</mat-option>
                     }
-                    @if (!sku) {
-                      <option value="">Sin presentaciones</option>
-                    }
-                  </select></label
-                >
+                  </mat-select>
+                </div>
                 <div class="product-meta">
                   <span>{{ producto.presentaciones.length }} presentaciones</span>
                   @if (sku?.estadoFormulacion === 'por_completar') {
