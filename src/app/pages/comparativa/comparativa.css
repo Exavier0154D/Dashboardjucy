@@ -131,9 +131,11 @@ select {
   font-size: 13px;
 }
 .month-entry {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px;
   align-items: end;
   gap: 8px;
+  min-width: 0;
 }
 .product-search {
   position: relative;
@@ -153,9 +155,40 @@ select {
 .month-entry label {
   flex: 1;
 }
+.month-entry mat-select {
+  min-width: 0;
+  flex: none;
+}
 .month-entry button {
   min-height: 46px;
+  height: 46px;
+  flex: 0 0 auto;
 }
+.fields mat-select {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 46px;
+  flex: none;
+  padding: 0 13px;
+  border: 1px solid #dce5de;
+  border-radius: 10px;
+  background: #fff;
+  color: #214438;
+  font-size: 13px;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+.fields mat-select:hover:not([aria-disabled='true']) { border-color: #9bc6aa; }
+.fields mat-select:focus-visible,
+.fields mat-select[aria-expanded='true'],
+.fields .product-search input:focus-visible {
+  outline: none;
+  border-color: #23825c;
+  box-shadow: 0 0 0 3px #23825c1c;
+}
+.fields mat-select[aria-disabled='true'] { background: #f3f6f3; opacity: .6; }
+.month-entry button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 10px; white-space: nowrap; }
+.fields .product-search input { border-radius: 10px; }
 .months {
   display: flex;
   flex-wrap: wrap;
@@ -455,6 +488,19 @@ h1 {
   border: 1px solid #e5eae7;
   border-radius: 10px;
   background: #fafcf9;
+}
+.fields.fields--embedded {
+  grid-template-columns: 120px minmax(0, 540px);
+  justify-content: start;
+  gap: 16px;
+}
+@media (max-width: 760px) {
+  .fields.fields--embedded { grid-template-columns: minmax(0, 1fr); }
+  .fields--embedded > label { max-width: 120px; }
+}
+@media (max-width: 480px) {
+  .month-entry { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .month-entry button { width: 150px; justify-self: end; }
 }
 .fields label {
   color: #64786b;

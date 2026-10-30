@@ -118,13 +118,13 @@
     <mat-card class="cost-card" appearance="outlined">
       <div class="card-header">
         <span class="eyebrow">DESGLOSE DE FABRICACIÓN</span>
-        <h3>Costos por presentación</h3>
+        <h3>Comparación de costos</h3>
         <p>
-          Materia prima + empaque + cartón + mano de obra + gastos indirectos de fabricación del mes
-          elegido.
+          Estándar base frente a los meses de fabricación seleccionados.
         </p>
       </div>
       <mat-card-content>
+        <div class="legacy-cost-breakdown">
         <div class="cost-controls">
           <label
             >Mes de costos de fabricación
@@ -318,6 +318,15 @@
             La materia prima usa el historial de la semana elegida; empaque y cartón usan sus
             valores actuales.
           </p>
+        }
+        </div>
+        @if (productoSeleccionado() && presentacionActual()) {
+          <div class="embedded-comparison">
+            <app-comparativa
+              [productoInicial]="productoSeleccionado()"
+              [presentacionInicial]="presentacionActual()"
+            ></app-comparativa>
+          </div>
         }
       </mat-card-content>
     </mat-card>

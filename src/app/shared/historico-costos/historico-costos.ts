@@ -16,6 +16,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { coincideBusqueda } from '../../core/busqueda-texto';
 
 import { BaseChartDirective } from 'ng2-charts';
@@ -43,7 +45,9 @@ import {
     MatInputModule,
     MatIconModule,
     MatButtonModule,
+    MatDatepickerModule,
   ],
+  providers: [provideNativeDateAdapter(), { provide: MAT_DATE_LOCALE, useValue: 'es-EC' }],
   templateUrl: './historico-costos.html',
   styleUrl: './historico-costos.css',
 })
@@ -87,6 +91,16 @@ export class HistoricoCostos implements OnInit, OnDestroy {
     typeof valor === 'string' ? valor : (valor?.nombre ?? '');
   readonly desde = signal('');
   readonly hasta = signal('');
+  fechaCalendario(fecha: string): Date | null {
+    if (!fecha) return null;
+    const [anio, mes, dia] = fecha.split('-').map(Number);
+    return new Date(anio, mes - 1, dia);
+  }
+  seleccionarFecha(campo: 'desde' | 'hasta', fecha: Date | null): void {
+    this[campo].set(fecha && !Number.isNaN(fecha.getTime())
+      ? `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`
+      : '');
+  }
   readonly cargando = signal(true);
   readonly cargandoProducto = signal(false);
   readonly error = signal<string | null>(null);

@@ -27,9 +27,10 @@
           <h2 id="config-title">Configura la comparación</h2>
           <p>La misma presentación para todos los períodos.</p>
         </div>
-        <span class="counter">{{ mesesSeleccionados().length }} / 4 meses</span>
+        <span class="counter">{{ mesesComparacionVisibles().length }} / 4 meses</span>
       </div>
-      <div class="fields">
+      <div class="fields" [class.fields--embedded]="presentacionInicial()">
+        @if (!presentacionInicial()) {
         <label class="product-field"
           >Producto y presentación
           <span class="product-search">
@@ -46,6 +47,7 @@
             />
           </span>
           <mat-autocomplete
+            class="jucy-history-options jucy-product-options"
             #resultadosProducto="matAutocomplete"
             [displayWith]="mostrarProducto"
             (optionSelected)="seleccionarSku($event.option.value)"
@@ -53,55 +55,61 @@
           >
             @for (o of opcionesFiltradas(); track o.presentacion.id) {
               <mat-option [value]="o.presentacion.id">
-                {{ o.producto.nombre }} ·
-                {{ o.presentacion.nombreSku || o.presentacion.claveSku }} ·
-                {{ o.presentacion.claveSku }} ·
-                {{ o.presentacion.litros * 1000 | number: '1.0-3' }} ml ·
-                {{ o.presentacion.tecnologia }}
+                <span class="compare-product-option">
+                  <strong>{{ o.producto.nombre }}</strong>
+                  <span>{{ o.presentacion.nombreSku || o.presentacion.claveSku }} · {{ o.presentacion.litros * 1000 | number: '1.0-3' }} ml · {{ o.presentacion.tecnologia }} · {{ o.presentacion.claveSku }}</span>
+                </span>
               </mat-option>
             } @empty {
               <mat-option disabled>No se encontraron productos</mat-option>
             }
           </mat-autocomplete>
         </label>
+        }
         <label
           >Año
-          <select
+          <mat-select
+            aria-label="Año de comparación"
+            panelClass="jucy-filter-panel"
             [value]="anioSeleccionado()"
-            (change)="cambiarAnio($any($event.target).value)"
+            (selectionChange)="cambiarAnio($event.value)"
             [disabled]="!aniosDisponibles().length"
           >
             @for (anio of aniosDisponibles(); track anio) {
-              <option [value]="anio">{{ anio }}</option>
+              <mat-option [value]="anio">{{ anio }}</mat-option>
             }
-          </select>
+          </mat-select>
         </label>
         <div class="month-entry">
           <label
             >Mes para comparar
-            <select
+            <mat-select
+              id="mes-comparativa-select"
+              aria-label="Mes para comparar"
+              panelClass="jucy-filter-panel"
+              placeholder="Selecciona un mes"
               [value]="mesPendiente()"
-              (change)="mesPendiente.set($any($event.target).value)"
+              (selectionChange)="mesPendiente.set($event.value)"
               [disabled]="
                 cargando() ||
                 !mesesDisponibles().length ||
                 mesesSeleccionados().length >= limiteMeses
               "
             >
-              <option value="">Selecciona un mes</option>
+              <mat-option value="">Selecciona un mes</mat-option>
               @for (mes of mesesDisponibles(); track mes) {
-                <option [value]="mes" [disabled]="mesesSeleccionados().includes(mes)">
+                <mat-option [value]="mes" [disabled]="mesesSeleccionados().includes(mes)">
                   {{ nombreMes(mes) }}
-                </option>
+                </mat-option>
               }
-            </select>
+            </mat-select>
           </label>
           <button
             type="button"
             (click)="agregarMes()"
             [disabled]="cargando() || !mesPendiente() || mesesSeleccionados().length >= limiteMeses"
           >
-            Agregar mes
+            <mat-icon aria-hidden="true">add</mat-icon>Agregar mes
           </button>
         </div>
       </div>
@@ -136,7 +144,7 @@
           </div>
           <span class="currency">USD · por presentación</span>
         </div>
-        @if (mesesSeleccionados().length) {
+        @if (costos()) {
           <div
             class="table-scroll"
             tabindex="0"
@@ -220,8 +228,8 @@
             <mat-icon>compare_arrows</mat-icon>
             <h3>Agrega el primer mes</h3>
             <p>
-              Tu referencia es la base fija del producto. Elige hasta 4 meses registrados para ver
-              sus diferencias.
+              No hay meses registrados para este producto. El estándar se mostrará cuando exista
+              un período mensual disponible.
             </p>
           </div>
         }

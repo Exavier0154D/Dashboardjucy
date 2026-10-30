@@ -130,21 +130,29 @@ select {
   flex: 2;
   min-width: 240px;
 }
-.material-search {
+.material-search,
+.history-date {
   width: 100%;
-  --mat-form-field-container-height: 44px;
-  --mat-form-field-container-vertical-padding: 10px;
-  --mat-form-field-container-text-size: 12px;
+  --mat-form-field-container-height: 50px;
+  --mat-form-field-container-vertical-padding: 13px;
+  --mat-form-field-container-text-size: 13px;
   --mat-form-field-outlined-outline-color: #dce5de;
-  --mat-form-field-outlined-container-shape: 7px;
-  --mat-form-field-outlined-focus-outline-color: #3b82f6;
+  --mat-form-field-outlined-container-shape: 12px;
+  --mat-form-field-outlined-focus-outline-color: #23825c;
+  --mat-form-field-outlined-hover-outline-color: #8ebda4;
+  --mat-form-field-outlined-input-text-color: #214438;
+  --mat-form-field-outlined-focus-label-text-color: #19734d;
+  --mat-form-field-outlined-container-color: #fff;
 }
-.material-search input[matInput] {
+.history-date { flex: 1; min-width: 180px; }
+.material-search input[matInput],
+.history-date input[matInput] {
   padding: 0;
   border: 0;
   border-radius: 0;
   min-height: 0;
 }
+.history-date input { cursor: pointer; }
 .material-search button {
   background: transparent;
   border: 0;

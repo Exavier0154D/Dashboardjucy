@@ -208,16 +208,16 @@ describe('Materia prima con ingredientes y envases', () => {
     expect(producto.presentaciones[0].totalCosto).toBe(0.8);
   });
 
-  it('filtra cartones pendientes y restablece la página al cambiar de filtro', () => {
+  it('filtra cartones pendientes y restablece la página al cambiar de filtro', async () => {
     mostrarEnvases();
     fixture.componentInstance.paginaEnvases.set(5);
-    const selects = fixture.nativeElement.querySelectorAll(
-      '.filter-row select',
-    ) as NodeListOf<HTMLSelectElement>;
-    selects[0].value = 'Cartón';
-    selects[0].dispatchEvent(new Event('change'));
-    selects[1].value = 'sin_dato';
-    selects[1].dispatchEvent(new Event('change'));
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const tipo = await loader.getHarness(MatSelectHarness.with({ selector: '#tipo-envase-select' }));
+    await tipo.open();
+    await tipo.clickOptions({ text: 'Cartón' });
+    const precio = await loader.getHarness(MatSelectHarness.with({ selector: '#precio-envase-select' }));
+    await precio.open();
+    await precio.clickOptions({ text: 'Sin dato' });
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
     expect(fixture.nativeElement.querySelector('tbody')?.textContent).toContain('Cartón');
@@ -250,14 +250,17 @@ describe('Materia prima con ingredientes y envases', () => {
     fixture.componentInstance.cambiarVista('productos');
     fixture.detectChanges();
     await fixture.whenStable();
-    const selects = fixture.nativeElement.querySelectorAll(
-      '[aria-label="Período de costos"] select',
-    ) as NodeListOf<HTMLSelectElement>;
-    selects[0].value = '2025';
-    selects[0].dispatchEvent(new Event('change'));
-    await fixture.whenStable();
-    selects[1].value = '12';
-    selects[1].dispatchEvent(new Event('change'));
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const anio = await loader.getHarness(
+      MatSelectHarness.with({ selector: '#anio-costos-select' }),
+    );
+    const mes = await loader.getHarness(
+      MatSelectHarness.with({ selector: '#mes-costos-select' }),
+    );
+    await anio.open();
+    await anio.clickOptions({ text: '2025' });
+    await mes.open();
+    await mes.clickOptions({ text: 'diciembre' });
     await fixture.whenStable();
     expect(fixture.componentInstance.mesConsulta()).toBe('2025-12');
     expect(fixture.componentInstance.productosFiltrados()).toEqual([producto]);
@@ -270,13 +273,10 @@ describe('Materia prima con ingredientes y envases', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(fixture.componentInstance.mesConsulta()).toBe('2025-12');
-    expect(
-      (
-        fixture.nativeElement.querySelector(
-          '[aria-label="Período de costos"] select',
-        ) as HTMLSelectElement
-      ).value,
-    ).toBe('2025');
+    const anioAlVolver = await loader.getHarness(
+      MatSelectHarness.with({ selector: '#anio-costos-select' }),
+    );
+    expect(await anioAlVolver.getValueText()).toBe('2025');
   });
 
   it('permite seleccionar una presentación y abrir sus costos', async () => {

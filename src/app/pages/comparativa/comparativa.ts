@@ -1,7 +1,10 @@
 ﻿import { Component, computed, effect, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
+import { input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatSelectModule } from '@angular/material/select';
+import { Presentacion, Producto } from '../../models/producto.model';
 import { coincideBusqueda } from '../../core/busqueda-texto';
 import { DataService } from '../../core/data.service';
 import { SelectionService } from '../../core/selection.service';
@@ -19,11 +22,13 @@ interface Periodo {
 @Component({
   selector: 'app-comparativa',
   standalone: true,
-  imports: [DecimalPipe, MatIconModule, MatAutocompleteModule],
+  imports: [DecimalPipe, MatIconModule, MatAutocompleteModule, MatSelectModule],
   templateUrl: './comparativa.html',
   styleUrl: './comparativa.css',
 })
 export class Comparativa {
+  readonly productoInicial = input<Producto | null>(null);
+  readonly presentacionInicial = input<Presentacion | null>(null);
   private readonly data = inject(DataService);
   private readonly selection = inject(SelectionService);
   private readonly servicioCostos = inject(CostosProduccionService);
@@ -63,7 +68,7 @@ export class Comparativa {
       ),
   );
   readonly opcion = computed(() => {
-    const id = this.skuId() ?? this.selection.presentacionSeleccionada()?.id;
+    const id = this.presentacionInicial()?.id ?? this.skuId() ?? this.selection.presentacionSeleccionada()?.id;
     return this.opciones().find((o) => o.presentacion.id === id) ?? this.opciones()[0] ?? null;
   });
   readonly opcionesFiltradas = computed(() =>
@@ -108,8 +113,16 @@ export class Comparativa {
     this.mesesRegistrados().filter((mes) => mes.startsWith(`${this.anioSeleccionado()}-`)),
   );
   readonly estandar = computed(() => this.calcularPeriodo(''));
+  /** Siempre mostramos una referencia mensual junto al estándar para que la selección individual sea útil desde el primer vistazo. */
+  readonly mesesComparacionVisibles = computed(() =>
+    this.mesesSeleccionados().length
+      ? this.mesesSeleccionados()
+      : this.mesValido(this.mesPendiente()) && this.mesesDisponibles().includes(this.mesPendiente())
+        ? [this.mesPendiente()]
+        : [],
+  );
   readonly comparaciones = computed(() =>
-    this.mesesSeleccionados().map((mes) => this.calcularPeriodo(mes)),
+    this.mesesComparacionVisibles().map((mes) => this.calcularPeriodo(mes)),
   );
   readonly periodos = computed(() => [this.estandar(), ...this.comparaciones()]);
 

@@ -5,6 +5,8 @@ import { SelectionService } from '../../core/selection.service';
 import { CostosPresentacion, CostosProduccionService } from '../../core/costos-produccion.service';
 import { Producto, Presentacion } from '../../models/producto.model';
 import { Comparativa } from './comparativa';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { MatSelectHarness } from '@angular/material/select/testing';
 
 const sku: Presentacion = {
   id: 1,
@@ -163,7 +165,11 @@ describe('Comparativa con el estándar', () => {
     expect(component.mesesDisponibles()).toEqual(
       Array.from({ length: 8 }, (_, i) => `2026-${String(i + 1).padStart(2, '0')}`),
     );
-    expect(fixture.nativeElement.querySelectorAll('.month-entry select option').length).toBe(9);
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const mes = await loader.getHarness(MatSelectHarness.with({ selector: '#mes-comparativa-select' }));
+    await mes.open();
+    expect((await mes.getOptions()).length).toBe(9);
+    await mes.close();
     agregar('2026-09');
     expect(component.mesesSeleccionados()).toEqual([]);
   });

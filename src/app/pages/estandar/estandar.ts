@@ -21,6 +21,7 @@ import { DataService } from '../../core/data.service';
 import { Ingrediente, Presentacion } from '../../models/producto.model';
 
 import { HistoricoCostos } from '../../shared/historico-costos/historico-costos';
+import { Comparativa } from '../comparativa/comparativa';
 
 @Component({
   selector: 'app-estandar',
@@ -35,6 +36,7 @@ import { HistoricoCostos } from '../../shared/historico-costos/historico-costos'
     MatTableModule,
     BaseChartDirective,
     HistoricoCostos,
+    Comparativa,
   ],
   templateUrl: './estandar.html',
   styleUrl: './estandar.css',

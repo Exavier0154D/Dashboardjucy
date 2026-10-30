@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit, PLATFORM_ID, computed, inject, signal } f
 import { DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
 import { DataService } from '../../core/data.service';
 import { TIPOS_EMPAQUE } from '../../models/empaque.model';
 import {
@@ -63,7 +64,7 @@ const vacio: CatalogoAdmin = {
 
 @Component({
   selector: 'app-administracion',
-  imports: [DatePipe, DecimalPipe, ReactiveFormsModule, MatIconModule],
+  imports: [DatePipe, DecimalPipe, ReactiveFormsModule, MatIconModule, MatSelectModule],
   templateUrl: './administracion.html',
   styleUrl: './administracion.css',
 })

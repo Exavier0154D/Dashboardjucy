@@ -267,9 +267,29 @@ select.ng-touched.ng-invalid {
 }
 
 .toolbar__select {
-  width: auto;
-  min-width: 200px;
-  max-width: 280px;
+  flex: 1 1 440px;
+  width: 100%;
+  min-width: 0;
+  max-width: 560px;
+}
+mat-select.toolbar__select {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  background: #fff;
+  color: #214438;
+  font-size: 13px;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+mat-select.toolbar__select:hover { border-color: #9bc6aa; }
+mat-select.toolbar__select:focus-visible,
+mat-select.toolbar__select[aria-expanded='true'] {
+  outline: none;
+  border-color: #23825c;
+  box-shadow: 0 0 0 3px #23825c1c;
 }
 
 .field {

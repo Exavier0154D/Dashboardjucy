@@ -23,11 +23,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/estandar/estandar').then((m) => m.Estandar),
   },
 
-  {
-    path: 'comparativa',
-    loadComponent: () => import('./pages/comparativa/comparativa').then((m) => m.Comparativa),
-  },
-
   // NUEVA RUTA: EMPAQUES
   {
     path: 'empaques',

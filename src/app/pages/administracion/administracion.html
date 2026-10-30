@@ -147,17 +147,19 @@
             (input)="busqueda.set($any($event.target).value)"
         /></label>
         @if (pestana() === 'presentaciones' || pestana() === 'empaques') {
-          <select
+          <mat-select
             class="toolbar__select"
+            panelClass="jucy-filter-panel"
+            placeholder="Todos los productos"
             aria-label="Filtrar por producto"
             [value]="filtroProducto()"
-            (change)="filtroProducto.set($any($event.target).value)"
+            (selectionChange)="filtroProducto.set($event.value)"
           >
-            <option value="">Todos los productos</option>
+            <mat-option value="">Todos los productos</mat-option>
             @for (p of productos(); track p.id) {
-              <option [value]="p.id">{{ p.marca }} · {{ p.nombre }} · {{ p.variante }}</option>
+              <mat-option [value]="p.id">{{ p.marca }} · {{ p.nombre }} · {{ p.variante }}</mat-option>
             }
-          </select>
+          </mat-select>
         }
         @if (editor()) {
           @switch (pestana()) {

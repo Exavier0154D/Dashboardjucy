@@ -71,41 +71,32 @@
             /></label>
             <div class="filter-row">
               <label
-                >Categoría<select
-                  #categoria
-                  [value]="categoriaSeleccionada()"
-                  (change)="filtrarPorCategoria(categoria.value)"
+                ><span id="categoria-filtro-label">Categoría</span><mat-select panelClass="jucy-filter-panel" aria-labelledby="categoria-filtro-label" [value]="categoriaSeleccionada()" (selectionChange)="filtrarPorCategoria($event.value)"
                 >
                   @for (cat of categoriasConConteo(); track cat.nombre) {
-                    <option [value]="cat.nombre">
-                      {{ cat.nombre === 'Todas' ? 'Todas las categorías' : cat.nombre }}
-                    </option>
+                    <mat-option [value]="cat.nombre">
+                      <span class="filter-option-content"><span class="filter-category-dot" [attr.data-category]="cat.nombre" aria-hidden="true"></span><span>{{ cat.nombre === 'Todas' ? 'Todas las categorías' : cat.nombre }}</span></span>
+                    </mat-option>
                   }
-                </select></label
+                </mat-select></label
               >
               <label
-                >Marca<select
-                  #marca
-                  [value]="marcaSeleccionada()"
-                  (change)="marcaSeleccionada.set(marca.value)"
+                ><span id="marca-filtro-label">Marca</span><mat-select panelClass="jucy-filter-panel" aria-labelledby="marca-filtro-label" [value]="marcaSeleccionada()" (selectionChange)="marcaSeleccionada.set($event.value)"
                 >
-                  <option value="Todas">Todas las marcas</option>
+                  <mat-option value="Todas">Todas las marcas</mat-option>
                   @for (nombre of marcas(); track nombre) {
-                    <option [value]="nombre">{{ nombre }}</option>
+                    <mat-option [value]="nombre">{{ nombre }}</mat-option>
                   }
-                </select></label
+                </mat-select></label
               >
               <label
-                >Tecnología<select
-                  #tecnologia
-                  [value]="tecnologiaSeleccionada()"
-                  (change)="tecnologiaSeleccionada.set(tecnologia.value)"
+                ><span id="tecnologia-filtro-label">Tecnología</span><mat-select panelClass="jucy-filter-panel" aria-labelledby="tecnologia-filtro-label" [value]="tecnologiaSeleccionada()" (selectionChange)="tecnologiaSeleccionada.set($event.value)"
                 >
-                  <option value="Todas">Todas las tecnologías</option>
+                  <mat-option value="Todas">Todas las tecnologías</mat-option>
                   @for (nombre of tecnologias(); track nombre) {
-                    <option [value]="nombre">{{ nombre }}</option>
+                    <mat-option [value]="nombre">{{ nombre }}</mat-option>
                   }
-                </select></label
+                </mat-select></label
               >
               <button type="button" class="text-button" (click)="limpiarFiltrosProducto()">
                 Limpiar filtros
@@ -113,28 +104,32 @@
             </div>
             <div class="filter-row" aria-label="Período de costos">
               <label
-                >Año de costos
-                <select
-                  #anioCostos
+                ><span id="anio-costos-label">Año de costos</span>
+                <mat-select
+                  id="anio-costos-select"
+                  panelClass="jucy-filter-panel"
+                  aria-labelledby="anio-costos-label"
                   [value]="anioConsulta()"
-                  (change)="cambiarAnioConsulta(anioCostos.value)"
+                  (selectionChange)="cambiarAnioConsulta($event.value)"
                 >
                   @for (anio of aniosConsulta(); track anio) {
-                    <option [value]="anio">{{ anio }}</option>
+                    <mat-option [value]="anio">{{ anio }}</mat-option>
                   }
-                </select>
+                </mat-select>
               </label>
               <label
-                >Mes de costos
-                <select
-                  #mesCostos
+                ><span id="mes-costos-label">Mes de costos</span>
+                <mat-select
+                  id="mes-costos-select"
+                  panelClass="jucy-filter-panel"
+                  aria-labelledby="mes-costos-label"
                   [value]="numeroMesConsulta()"
-                  (change)="cambiarMesConsulta(mesCostos.value)"
+                  (selectionChange)="cambiarMesConsulta($event.value)"
                 >
                   @for (mes of mesesConsulta; track mes.numero) {
-                    <option [value]="mes.numero">{{ mes.nombre }}</option>
+                    <mat-option [value]="mes.numero">{{ mes.nombre }}</mat-option>
                   }
-                </select>
+                </mat-select>
               </label>
             </div>
           </div>
@@ -261,39 +256,39 @@
               @if (tipoMaterial() === 'ingredientes') {
                 <div class="filter-row ingredient-filters">
                   <label
-                    >Categoría de producto<select
-                      #categoriaInsumo
+                    >Categoría de producto<mat-select panelClass="jucy-filter-panel"
+                      aria-label="Categoría de producto"
                       [value]="categoriaIngrediente()"
-                      (change)="categoriaIngrediente.set(categoriaInsumo.value)"
+                      (selectionChange)="categoriaIngrediente.set($event.value)"
                     >
-                      <option value="Todas">Todas las categorías</option>
+                      <mat-option value="Todas">Todas las categorías</mat-option>
                       @for (categoria of categoriasIngredientes(); track categoria) {
-                        <option [value]="categoria">{{ categoria }}</option>
+                        <mat-option [value]="categoria"><span class="filter-option-content"><span class="filter-category-dot" [attr.data-category]="categoria" aria-hidden="true"></span>{{ categoria }}</span></mat-option>
                       }
-                    </select></label
+                    </mat-select></label
                   >
                   <label
-                    >Estado<select
-                      #estadoInsumo
+                    >Estado<mat-select panelClass="jucy-filter-panel"
+                      aria-label="Estado"
                       [value]="estadoIngrediente()"
-                      (change)="estadoIngrediente.set(estadoInsumo.value)"
+                      (selectionChange)="estadoIngrediente.set($event.value)"
                     >
-                      <option value="Todos">Todos los estados</option>
-                      <option value="Activo">Activo</option>
-                      <option value="Alerta de costo">Alerta de costo</option>
-                      <option value="Inactivo">Inactivo</option>
-                    </select></label
+                      <mat-option value="Todos">Todos los estados</mat-option>
+                      <mat-option value="Activo">Activo</mat-option>
+                      <mat-option value="Alerta de costo">Alerta de costo</mat-option>
+                      <mat-option value="Inactivo">Inactivo</mat-option>
+                    </mat-select></label
                   >
                   <label
-                    >Ordenar por<select
-                      #orden
+                    >Ordenar por<mat-select panelClass="jucy-filter-panel"
+                      aria-label="Ordenar por"
                       [value]="ordenIngredientes()"
-                      (change)="ordenIngredientes.set(orden.value)"
+                      (selectionChange)="ordenIngredientes.set($event.value)"
                     >
-                      <option value="nombre">Nombre: A–Z</option>
-                      <option value="precio-desc">Mayor precio</option>
-                      <option value="precio-asc">Menor precio</option>
-                    </select></label
+                      <mat-option value="nombre">Nombre: A–Z</mat-option>
+                      <mat-option value="precio-desc">Mayor precio</mat-option>
+                      <mat-option value="precio-asc">Menor precio</mat-option>
+                    </mat-select></label
                   >
                   <button class="text-button" type="button" (click)="limpiarFiltrosMateria()">
                     Limpiar filtros
@@ -303,28 +298,32 @@
               @if (tipoMaterial() === 'envases') {
                 <div class="filter-row">
                   <label
-                    >Tipo<select
-                      #tipo
+                    >Tipo<mat-select
+                      id="tipo-envase-select"
+                      aria-label="Tipo de envase"
+                      panelClass="jucy-filter-panel"
                       [value]="tipoEnvase()"
-                      (change)="filtrarEnvases(tipo.value, estadoEnvase())"
+                      (selectionChange)="filtrarEnvases($event.value, estadoEnvase())"
                     >
-                      <option value="Todos">Todos los envases</option>
+                      <mat-option value="Todos">Todos los envases</mat-option>
                       @for (t of tiposEnvase; track t) {
-                        <option [value]="t">{{ t === 'Tap' ? 'Tapa' : t }}</option>
+                        <mat-option [value]="t">{{ t === 'Tap' ? 'Tapa' : t }}</mat-option>
                       }
-                    </select></label
+                    </mat-select></label
                   >
                   <label
-                    >Precio<select
-                      #estado
+                    >Precio<mat-select
+                      id="precio-envase-select"
+                      aria-label="Estado del precio"
+                      panelClass="jucy-filter-panel"
                       [value]="estadoEnvase()"
-                      (change)="filtrarEnvases(tipoEnvase(), estado.value)"
+                      (selectionChange)="filtrarEnvases(tipoEnvase(), $event.value)"
                     >
-                      <option value="Todos">Todos los estados</option>
-                      <option value="confirmado">Confirmado</option>
-                      <option value="referencia_producto">Referencia</option>
-                      <option value="sin_dato">Sin dato</option>
-                    </select></label
+                      <mat-option value="Todos">Todos los estados</mat-option>
+                      <mat-option value="confirmado">Confirmado</mat-option>
+                      <mat-option value="referencia_producto">Referencia</mat-option>
+                      <mat-option value="sin_dato">Sin dato</mat-option>
+                    </mat-select></label
                   >
                   <a class="text-button" routerLink="/empaques"
                     >Ver costos de empaque y cartón <mat-icon>arrow_forward</mat-icon></a

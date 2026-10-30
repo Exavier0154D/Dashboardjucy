@@ -57,12 +57,13 @@
             </button>
           }
           <mat-autocomplete
+            class="jucy-history-options"
             #opcionesMateria="matAutocomplete"
             [displayWith]="mostrarMateria"
             (optionSelected)="seleccionarMateria($event.option.value)"
           >
             @for (m of materiasSelector(); track m.id) {
-              <mat-option [value]="m">{{ m.nombre }}</mat-option>
+              <mat-option [value]="m"><span class="history-material-option"><mat-icon aria-hidden="true">eco</mat-icon>{{ m.nombre }}</span></mat-option>
             } @empty {
               <mat-option disabled>No se encontraron materias primas</mat-option>
             }
@@ -74,24 +75,22 @@
         </p>
       </div>
     }
-    <label
-      >Desde
-      <input
-        #fechaDesde
-        type="date"
-        [max]="fechaLimitePrecios"
-        [value]="desde()"
-        (change)="desde.set(fechaDesde.value)"
-    /></label>
-    <label
-      >Hasta
-      <input
-        #fechaHasta
-        type="date"
-        [max]="fechaLimitePrecios"
-        [value]="hasta()"
-        (change)="hasta.set(fechaHasta.value)"
-    /></label>
+    <mat-form-field appearance="outline" class="history-date" subscriptSizing="dynamic">
+      <mat-label>Desde</mat-label>
+      <input matInput readonly [matDatepicker]="calendarioDesde" [max]="fechaCalendario(fechaLimitePrecios)"
+        [value]="fechaCalendario(desde())" (click)="calendarioDesde.open()"
+        (dateChange)="seleccionarFecha('desde', $event.value)" />
+      <mat-datepicker-toggle matIconSuffix [for]="calendarioDesde"></mat-datepicker-toggle>
+      <mat-datepicker #calendarioDesde panelClass="jucy-history-calendar"></mat-datepicker>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="history-date" subscriptSizing="dynamic">
+      <mat-label>Hasta</mat-label>
+      <input matInput readonly [matDatepicker]="calendarioHasta" [max]="fechaCalendario(fechaLimitePrecios)"
+        [value]="fechaCalendario(hasta())" (click)="calendarioHasta.open()"
+        (dateChange)="seleccionarFecha('hasta', $event.value)" />
+      <mat-datepicker-toggle matIconSuffix [for]="calendarioHasta"></mat-datepicker-toggle>
+      <mat-datepicker #calendarioHasta panelClass="jucy-history-calendar"></mat-datepicker>
+    </mat-form-field>
   </div>
   <p class="note availability-note">
     Precios disponibles hasta septiembre de 2026. Octubre en adelante queda pendiente de registro.

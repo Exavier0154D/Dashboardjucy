@@ -584,3 +584,39 @@ summary:focus-visible {
     height: 330px;
   }
 }
+.embedded-comparison {
+  margin: 28px -20px -20px;
+  padding: 24px 20px 4px;
+  border-top: 1px solid #e4ece6;
+  background: linear-gradient(180deg, #fbfdf9 0%, #ffffff 100%);
+}
+.legacy-cost-breakdown { display: none; }
+.embedded-comparison .page {
+  max-width: none;
+  padding: 0;
+}
+.embedded-comparison .page-header {
+  display: none;
+}
+.embedded-comparison .configuration,
+.embedded-comparison .report {
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+}
+.embedded-comparison .configuration .section-heading {
+  margin-bottom: 14px;
+}
+.embedded-comparison .configuration .fields {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.embedded-comparison .product-field {
+  display: none;
+}
+.embedded-comparison .scope-note,
+.embedded-comparison .observations {
+  display: none;
+}
