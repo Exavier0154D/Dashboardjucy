@@ -591,7 +591,6 @@ export class Administracion implements OnInit, OnDestroy {
       // Un error al recargar no debe presentarse como un fallo de la escritura ya confirmada.
       try {
         this.catalogo.set(await this.api.cargarCatalogo());
-        if (this.data.cargando()) await this.data.actualizarAhora();
         if (!(await this.data.actualizarAhora()))
           throw new Error(this.data.error() ?? 'No se pudo actualizar el dashboard.');
       } catch (e) {
