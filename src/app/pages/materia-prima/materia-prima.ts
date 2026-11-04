@@ -366,6 +366,7 @@ export class MateriaPrima {
   volverProductos(): void {
     this.selectionService.limpiarSeleccion();
     this.vista.set('productos');
+    this.irAlInicio();
   }
   buscarMateriaPrima(valor: string): void {
     this.textoBusqueda.set(valor);
