@@ -4,6 +4,43 @@
   background: #f5f7f3;
 }
 
+.auth-loading, .login-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: #234638;
+  background: radial-gradient(ellipse at 85% 10%, #e4f3d4, transparent 45%), #f5f7f3;
+}
+.login-card {
+  width: min(100%, 440px);
+  padding: 40px;
+  border: 1px solid #e0eae1;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 18px 50px #1c483318;
+}
+.login-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 36px; }
+.login-brand strong { font-size: 32px; letter-spacing: -2px; color: #183f32; }
+.login-brand strong span { color: #8fbe49; }
+.login-mark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; color: #245b3d; background: #dbefbc; font-size: 25px; }
+.login-kicker { color: #6f963d; font-size: 10px; font-weight: 700; letter-spacing: .12em; }
+.login-card h1 { margin: 9px 0; color: #183f32; font-size: 28px; }
+.login-card p { margin: 0; color: #6c7e74; font-size: 14px; line-height: 1.5; }
+.login-card form { display: grid; gap: 8px; margin-top: 28px; }
+.login-card label { margin-top: 10px; color: #344f40; font-size: 13px; font-weight: 600; }
+.login-card input { width: 100%; box-sizing: border-box; min-height: 46px; padding: 10px 12px; border: 1px solid #d1dfd5; border-radius: 8px; font: inherit; color: #183f32; }
+.login-card input:focus-visible, .login-card button:focus-visible, .session-bar button:focus-visible { outline: 3px solid #9bca74; outline-offset: 2px; }
+.login-card button { min-height: 46px; margin-top: 18px; border: 0; border-radius: 8px; color: #fff; background: #176d49; font: inherit; font-weight: 600; cursor: pointer; }
+.login-card button:disabled, .session-bar button:disabled { opacity: .6; cursor: wait; }
+.login-card .login-error, .session-error { color: #a33232; font-size: 13px; }
+.login-card .login-help { margin-top: 24px; text-align: center; font-size: 12px; }
+.session-bar { display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding: 10px 24px; border-bottom: 1px solid #e0eae1; color: #587064; font-size: 12px; }
+.session-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.session-bar button { flex-shrink: 0; border: 0; background: transparent; color: #176d49; font: inherit; font-weight: 600; cursor: pointer; }
+.session-error { margin: 8px 24px 0; }
+@media (max-width: 480px) { .login-card { padding: 28px 22px; } }
+
 .app-layout {
   display: flex;
   height: 100vh;

@@ -1,9 +1,35 @@
-<div class="app-layout">
-  <app-sidebar></app-sidebar>
-
-  <div class="main-area">
-    <main class="content" id="contenido-principal" tabindex="-1">
-      <router-outlet></router-outlet>
-    </main>
+@if (comprobando()) {
+  <div class="auth-loading" role="status">Comprobando sesión…</div>
+} @else if (!email()) {
+  <main class="login-page">
+    <section class="login-card" aria-labelledby="login-title">
+      <div class="login-brand"><span class="login-mark" aria-hidden="true">✦</span><strong>jucy<span>.</span></strong></div>
+      <span class="login-kicker">COSTOS DE PRODUCCIÓN</span>
+      <h1 id="login-title">Bienvenido</h1>
+      <p>Inicia sesión para consultar los costos de producción.</p>
+      <form [formGroup]="formulario" (ngSubmit)="iniciarSesion()">
+        <label for="login-email">Correo electrónico</label>
+        <input id="login-email" type="email" formControlName="email" autocomplete="username" placeholder="nombre@empresa.com" required />
+        <label for="login-password">Contraseña</label>
+        <input id="login-password" type="password" formControlName="password" autocomplete="current-password" required />
+        @if (error()) { <p class="login-error" role="alert">{{ error() }}</p> }
+        <button type="submit" [disabled]="ocupado()">{{ ocupado() ? 'Ingresando…' : 'Iniciar sesión' }}</button>
+      </form>
+      <p class="login-help">¿Necesitas acceso? Solicita una cuenta al administrador.</p>
+    </section>
+  </main>
+} @else {
+  <div class="app-layout">
+    <app-sidebar></app-sidebar>
+    <div class="main-area">
+      <div class="session-bar">
+        <span>{{ email() }}</span>
+        <button type="button" (click)="cerrarSesion()" [disabled]="ocupado()">Cerrar sesión</button>
+      </div>
+      @if (error()) { <p class="session-error" role="alert">{{ error() }}</p> }
+      <main class="content" id="contenido-principal" tabindex="-1">
+        <router-outlet></router-outlet>
+      </main>
+    </div>
   </div>
-</div>
+}

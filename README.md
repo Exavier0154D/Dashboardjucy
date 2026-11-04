@@ -1,5 +1,11 @@
 # DashboardJucyCostos
 
+## Acceso de usuarios
+
+El inicio de sesión utiliza Supabase Auth con correo y contraseña. Un administrador del proyecto debe crear o invitar las cuentas desde Supabase y desactivar el registro público si solo deben acceder usuarios autorizados. Los permisos de edición del catálogo se administran por separado mediante la autorización existente de editor.
+
+La pantalla de inicio de sesión solo controla la interfaz. Para proteger los datos directamente en Supabase, revisa las políticas RLS y los permisos de tablas, vistas y funciones: deben impedir el acceso anónimo y conceder únicamente los permisos necesarios a las cuentas autenticadas. Verifica también que las cuentas autorizadas conserven acceso a todas las consultas que usa el dashboard.
+
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.25.
 
 ## Development server
