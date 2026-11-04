@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -39,6 +39,7 @@ type Vista = 'productos' | 'materias';
   styleUrl: './materia-prima.css',
 })
 export class MateriaPrima {
+  private readonly elemento = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly data = inject(DataService);
   private readonly selectionService = inject(SelectionService);
   private readonly router = inject(Router);
@@ -138,6 +139,7 @@ export class MateriaPrima {
   }
   abrirEnvase(fila: ReturnType<typeof catalogoEnvases>[number]): void {
     this.selectionService.seleccionarProducto(fila.producto, fila.presentacion);
+    this.irAlInicio();
     void this.router.navigate(['/materia-prima']);
   }
   elegirPresentacionPorId(producto: Producto, id: string | number): void {
@@ -353,6 +355,13 @@ export class MateriaPrima {
     this.selectionService.seleccionarMesCostos(mesInicial);
     this.selectionService.seleccionarProducto(producto, sku);
     this.vista.set('productos');
+    this.irAlInicio();
+  }
+  private irAlInicio(): void {
+    const contenido = this.elemento.nativeElement.closest<HTMLElement>('.content');
+    if (contenido) contenido.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   }
   volverProductos(): void {
     this.selectionService.limpiarSeleccion();

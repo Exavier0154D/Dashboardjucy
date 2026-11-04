@@ -301,6 +301,22 @@ describe('Materia prima con ingredientes y envases', () => {
     expect(TestBed.inject(SelectionService).presentacionSeleccionada()?.id).toBe(2);
   });
 
+  it('abre un producto desde el inicio del área de contenido', () => {
+    fixture.componentInstance.cambiarVista('productos');
+    fixture.detectChanges();
+    const contenido = document.createElement('main');
+    contenido.className = 'content';
+    fixture.nativeElement.parentNode?.insertBefore(contenido, fixture.nativeElement);
+    contenido.appendChild(fixture.nativeElement);
+    contenido.scrollTop = 500;
+
+    (fixture.nativeElement.querySelector('.product-card .primary-button') as HTMLButtonElement).click();
+
+    expect(contenido.scrollTop).toBe(0);
+    expect(TestBed.inject(SelectionService).productoSeleccionado()?.id).toBe(producto.id);
+    contenido.remove();
+  });
+
   it('muestra el nombre inferior como título único de cada tarjeta', async () => {
     datos.productos.set([
       producto,
