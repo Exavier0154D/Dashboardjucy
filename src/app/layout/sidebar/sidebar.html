@@ -30,13 +30,15 @@
       class="nav-item"
       ><mat-icon>view_in_ar</mat-icon><span>Empaque y cartón</span></a
     >
-    <a
-      routerLink="/administracion"
-      routerLinkActive="active"
-      ariaCurrentWhenActive="page"
-      class="nav-item"
-      ><mat-icon>tune</mat-icon><span>Administración</span></a
-    >
+    @if (puedeAdministrar()) {
+      <a
+        routerLink="/administracion"
+        routerLinkActive="active"
+        ariaCurrentWhenActive="page"
+        class="nav-item"
+        ><mat-icon>tune</mat-icon><span>Administración</span></a
+      >
+    }
   </nav>
   <div class="sidebar-footer">
     <span class="footer-dot"></span>

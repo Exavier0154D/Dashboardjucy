@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { App } from './app';
 import { SupabaseService } from './core/supabase.service';
+import { CatalogoAdminService } from './core/catalogo-admin.service';
 
 describe('Acceso a la aplicación', () => {
   let cambiarSesion: (event: string, session: any) => void;
@@ -19,7 +20,14 @@ describe('Acceso a la aplicación', () => {
     vi.clearAllMocks();
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter([]), { provide: SupabaseService, useValue: { client: { auth } } }],
+      providers: [
+        provideRouter([]),
+        { provide: SupabaseService, useValue: { client: { auth } } },
+        { provide: CatalogoAdminService, useValue: {
+          escucharSesion: () => ({ unsubscribe: () => {} }),
+          sesionEditor: async () => ({ email: null, editor: false }),
+        } },
+      ],
     }).compileComponents();
   });
 
