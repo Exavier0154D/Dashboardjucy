@@ -246,7 +246,9 @@ describe('Materia prima con ingredientes y envases', () => {
     expect(fixture.nativeElement.querySelector('tbody')?.textContent).toContain('Tapa');
   });
 
-  it('permite elegir año y mes desde la búsqueda y conserva el período al abrir y volver', async () => {
+  it('muestra solo el año antes de elegir el producto y conserva el período al abrir y volver', async () => {
+    const seleccion = TestBed.inject(SelectionService);
+    seleccion.seleccionarMesCostos('2026-12');
     fixture.componentInstance.cambiarVista('productos');
     fixture.detectChanges();
     await fixture.whenStable();
@@ -254,18 +256,13 @@ describe('Materia prima con ingredientes y envases', () => {
     const anio = await loader.getHarness(
       MatSelectHarness.with({ selector: '#anio-costos-select' }),
     );
-    const mes = await loader.getHarness(
-      MatSelectHarness.with({ selector: '#mes-costos-select' }),
-    );
+    expect(fixture.nativeElement.querySelector('#mes-costos-select')).toBeNull();
     await anio.open();
     await anio.clickOptions({ text: '2025' });
-    await mes.open();
-    await mes.clickOptions({ text: 'diciembre' });
     await fixture.whenStable();
     expect(fixture.componentInstance.mesConsulta()).toBe('2025-12');
     expect(fixture.componentInstance.productosFiltrados()).toEqual([producto]);
     fixture.componentInstance.seleccionarProducto(producto);
-    const seleccion = TestBed.inject(SelectionService);
     expect(seleccion.mesCostosSeleccionado()).toBe('2025-12');
     expect(seleccion.presentacionSeleccionada()?.id).toBe(sku.id);
     fixture.componentInstance.volverProductos();

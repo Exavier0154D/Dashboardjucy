@@ -237,17 +237,18 @@ table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 12px;
+  font-size: 15px;
+  line-height: 1.35;
 }
 caption {
   text-align: left;
-  padding: 9px 12px;
-  font-size: 11px;
+  padding: 8px 12px;
+  font-size: 13px;
   color: #64748b;
 }
 th,
 td {
-  padding: 11px 12px;
+  padding: 10px 14px;
   text-align: right;
   border-bottom: 1px solid #e2e8f0;
   min-width: 155px;
@@ -283,7 +284,7 @@ thead .base-column {
 }
 tbody td {
   color: #173f35;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
 }
 tbody td.base-column {
@@ -291,8 +292,8 @@ tbody td.base-column {
 }
 small {
   display: block;
-  margin-top: 4px;
-  font-size: 11px;
+  margin-top: 3px;
+  font-size: 13px;
   color: #64748b;
   font-weight: 400;
   text-transform: none;
@@ -315,7 +316,7 @@ td .delta.decrease {
   border-top: 1px solid #cbded2;
 }
 .total-row td {
-  font-size: 17px;
+  font-size: 19px;
 }
 .total-row .base-column {
   background: #dceee3;
@@ -336,7 +337,7 @@ tbody tr:last-child > * {
   display: flex;
   flex-wrap: wrap;
   gap: 18px;
-  font-size: 11px;
+  font-size: 14px;
 }
 .scope-note {
   font-size: 12px;
@@ -531,7 +532,7 @@ h1 {
 }
 thead th {
   background: #f8faf7;
-  color: #718176;
+  color: #475f50;
 }
 tbody tr:hover > * {
   background-color: #f2f9ed;

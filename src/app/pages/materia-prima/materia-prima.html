@@ -117,20 +117,6 @@
                   }
                 </mat-select>
               </label>
-              <label
-                ><span id="mes-costos-label">Mes de costos</span>
-                <mat-select
-                  id="mes-costos-select"
-                  panelClass="jucy-filter-panel"
-                  aria-labelledby="mes-costos-label"
-                  [value]="numeroMesConsulta()"
-                  (selectionChange)="cambiarMesConsulta($event.value)"
-                >
-                  @for (mes of mesesConsulta; track mes.numero) {
-                    <mat-option [value]="mes.numero">{{ mes.nombre }}</mat-option>
-                  }
-                </mat-select>
-              </label>
             </div>
           </div>
           <div class="results-heading" role="status">

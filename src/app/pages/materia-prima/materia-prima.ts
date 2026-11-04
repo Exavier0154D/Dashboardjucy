@@ -64,20 +64,11 @@ export class MateriaPrima {
       String(Math.min(...anios) + indice),
     ).reverse();
   });
-  readonly mesesConsulta = Array.from({ length: 12 }, (_, indice) => ({
-    numero: String(indice + 1).padStart(2, '0'),
-    nombre: new Intl.DateTimeFormat('es-EC', { month: 'long', timeZone: 'UTC' }).format(
-      new Date(Date.UTC(2026, indice, 1)),
-    ),
-  }));
 
   cambiarAnioConsulta(anio: string): void {
     this.selectionService.seleccionarMesCostos(`${anio}-${this.numeroMesConsulta()}`);
   }
 
-  cambiarMesConsulta(mes: string): void {
-    this.selectionService.seleccionarMesCostos(`${this.anioConsulta()}-${mes}`);
-  }
   readonly vista = signal<Vista>('productos');
   readonly tipoMaterial = signal<'ingredientes' | 'envases'>('ingredientes');
   readonly tipoEnvase = signal('Todos');
