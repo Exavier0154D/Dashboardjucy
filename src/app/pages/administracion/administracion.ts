@@ -3,6 +3,7 @@ import { DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { A11yModule } from '@angular/cdk/a11y';
 import { DataService } from '../../core/data.service';
 import { TIPOS_EMPAQUE } from '../../models/empaque.model';
 import {
@@ -64,7 +65,7 @@ const vacio: CatalogoAdmin = {
 
 @Component({
   selector: 'app-administracion',
-  imports: [DatePipe, DecimalPipe, ReactiveFormsModule, MatIconModule, MatSelectModule],
+  imports: [DatePipe, DecimalPipe, ReactiveFormsModule, MatIconModule, MatSelectModule, A11yModule],
   templateUrl: './administracion.html',
   styleUrl: './administracion.css',
 })
@@ -93,6 +94,7 @@ export class Administracion implements OnInit, OnDestroy {
   readonly aviso = signal<string | null>(null);
   readonly errorSesion = signal<string | null>(null);
   readonly errorHistorial = signal<string | null>(null);
+  readonly confirmacion = signal<{ titulo: string; mensaje: string } | null>(null);
   readonly busqueda = signal('');
   readonly filtroProducto = signal('');
   readonly filtroHistorial = signal('');
@@ -223,6 +225,7 @@ export class Administracion implements OnInit, OnDestroy {
       this.editor.set(s.editor);
       this.errorSesion.set(null);
       if (!s.editor) {
+        this.cancelarConfirmacion();
         this.editando.set(null);
         this.historial.set([]);
         this.historialVersion++;
@@ -230,6 +233,7 @@ export class Administracion implements OnInit, OnDestroy {
       } else if (this.pestana() === 'historial') await this.cargarHistorial();
     } catch (e) {
       if (this.destruido || version !== this.sesionVersion) return;
+      this.cancelarConfirmacion();
       this.editor.set(false);
       this.editando.set(null);
       this.historial.set([]);
@@ -286,6 +290,7 @@ export class Administracion implements OnInit, OnDestroy {
   }
   cambiarPestana(p: Pestana): void {
     if (this.guardando()) return;
+    this.cancelarConfirmacion();
     this.pestana.set(p);
     this.editando.set(null);
     this.busqueda.set('');
@@ -315,7 +320,10 @@ export class Administracion implements OnInit, OnDestroy {
     void this.cargarHistorial();
   }
   cancelar(): void {
-    if (!this.guardando()) this.editando.set(null);
+    if (!this.guardando()) {
+      this.cancelarConfirmacion();
+      this.editando.set(null);
+    }
   }
   private abrir(p: Pestana): boolean {
     if (!this.editor() || this.guardando()) return false;
@@ -633,8 +641,22 @@ export class Administracion implements OnInit, OnDestroy {
       }
       default: return;
     }
-    if (!window.confirm(`¿Eliminar «${nombre}»?${detalle} Esta acción es permanente y no guarda los cambios pendientes del formulario.`)) return;
-    await this.guardar(() => this.api.eliminarRegistro(tabla, id), 'Registro eliminado.');
+    this.confirmacion.set({
+      titulo: `¿Eliminar «${nombre}»?`,
+      mensaje: `${detalle} Esta acción es permanente y no guarda los cambios pendientes del formulario.`,
+    });
+    this.eliminacionPendiente = { tabla, id };
+  }
+  private eliminacionPendiente: { tabla: 'producto' | 'materia_prima' | 'presentacion' | 'empaque'; id: string | number } | null = null;
+  cancelarConfirmacion(): void {
+    this.confirmacion.set(null);
+    this.eliminacionPendiente = null;
+  }
+  async confirmarEliminacion(): Promise<void> {
+    const pendiente = this.eliminacionPendiente;
+    this.cancelarConfirmacion();
+    if (!pendiente) return;
+    await this.guardar(() => this.api.eliminarRegistro(pendiente.tabla, pendiente.id), 'Registro eliminado.');
   }
   private async guardar(accion: () => Promise<void>, exito = 'Cambios guardados.'): Promise<void> {
     if (this.guardando() || !this.editor()) return;

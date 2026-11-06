@@ -24,17 +24,17 @@ describe('Eliminación desde administración', () => {
     component.catalogo.set(catalogo);
     component.editor.set(true);
     component.editarEmpaque(empaque);
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
   });
   afterEach(() => vi.restoreAllMocks());
 
   it('exige acceso de editor y confirmación antes de eliminar', async () => {
     component.editor.set(false);
     await component.eliminarActual();
-    expect(window.confirm).not.toHaveBeenCalled();
+    expect(component.confirmacion()).toBeNull();
     component.editor.set(true);
-    vi.mocked(window.confirm).mockReturnValue(false);
     await component.eliminarActual();
+    expect(component.confirmacion()).not.toBeNull();
+    await component.cancelarConfirmacion();
     expect(api.eliminarRegistro).not.toHaveBeenCalled();
     expect(component.editando()).toBe('empaques');
   });
@@ -42,6 +42,7 @@ describe('Eliminación desde administración', () => {
   it('elimina el registro existente aunque el formulario tenga cambios inválidos y actualiza el dashboard', async () => {
     component.formEmpaque.controls.costo.setValue(-1);
     await component.eliminarActual();
+    await component.confirmarEliminacion();
     expect(api.eliminarRegistro).toHaveBeenCalledWith('empaque', 7);
     expect(actualizar).toHaveBeenCalledOnce();
     expect(component.empaques()).toEqual([]);
@@ -52,6 +53,7 @@ describe('Eliminación desde administración', () => {
   it('conserva el formulario y muestra el error cuando la base de datos rechaza la eliminación', async () => {
     api.eliminarRegistro.mockRejectedValue(new Error('Registro en uso'));
     await component.eliminarActual();
+    await component.confirmarEliminacion();
     expect(component.error()).toBe('Registro en uso');
     expect(component.editando()).toBe('empaques');
     expect(component.guardando()).toBe(false);
@@ -69,6 +71,6 @@ describe('Eliminación desde administración', () => {
     await component.eliminarActual();
     expect(component.error()).toContain('en uso');
     expect(api.eliminarRegistro).not.toHaveBeenCalled();
-    expect(window.confirm).not.toHaveBeenCalled();
+    expect(component.confirmacion()).toBeNull();
   });
 });

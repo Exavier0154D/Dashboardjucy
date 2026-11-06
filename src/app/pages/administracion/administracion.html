@@ -866,3 +866,18 @@
     }
   }
 </div>
+@if (confirmacion(); as confirm) {
+  <div class="confirm-backdrop" role="presentation" (click)="cancelarConfirmacion()">
+    <section class="confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message" cdkTrapFocus [cdkTrapFocusAutoCapture]="true" (keydown.escape)="cancelarConfirmacion()" (click)="$event.stopPropagation()">
+      <div class="confirm-modal__icon"><mat-icon>delete_outline</mat-icon></div>
+      <h2 id="confirm-title">{{ confirm.titulo }}</h2>
+      <p id="confirm-message">{{ confirm.mensaje }}</p>
+      <div class="confirm-modal__actions">
+        <button type="button" class="btn" cdkFocusInitial (click)="cancelarConfirmacion()">Cancelar</button>
+        <button type="button" class="btn btn--danger confirm-modal__delete" (click)="confirmarEliminacion()" [disabled]="guardando()">
+          <mat-icon>delete</mat-icon>Eliminar
+        </button>
+      </div>
+    </section>
+  </div>
+}
