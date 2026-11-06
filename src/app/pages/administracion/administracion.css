@@ -374,6 +374,14 @@ mat-select.toolbar__select[aria-expanded='true'] {
   color: var(--c-primary);
 }
 
+.btn--danger {
+  color: var(--c-danger);
+}
+
+.panel__delete {
+  margin-right: auto;
+}
+
 .btn--danger:hover {
   background: var(--c-danger-soft);
   color: var(--c-danger);

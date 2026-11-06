@@ -244,6 +244,11 @@
               La fórmula se edita en «SKU y fórmulas», para cada presentación y tecnología.
             </p>
             <div class="panel__actions">
+              @if (puedeEliminar()) {
+                <button class="btn btn--danger panel__delete" type="button" (click)="eliminarActual()" [disabled]="!editor() || guardando()">
+                  <mat-icon>delete</mat-icon>Eliminar
+                </button>
+              }
               <button type="button" class="btn" (click)="cancelar()" [disabled]="guardando()">
                 Cancelar</button
               ><button class="btn btn--primary" type="submit" [disabled]="guardando()">
@@ -327,6 +332,11 @@
               fechas y valores; no se crea una compra histórica al guardar aquí.
             </p>
             <div class="panel__actions">
+              @if (puedeEliminar()) {
+                <button class="btn btn--danger panel__delete" type="button" (click)="eliminarActual()" [disabled]="!editor() || guardando()">
+                  <mat-icon>delete</mat-icon>Eliminar
+                </button>
+              }
               <button class="btn" type="button" (click)="cancelar()" [disabled]="guardando()">
                 Cancelar</button
               ><button class="btn btn--primary" type="submit" [disabled]="guardando()">
@@ -550,6 +560,11 @@
               Desactivar el SKU conserva su fórmula, empaques y mano de obra.
             </p>
             <div class="panel__actions">
+              @if (puedeEliminar()) {
+                <button class="btn btn--danger panel__delete" type="button" (click)="eliminarActual()" [disabled]="!editor() || guardando()">
+                  <mat-icon>delete</mat-icon>Eliminar
+                </button>
+              }
               <button type="button" class="btn" (click)="cancelar()" [disabled]="guardando()">
                 Cancelar</button
               ><button type="submit" class="btn btn--primary" [disabled]="guardando()">
@@ -683,6 +698,11 @@
               unidad. «Sin dato» indica un precio pendiente.
             </p>
             <div class="panel__actions">
+              @if (puedeEliminar()) {
+                <button class="btn btn--danger panel__delete" type="button" (click)="eliminarActual()" [disabled]="!editor() || guardando()">
+                  <mat-icon>delete</mat-icon>Eliminar
+                </button>
+              }
               <button class="btn" type="button" (click)="cancelar()" [disabled]="guardando()">
                 Cancelar</button
               ><button class="btn btn--primary" type="submit" [disabled]="guardando()">

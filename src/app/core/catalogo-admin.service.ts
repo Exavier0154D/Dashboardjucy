@@ -159,6 +159,16 @@ export class CatalogoAdminService {
     if (error) throw error;
     if (!data) throw new Error('No se guardó el SKU. Revisa tus permisos.');
   }
+  async eliminarRegistro(tabla: 'producto' | 'materia_prima' | 'presentacion' | 'empaque', id: string | number): Promise<void> {
+    await this.exigirEditor();
+    const { data, error } = await this.db.from(tabla).delete().eq('id', id).select('id').single();
+    if (error) {
+      if (error.code === '23503')
+        throw new Error('Este registro tiene datos relacionados. Elimina primero esas relaciones o desactiva el registro.');
+      throw error;
+    }
+    if (!data) throw new Error('No se eliminó el registro. Revisa tus permisos y recarga.');
+  }
   async listarHistorial(tabla: string | null): Promise<HistorialDB[]> {
     // Se muestran los 200 cambios más recientes, con desempate estable y paginación.
     const filas: HistorialDB[] = [];

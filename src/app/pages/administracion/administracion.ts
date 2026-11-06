@@ -579,7 +579,64 @@ export class Administracion implements OnInit, OnDestroy {
       ),
     );
   }
-  private async guardar(accion: () => Promise<void>): Promise<void> {
+  puedeEliminar(): boolean {
+    switch (this.editando()) {
+      case 'productos': return this.formProducto.controls.id.value !== null;
+      case 'materias': return this.formMateria.controls.id.value !== null;
+      case 'presentaciones': return this.formSku.controls.id.value !== null;
+      case 'empaques': return this.formEmpaque.controls.id.value !== null;
+      default: return false;
+    }
+  }
+  async eliminarActual(): Promise<void> {
+    if (!this.browser || !this.editor() || this.guardando() || !this.puedeEliminar()) return;
+    this.error.set(null);
+    this.aviso.set(null);
+    const c = this.catalogo();
+    let tabla: 'producto' | 'materia_prima' | 'presentacion' | 'empaque';
+    let id: string | number;
+    let nombre: string;
+    let detalle = '';
+    switch (this.editando()) {
+      case 'productos': {
+        tabla = 'producto';
+        id = this.formProducto.controls.id.value!;
+        nombre = this.nombreProducto(id);
+        if (c.presentaciones.some(p => p.producto_id === id)) {
+          this.error.set('Elimina primero los SKU de este producto o desactívalo para conservar sus datos.');
+          return;
+        }
+        break;
+      }
+      case 'materias': {
+        tabla = 'materia_prima';
+        id = this.formMateria.controls.id.value!;
+        nombre = this.materiasPorId().get(id)?.nombre ?? `Materia prima #${id}`;
+        if (c.formulas.some(f => f.materia_prima_id === id) || c.items.some(i => i.materia_prima_id === id)) {
+          this.error.set('Esta materia prima está en uso. Retírala de las fórmulas y cantidades antes de eliminarla, o desactívala.');
+          return;
+        }
+        break;
+      }
+      case 'presentaciones':
+        tabla = 'presentacion';
+        id = this.formSku.controls.id.value!;
+        nombre = this.nombreSku(id);
+        detalle = ' Esto también puede eliminar su fórmula, cantidades, empaques y otros datos asociados.';
+        break;
+      case 'empaques': {
+        tabla = 'empaque';
+        id = this.formEmpaque.controls.id.value!;
+        const empaque = c.empaques.find(e => e.id === id);
+        nombre = empaque ? `${empaque.tipo} · ${this.nombreSku(empaque.presentacion_id)}` : `Empaque #${id}`;
+        break;
+      }
+      default: return;
+    }
+    if (!window.confirm(`¿Eliminar «${nombre}»?${detalle} Esta acción es permanente y no guarda los cambios pendientes del formulario.`)) return;
+    await this.guardar(() => this.api.eliminarRegistro(tabla, id), 'Registro eliminado.');
+  }
+  private async guardar(accion: () => Promise<void>, exito = 'Cambios guardados.'): Promise<void> {
     if (this.guardando() || !this.editor()) return;
     this.guardando.set(true);
     this.error.set(null);
@@ -587,7 +644,7 @@ export class Administracion implements OnInit, OnDestroy {
     try {
       await accion();
       this.editando.set(null);
-      this.aviso.set('Cambios guardados.');
+      this.aviso.set(exito);
       // Un error al recargar no debe presentarse como un fallo de la escritura ya confirmada.
       try {
         this.catalogo.set(await this.api.cargarCatalogo());
