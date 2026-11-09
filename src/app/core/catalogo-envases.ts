@@ -1,7 +1,7 @@
 import type { Empaque, TipoEmpaque } from '../models/empaque.model';
 import type { Producto } from '../models/producto.model';
 
-/** Vista de los empaques existentes por SKU; no agrega ingredientes a las fórmulas. */
+
 export function catalogoEnvases(productos: Producto[], empaques: Empaque[]) {
   const presentaciones = new Map(
     productos.flatMap((producto) =>
@@ -45,11 +45,11 @@ export interface GrupoEnvase {
   referencia: boolean;
 }
 
-/** Agrupa la vista por tipo y tamaño; cada SKU conserva su precio y su estado. */
+
 export function agruparEnvases(filas: FilaEnvase[]): GrupoEnvase[] {
   const grupos = new Map<string, FilaEnvase[]>();
   for (const fila of filas) {
-    // Los cartones impresos conservan su registro individual por producto.
+
     const clave =
       fila.empaque.tipo === 'Cartón'
         ? JSON.stringify(['Cartón', fila.empaque.id])

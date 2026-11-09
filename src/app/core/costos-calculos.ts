@@ -76,10 +76,7 @@ export function mesActualEcuador(ahora = new Date()): string {
   return `${anio}-${mes}`;
 }
 
-/**
- * Incluye meses intermedios y el mes actual,
- * aunque todavía no exista una actualización.
- */
+
 export function mesesManoObra(registros: ManoObraMensual[], actual = mesActualEcuador()): string[] {
   resolverManoObra(registros, `${actual}-01`);
 

@@ -7,7 +7,7 @@ export type CategoriaCatalogo = typeof CATEGORIAS_PRODUCTO[number];
 export type TecnologiaProducto = 'HPP' | 'HTST' | 'UHT';
 export type EstadoFormulacion = 'copiada' | 'escalada' | 'por_completar';
 
-// Alias temporal para componentes que todavía importan el tipo anterior.
+
 export type CategoriaAnterior =
   | 'Jugo' | 'Néctar' | 'Limonada' | 'Funcional' | 'Café y lácteos'
   | 'Proteína' | 'Tradicional' | 'Agua de coco' | 'Salsas y untables';
@@ -16,7 +16,7 @@ export interface Ingrediente {
   materiaPrimaId: number;
   nombre: string;
   unidad: string;
-  /** Porcentaje en escala 0–100. */
+
   porcentaje: number;
 }
 
@@ -43,14 +43,13 @@ export interface Presentacion {
   estadoFormulacion: EstadoFormulacion;
   presentacionOrigenId: number | null;
   factorEscala: number | null;
-  /** Gastos indirectos de fabricación asignados por SKU / presentación. */
+
   gastosIndirectosDeFabricacion?: number | null;
   gastos_indirectos_de_fabricacion?: number | null;
   ingredientes: Ingrediente[];
   items: ItemPresentacion[];
   totalKg: number;
   totalLitros: number;
-  /** Solo materia prima. NULL cuando no existe fórmula/cantidad. */
   totalCosto: number | null;
 }
 
@@ -63,7 +62,6 @@ export interface Producto {
   activo: boolean;
   fechaRevision: string;
   productoOrigenId: string | null;
-  /** Compatibilidad: fórmula del SKU seleccionado o del primero al cargar. */
   ingredientes: Ingrediente[];
   presentaciones: Presentacion[];
 }

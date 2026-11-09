@@ -6,7 +6,7 @@ import {
   fechaHistoricaValida,
 } from '../shared/historico-costos/historico-calculos';
 
-/** Valora las cantidades del SKU con los precios vigentes al cierre del mes. */
+
 export function calcularMateriaPrimaMensual(
   presentacion: Pick<Presentacion, 'items'>,
   mes: string,
@@ -23,7 +23,7 @@ export function fechaCierreMes(mes: string): string {
   return `${mes}-${ultimoDia}`;
 }
 
-/** Usa los kg de producción registrados; no convierte litros en kg. */
+
 export function calcularMateriaPrimaEnFecha(
   presentacion: Pick<Presentacion, 'items'>,
   fecha: string,
@@ -62,7 +62,7 @@ export function calcularMateriaPrimaEnFecha(
   };
 }
 
-/** Conserva las fechas reales de actualización, incluso cuando hay cinco registros. */
+
 export function semanasDePrecios(
   mes: string,
   precios: PrecioSemanal[],
@@ -76,6 +76,6 @@ export function semanasDePrecios(
         .map((p) => p.semana),
     ),
   ].sort();
-  // Permite consultar cuatro semanas con el precio anterior si no hubo actualizaciones.
+
   return fechas.length ? fechas : ['01', '08', '15', '22'].map((dia) => `${mes}-${dia}`);
 }

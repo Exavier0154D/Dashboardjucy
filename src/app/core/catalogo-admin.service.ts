@@ -62,7 +62,7 @@ export function validarFilas(filas: FilaFormula[]): void {
   }
 }
 
-/** La comparación incluye fórmula y cantidades, para detectar ediciones concurrentes. */
+
 export function versionSku(p: PresentacionDB, formulas: FormulaDB[], items: ItemDB[]) {
   return {
     presentacion: p,

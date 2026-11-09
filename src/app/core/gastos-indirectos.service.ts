@@ -172,7 +172,7 @@ export class GastosIndirectosService {
       );
     }
 
-    // RLS verifica que el usuario tenga permisos de editor.
+
     const { error } = await this.db
       .from('gasto_indirecto')
       .upsert(

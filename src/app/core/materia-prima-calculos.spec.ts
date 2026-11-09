@@ -15,7 +15,7 @@ describe('Materia prima al cierre de cada mes', () => {
     { id: 1, nombre: 'Coco', costo_kg: 0.2 },
     { id: 2, nombre: 'Agua', costo_kg: 0.1 },
   ];
-  // Desordenados para verificar que importa la fecha y no el orden de lectura.
+
   const precios = [
     { materia_prima_id: 1, semana: '2026-03-01', costo_kg: 0.23 },
     { materia_prima_id: 1, semana: '2026-02-15', costo_kg: 0.25 },
