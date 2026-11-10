@@ -39,24 +39,6 @@
           <mat-icon>refresh</mat-icon>{{ cargando() ? 'Actualizando…' : 'Actualizar datos' }}
         </button>
       </header>
-      <nav class="view-switch" aria-label="Explorar costos">
-        <button
-          type="button"
-          [class.selected]="vista() === 'productos'"
-          [attr.aria-pressed]="vista() === 'productos'"
-          (click)="cambiarVista('productos')"
-        >
-          <mat-icon>grid_view</mat-icon>Costos por producto
-        </button>
-        <button
-          type="button"
-          [class.selected]="vista() === 'materias'"
-          [attr.aria-pressed]="vista() === 'materias'"
-          (click)="cambiarVista('materias')"
-        >
-          <mat-icon>inventory_2</mat-icon>Catálogo de insumos
-        </button>
-      </nav>
       @if (vista() === 'productos') {
         <section class="section" aria-label="Catálogo de productos">
           <div class="catalog-toolbar surface">

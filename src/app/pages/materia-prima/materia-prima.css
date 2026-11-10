@@ -716,34 +716,6 @@ h1 {
   color: #bc5143;
   background: #fff0ec;
 }
-.view-switch {
-  display: flex;
-  gap: 22px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid var(--border);
-}
-.view-switch button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 2px 14px;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  background: none;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-}
-.view-switch button.selected {
-  color: var(--green);
-  border-bottom-color: var(--green);
-}
-.view-switch mat-icon {
-  font-size: 17px;
-  width: 17px;
-  height: 17px;
-}
 .catalog-heading {
   display: flex;
   align-items: center;
@@ -1026,12 +998,6 @@ summary {
     align-items: flex-start;
     flex-direction: column;
     gap: 14px;
-  }
-  .view-switch {
-    gap: 16px;
-  }
-  .view-switch button {
-    font-size: 11px;
   }
   .chart-card {
     padding: 18px 12px;
