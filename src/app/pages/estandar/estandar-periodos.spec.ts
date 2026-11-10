@@ -81,7 +81,7 @@ describe('Períodos visibles y cálculo del estándar', () => {
     expect(component.mesSeleccionado()).toBe('2026-01');
     component.mesSeleccionado.set('2026-10');
     await fixture.whenStable();
-    // El valor del modelo existe antes de que lleguen las opciones del selector.
+
     meses.set(['2026-01', '2026-08', '2026-10']);
     component.costos.set({
       presentacionId: 5,

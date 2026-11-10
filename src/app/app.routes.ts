@@ -23,7 +23,7 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/estandar/estandar').then((m) => m.Estandar),
   },
 
-  // NUEVA RUTA: EMPAQUES
+
   {
     path: 'empaques',
     loadComponent: () => import('./pages/empaques/empaques').then((m) => m.Empaques),

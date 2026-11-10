@@ -71,7 +71,7 @@ export class Estandar {
     this.selectionService.seleccionarPresentacion(presentacion);
   }
 
-  // INGREDIENTES
+
 
   readonly ingredientes = computed<Ingrediente[]>(() => {
     return [...(this.presentacionActual()?.ingredientes ?? [])].sort(
@@ -79,7 +79,7 @@ export class Estandar {
     );
   });
 
-  // TABLA DE FORMULACIÓN
+
 
   readonly displayedColumns: string[] = ['componente', 'unidad', 'porcentaje', 'kg', 'litros'];
 
@@ -106,7 +106,7 @@ export class Estandar {
     });
   });
 
-  // GRÁFICO DE COMPOSICIÓN
+
 
   readonly paleta: string[] = [
     '#1d4ed8',
@@ -165,7 +165,7 @@ export class Estandar {
     },
   };
 
-  // CALCULADORA DE BATCH
+
 
   readonly litrosBatch = signal<number>(0);
 
@@ -197,7 +197,7 @@ export class Estandar {
     }));
   });
 
-  // RESUMEN DE PRESENTACIÓN
+
 
   readonly totalKg = computed(() => {
     return this.presentacionActual()?.totalKg ?? 0;
@@ -360,9 +360,7 @@ export class Estandar {
       this.costos.set(costos);
       const mesActual = this.mesSeleccionado();
       const mesesConDatos = costos.meses.filter((mes) => !this.esCostoReferencia(mes));
-      // El mes calendario actual puede ser un período de referencia sin actualización.
-      // En ese caso, mostrar de entrada el último período real disponible evita presentar
-      // octubre como si fuera el último costo confirmado.
+
       if (!mesActual || (this.esCostoReferencia(mesActual) && mesesConDatos.length)) {
         const fallback = mesesConDatos.at(-1) ?? costos.meses.at(-1) ?? mesActualEcuador();
         this.mesSeleccionado.set(fallback);

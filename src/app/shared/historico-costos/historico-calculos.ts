@@ -30,8 +30,7 @@ export function fechaHistoricaValida(fecha: string): boolean {
   const d = new Date(`${fecha}T00:00:00Z`);
   return Number.isFinite(d.getTime()) && d.toISOString().slice(0, 10) === fecha;
 }
-// Cada precio queda vigente desde su fecha hasta la siguiente actualización.
-// Antes del primer registro se utiliza el precio base histórico conservado.
+
 export function calcularSerie(
   semanas: string[],
   cantidades: CantidadMaterial[],
@@ -120,8 +119,7 @@ export interface PuntoCostoFinal extends PuntoHistorico {
   indirectosEstimados: boolean;
 }
 
-// La mano de obra conserva el último valor registrado anterior o igual a la fecha.
-// No se utilizan registros futuros; un cero registrado es válido.
+
 export function agregarCostosProduccion(
   serie: PuntoHistorico[],
   empaque: number,

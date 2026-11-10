@@ -52,7 +52,7 @@ import {
   styleUrl: './historico-costos.css',
 })
 export class HistoricoCostos implements OnInit, OnDestroy {
-  // Ampliar este corte cuando se confirmen los siguientes meses de precios.
+
   readonly fechaLimitePrecios = '2026-09-30';
   readonly modo = input<'materia' | 'producto'>('materia');
   readonly producto = input<Producto | null>(null);
@@ -118,7 +118,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
     if (this.modo() === 'producto') {
       const costos = this.costosActuales();
       fechas.push(...(costos?.manoObra ?? []).map((m) => m.mes));
-      // Incluye los cambios de mes para interrumpir el total cuando no hay GIF.
+
       fechas.push(...(costos?.meses ?? []).map((m) => `${m}-01`));
     }
     return [...new Set(fechas)].filter((fecha) => fecha <= this.fechaLimitePrecios).sort();
@@ -341,7 +341,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
     if (this.temporizador !== null) clearInterval(this.temporizador);
   }
 
-  // Paginación para evitar el límite de filas de Supabase.
+
   private async todasLasFilas(tabla: string, columnas: string): Promise<Record<string, unknown>[]> {
     const filas: Record<string, unknown>[] = [];
     let inicio = 0;
@@ -402,7 +402,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
       ) {
         throw new Error('Hay precios o fechas inválidos en Supabase.');
       }
-      // Detecta duplicados antes de mostrarlos en los gráficos.
+
       calcularSerie([], [], materiales, historicos);
       if (this.destruido) return;
       this.materiales.set(materiales.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')));
@@ -493,7 +493,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
   buscarMateria(valor: string): void {
     this.textoMateria.set(valor);
     this.filtroMateria.set(valor);
-    // Mientras se escribe, no se muestra el gráfico de la materia anterior.
+
     this.materiaId.set(null);
   }
 
