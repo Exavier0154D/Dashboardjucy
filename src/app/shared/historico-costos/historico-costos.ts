@@ -10,7 +10,7 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { DecimalPipe, isPlatformBrowser } from '@angular/common';
+import { DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -39,6 +39,7 @@ import {
   standalone: true,
   imports: [
     DecimalPipe,
+    DatePipe,
     BaseChartDirective,
     MatAutocompleteModule,
     MatFormFieldModule,
@@ -53,7 +54,6 @@ import {
 })
 export class HistoricoCostos implements OnInit, OnDestroy {
 
-  readonly fechaLimitePrecios = '2026-09-30';
   readonly modo = input<'materia' | 'producto'>('materia');
   readonly producto = input<Producto | null>(null);
   readonly presentacion = input<Presentacion | null>(null);
@@ -79,6 +79,9 @@ export class HistoricoCostos implements OnInit, OnDestroy {
   private readonly zona = inject(NgZone);
   readonly materiales = signal<MaterialBase[]>([]);
   private readonly precios = signal<PrecioSemanal[]>([]);
+  readonly fechaLimitePrecios = computed(() =>
+    this.precios().map((precio) => precio.semana).sort().at(-1) ?? '',
+  );
   private readonly cantidades = signal<CantidadMaterial[]>([]);
   readonly materiaId = signal<number | null>(null);
   readonly textoMateria = signal('');
@@ -121,7 +124,8 @@ export class HistoricoCostos implements OnInit, OnDestroy {
 
       fechas.push(...(costos?.meses ?? []).map((m) => `${m}-01`));
     }
-    return [...new Set(fechas)].filter((fecha) => fecha <= this.fechaLimitePrecios).sort();
+    const limite = this.fechaLimitePrecios();
+    return [...new Set(fechas)].filter((fecha) => !limite || fecha <= limite).sort();
   });
   readonly rangoInvalido = computed(
     () =>
@@ -159,7 +163,8 @@ export class HistoricoCostos implements OnInit, OnDestroy {
         : this.cantidades();
     const fechas = [...new Set([...this.semanas(), this.desde(), this.hasta()])].sort();
     return calcularSerie(
-      fechas.filter((s) => s >= this.desde() && s <= this.hasta() && s <= this.fechaLimitePrecios),
+      fechas.filter((s) => s >= this.desde() && s <= this.hasta() &&
+        (!this.fechaLimitePrecios() || s <= this.fechaLimitePrecios())),
       cantidades,
       this.materiales(),
       this.precios(),
@@ -387,9 +392,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
         nombre: String(m['nombre']),
         costo_kg: Number(m['costo_base_historico'] ?? m['costo_kg']),
       }));
-      const historicos: PrecioSemanal[] = precios
-        .filter((p) => String(p['semana']) <= this.fechaLimitePrecios)
-        .map((p) => ({
+      const historicos: PrecioSemanal[] = precios.map((p) => ({
           materia_prima_id: Number(p['materia_prima_id']),
           semana: String(p['semana']),
           costo_kg: Number(p['costo_kg']),

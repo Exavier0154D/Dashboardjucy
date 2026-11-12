@@ -14,6 +14,7 @@ describe('Períodos visibles y cálculo del estándar', () => {
       { materia_prima_id: 57, semana: '2026-01-01', costo_kg: 0.24 },
       { materia_prima_id: 57, semana: '2026-01-20', costo_kg: 0.26 },
       { materia_prima_id: 57, semana: '2026-08-22', costo_kg: 0.32 },
+      { materia_prima_id: 57, semana: '2026-10-01', costo_kg: 0.24 },
     ];
     const meses = signal<string[]>([]);
     const sku: Presentacion = {
@@ -64,6 +65,9 @@ describe('Períodos visibles y cálculo del estándar', () => {
         {
           provide: DataService,
           useValue: {
+            productos: signal([]),
+            cargando: signal(false),
+            error: signal(null),
             mesesMateriaPrima: () => meses(),
             semanasMateriaPrima: (_skus: Presentacion[], mes: string) =>
               semanasDePrecios(mes, precios, new Set([57])),
@@ -101,7 +105,7 @@ describe('Períodos visibles y cálculo del estándar', () => {
     const selects = fixture.nativeElement.querySelectorAll(
       '.cost-controls select',
     ) as NodeListOf<HTMLSelectElement>;
-    expect(selects[0].value).toBe('2026-01');
+    expect(selects[0].value).toBe('2026-10');
     expect(selects[1].value).toBe(component.semanaSeleccionada());
     selects[0].value = '2026-01';
     selects[0].dispatchEvent(new Event('change'));
@@ -121,6 +125,8 @@ describe('Períodos visibles y cálculo del estándar', () => {
     await fixture.whenStable();
     expect(selects[0].value).toBe('2026-10');
     expect(selects[1].value).toBe('2026-10-01');
-    expect(component.costoMateriaPrima()).toBeCloseTo(1.61312 * 0.32, 8);
+    expect(component.costoMateriaPrima()).toBeCloseTo(1.61312 * 0.24, 8);
+    expect(selects[0].selectedOptions[0].textContent).not.toContain('Costo de referencia');
+    expect(fixture.nativeElement.textContent).not.toContain('pendiente de actualización');
   });
 });

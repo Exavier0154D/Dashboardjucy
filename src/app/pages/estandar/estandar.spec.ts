@@ -1,4 +1,4 @@
-import { PLATFORM_ID } from '@angular/core';
+import { PLATFORM_ID, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CostosPresentacion, CostosProduccionService } from '../../core/costos-produccion.service';
 import { SelectionService } from '../../core/selection.service';
@@ -77,12 +77,24 @@ describe('Costo final del estándar', () => {
     expect(component.gastosIndirectosDelMes()?.estimado).toBe(true);
   });
 
-  it('marca como referencia solo septiembre a diciembre de 2026', () => {
-    for (let mes = 1; mes <= 12; mes++) {
-      expect(component.esCostoReferencia(`2026-${String(mes).padStart(2, '0')}`)).toBe(mes >= 10);
-    }
-    expect(component.esCostoReferencia('2025-09')).toBe(false);
-    expect(component.esCostoReferencia('2027-09')).toBe(false);
+  it('reconoce octubre y nuevos meses a partir de los precios registrados', () => {
+    const meses = signal(['2026-09']);
+    vi.spyOn(TestBed.inject(DataService), 'mesesMateriaPrima').mockImplementation(() => meses());
+    expect(component.esCostoReferencia('2026-09')).toBe(false);
+    expect(component.esCostoReferencia('2026-10')).toBe(true);
+    meses.set(['2026-09', '2026-10', '2027-01']);
+    expect(component.esCostoReferencia('2026-10')).toBe(false);
+    expect(component.esCostoReferencia('2027-01')).toBe(false);
+    expect(component.esCostoReferencia('2026-12')).toBe(true);
+  });
+
+  it('conserva octubre seleccionado al recargar los costos', async () => {
+    const cargar = vi.fn().mockResolvedValue(costos);
+    Object.assign(TestBed.inject(CostosProduccionService), { cargar });
+    component.mesSeleccionado.set('2026-10');
+    await component['cargarCostos'](1, component['solicitudCostos']);
+    expect(cargar).toHaveBeenCalledWith(1);
+    expect(component.mesSeleccionado()).toBe('2026-10');
   });
 
   it('recalcula al cambiar el mes y conserva un cero registrado', () => {

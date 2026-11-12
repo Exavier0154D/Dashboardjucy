@@ -323,7 +323,8 @@ export class Estandar {
   }
 
   esCostoReferencia(mes: string): boolean {
-    return ['2026-10', '2026-11', '2026-12'].includes(mes);
+    const presentacion = this.presentacionActual();
+    return !!mes && !!presentacion && !this.data.mesesMateriaPrima(presentacion).includes(mes);
   }
 
   cambiarSemana(fecha: string): void {
@@ -359,9 +360,10 @@ export class Estandar {
       if (solicitud !== this.solicitudCostos) return;
       this.costos.set(costos);
       const mesActual = this.mesSeleccionado();
-      const mesesConDatos = costos.meses.filter((mes) => !this.esCostoReferencia(mes));
+      const presentacion = this.presentacionActual();
+      const mesesConDatos = presentacion ? this.data.mesesMateriaPrima(presentacion).slice().sort() : [];
 
-      if (!mesActual || (this.esCostoReferencia(mesActual) && mesesConDatos.length)) {
+      if (!mesActual) {
         const fallback = mesesConDatos.at(-1) ?? costos.meses.at(-1) ?? mesActualEcuador();
         this.mesSeleccionado.set(fallback);
       }

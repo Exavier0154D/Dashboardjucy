@@ -77,7 +77,7 @@
     }
     <mat-form-field appearance="outline" class="history-date" subscriptSizing="dynamic">
       <mat-label>Desde</mat-label>
-      <input matInput readonly [matDatepicker]="calendarioDesde" [max]="fechaCalendario(fechaLimitePrecios)"
+      <input matInput readonly [matDatepicker]="calendarioDesde" [max]="fechaCalendario(fechaLimitePrecios())"
         [value]="fechaCalendario(desde())" (click)="calendarioDesde.open()"
         (dateChange)="seleccionarFecha('desde', $event.value)" />
       <mat-datepicker-toggle matIconSuffix [for]="calendarioDesde"></mat-datepicker-toggle>
@@ -85,16 +85,18 @@
     </mat-form-field>
     <mat-form-field appearance="outline" class="history-date" subscriptSizing="dynamic">
       <mat-label>Hasta</mat-label>
-      <input matInput readonly [matDatepicker]="calendarioHasta" [max]="fechaCalendario(fechaLimitePrecios)"
+      <input matInput readonly [matDatepicker]="calendarioHasta" [max]="fechaCalendario(fechaLimitePrecios())"
         [value]="fechaCalendario(hasta())" (click)="calendarioHasta.open()"
         (dateChange)="seleccionarFecha('hasta', $event.value)" />
       <mat-datepicker-toggle matIconSuffix [for]="calendarioHasta"></mat-datepicker-toggle>
       <mat-datepicker #calendarioHasta panelClass="jucy-history-calendar"></mat-datepicker>
     </mat-form-field>
   </div>
-  <p class="note availability-note">
-    Precios disponibles hasta septiembre de 2026. Octubre en adelante queda pendiente de registro.
-  </p>
+  @if (fechaLimitePrecios()) {
+    <p class="note availability-note">
+      Último precio registrado: {{ fechaLimitePrecios() | date: 'dd/MM/yyyy':'UTC' }}.
+    </p>
+  }
   <details class="methodology">
     <summary>Cómo interpretar el histórico<mat-icon>expand_more</mat-icon></summary>
     <p class="note">

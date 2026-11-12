@@ -10,6 +10,7 @@ describe('Corte de precios del gráfico histórico', () => {
       { materia_prima_id: 57, semana: '2026-01-01', costo_kg: 0.23 },
       { materia_prima_id: 57, semana: '2026-08-22', costo_kg: 0.29 },
       { materia_prima_id: 57, semana: '2026-09-01', costo_kg: 9 },
+      { materia_prima_id: 57, semana: '2026-10-01', costo_kg: 0.24 },
       { materia_prima_id: 57, semana: '2026-12-01', costo_kg: 10 },
     ];
     TestBed.configureTestingModule({
@@ -52,20 +53,20 @@ describe('Corte de precios del gráfico histórico', () => {
     return fixture.componentInstance;
   }
 
-  it('termina en septiembre aunque existan filas posteriores y no extiende la línea hasta hoy', async () => {
+  it('incluye octubre y llega hasta el último precio registrado', async () => {
     const component = await crear();
-    expect(component.semanas()).toEqual(['2026-01-01', '2026-08-22', '2026-09-01']);
-    expect(component.hasta()).toBe('2026-09-01');
-    expect(component.serie().map((p) => p.costo)).toEqual([0.23, 0.29, 9]);
-    expect(component.chartData().labels).toEqual(['01/01/2026', '22/08/2026', '01/09/2026']);
+    expect(component.fechaLimitePrecios()).toBe('2026-12-01');
+    expect(component.semanas()).toEqual(['2026-01-01', '2026-08-22', '2026-09-01', '2026-10-01', '2026-12-01']);
+    expect(component.hasta()).toBe('2026-12-01');
+    expect(component.serie().map((p) => p.costo)).toEqual([0.23, 0.29, 9, 0.24, 10]);
+    expect(component.chartData().labels).toContain('01/10/2026');
   });
 
-  it('excluye fechas posteriores incluso al introducir manualmente otro rango', async () => {
+  it('limita el rango manual al último precio registrado', async () => {
     const component = await crear();
     component.hasta.set('2026-12-31');
-    expect(component.serie().map((p) => p.semana)).toEqual(['2026-01-01', '2026-08-22', '2026-09-01']);
-    expect(component.resumen()?.ultimo).toBe(9);
-    component.desde.set('2026-12-01');
+    expect(component.serie().at(-1)?.semana).toBe('2026-12-01');
+    component.desde.set('2026-12-02');
     expect(component.serie()).toEqual([]);
     expect(component.resumen()).toBeNull();
   });

@@ -66,6 +66,7 @@ describe('Comparativa con el estándar', () => {
   let cargar: ReturnType<typeof vi.fn>;
   let actualizar: ReturnType<typeof vi.fn>;
   const productos = signal<Producto[]>([]);
+  const mesesMateriaPrima = signal<string[]>([]);
 
   function agregar(mes: string): void {
     component.mesPendiente.set(mes);
@@ -74,6 +75,9 @@ describe('Comparativa con el estándar', () => {
 
   beforeEach(async () => {
     productos.set([producto]);
+    mesesMateriaPrima.set(
+      Array.from({ length: 8 }, (_, i) => `2026-${String(i + 1).padStart(2, '0')}`),
+    );
     cargar = vi.fn().mockResolvedValue(costos);
     actualizar = vi.fn().mockResolvedValue(true);
     await TestBed.configureTestingModule({
@@ -89,8 +93,7 @@ describe('Comparativa con el estándar', () => {
             materiaPrimaDelMes: (_sku: Presentacion, mes: string) => ({
               costo: mes === '2026-01' ? 1 : 0.8,
             }),
-            mesesMateriaPrima: () =>
-              Array.from({ length: 8 }, (_, i) => `2026-${String(i + 1).padStart(2, '0')}`),
+            mesesMateriaPrima: () => mesesMateriaPrima(),
             actualizarAhora: actualizar,
           },
         },
@@ -158,7 +161,7 @@ describe('Comparativa con el estándar', () => {
     expect(fixture.nativeElement.querySelector('input[type="month"]')).toBeNull();
   });
 
-  it('ofrece solo enero a agosto aunque el servicio extienda los meses', async () => {
+  it('ofrece solo meses con registros aunque el servicio extienda los meses', async () => {
     cargar.mockResolvedValue({ ...costos, meses: ['2026-01', '2026-09', '2026-12'] });
     await component.actualizar();
     await fixture.whenStable();
@@ -172,6 +175,20 @@ describe('Comparativa con el estándar', () => {
     await mes.close();
     agregar('2026-09');
     expect(component.mesesSeleccionados()).toEqual([]);
+  });
+
+  it('habilita octubre automáticamente al llegar sus precios y permite compararlo', async () => {
+    mesesMateriaPrima.set(['2026-09']);
+    await fixture.whenStable();
+    expect(component.mesesDisponibles()).not.toContain('2026-10');
+    mesesMateriaPrima.set(['2026-09', '2026-10']);
+    await fixture.whenStable();
+    expect(component.mesesDisponibles()).toContain('2026-10');
+    agregar('2026-10');
+    await fixture.whenStable();
+    expect(component.comparaciones()[0].mes).toBe('2026-10');
+    expect(component.comparaciones()[0].valores.materiaPrima).toBe(0.8);
+    expect(fixture.nativeElement.querySelector('table').textContent).toContain('octubre de 2026');
   });
 
   it('admite registros de nuevos años sin modificar la base', async () => {
