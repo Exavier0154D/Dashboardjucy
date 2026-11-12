@@ -62,12 +62,13 @@ describe('Corte de precios del gráfico histórico', () => {
     expect(component.chartData().labels).toContain('01/10/2026');
   });
 
-  it('limita el rango manual al último precio registrado', async () => {
+  it('permite consultar meses posteriores y mantiene el último precio conocido', async () => {
     const component = await crear();
-    component.hasta.set('2026-12-31');
-    expect(component.serie().at(-1)?.semana).toBe('2026-12-01');
-    component.desde.set('2026-12-02');
-    expect(component.serie()).toEqual([]);
-    expect(component.resumen()).toBeNull();
+    component.hasta.set('2027-02-01');
+    expect(component.serie().at(-1)?.semana).toBe('2027-02-01');
+    expect(component.resumen()?.ultimo).toBe(10);
+    component.desde.set('2027-01-01');
+    expect(component.serie().map((p) => p.semana)).toEqual(['2027-01-01', '2027-02-01']);
+    expect(component.serie().map((p) => p.costo)).toEqual([10, 10]);
   });
 });

@@ -124,8 +124,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
 
       fechas.push(...(costos?.meses ?? []).map((m) => `${m}-01`));
     }
-    const limite = this.fechaLimitePrecios();
-    return [...new Set(fechas)].filter((fecha) => !limite || fecha <= limite).sort();
+    return [...new Set(fechas)].sort();
   });
   readonly rangoInvalido = computed(
     () =>
@@ -163,8 +162,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
         : this.cantidades();
     const fechas = [...new Set([...this.semanas(), this.desde(), this.hasta()])].sort();
     return calcularSerie(
-      fechas.filter((s) => s >= this.desde() && s <= this.hasta() &&
-        (!this.fechaLimitePrecios() || s <= this.fechaLimitePrecios())),
+      fechas.filter((s) => s >= this.desde() && s <= this.hasta()),
       cantidades,
       this.materiales(),
       this.precios(),

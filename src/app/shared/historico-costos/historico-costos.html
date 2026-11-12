@@ -77,7 +77,7 @@
     }
     <mat-form-field appearance="outline" class="history-date" subscriptSizing="dynamic">
       <mat-label>Desde</mat-label>
-      <input matInput readonly [matDatepicker]="calendarioDesde" [max]="fechaCalendario(fechaLimitePrecios())"
+      <input matInput readonly [matDatepicker]="calendarioDesde"
         [value]="fechaCalendario(desde())" (click)="calendarioDesde.open()"
         (dateChange)="seleccionarFecha('desde', $event.value)" />
       <mat-datepicker-toggle matIconSuffix [for]="calendarioDesde"></mat-datepicker-toggle>
@@ -85,7 +85,7 @@
     </mat-form-field>
     <mat-form-field appearance="outline" class="history-date" subscriptSizing="dynamic">
       <mat-label>Hasta</mat-label>
-      <input matInput readonly [matDatepicker]="calendarioHasta" [max]="fechaCalendario(fechaLimitePrecios())"
+      <input matInput readonly [matDatepicker]="calendarioHasta"
         [value]="fechaCalendario(hasta())" (click)="calendarioHasta.open()"
         (dateChange)="seleccionarFecha('hasta', $event.value)" />
       <mat-datepicker-toggle matIconSuffix [for]="calendarioHasta"></mat-datepicker-toggle>
