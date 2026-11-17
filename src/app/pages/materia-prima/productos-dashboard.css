@@ -1,0 +1,86 @@
+.products-page .product-card {
+  --product-accent: #138a66;
+  --product-soft: #def6e9;
+  border-top: 3px solid var(--product-accent);
+  background: radial-gradient(ellipse at 100% 0, var(--product-soft), transparent 65%), #fff;
+}
+.products-page .product-card[data-category='Agua de Coco'] {
+  --product-accent: #138d81;
+  --product-soft: #d9f5ee;
+}
+.products-page .product-card[data-category='Bebida'] {
+  --product-accent: #3978c6;
+  --product-soft: #e2eeff;
+}
+.products-page .product-card[data-category='Jugos y Zumo'] {
+  --product-accent: #d97736;
+  --product-soft: #fff0df;
+}
+.products-page .product-card[data-category='Lacteos'] {
+  --product-accent: #9065c8;
+  --product-soft: #f0e6fc;
+}
+.products-page .product-card[data-category='Limonada'] {
+  --product-accent: #789b29;
+  --product-soft: #f0f7d7;
+}
+.products-page .product-card[data-category='Naranja'] {
+  --product-accent: #df922b;
+  --product-soft: #fff0d3;
+}
+.products-page .product-card[data-category='Nectar'] {
+  --product-accent: #c85384;
+  --product-soft: #ffe6f0;
+}
+.products-page .product-card[data-category='P. Temporales y Salsa'] {
+  --product-accent: #66953d;
+  --product-soft: #e9f4d9;
+}
+.products-page .product-mark {
+  background: var(--product-soft);
+  color: var(--product-accent);
+  box-shadow: 0 4px 12px #244a3a0b;
+}
+.products-page .product-card:hover,
+.products-page .product-card:focus-within {
+  border-color: var(--product-accent);
+  box-shadow: 0 9px 22px #244a3a12;
+}
+.products-page .product-card .brand-label {
+  color: #5e786a;
+}
+.products-page .catalog-toolbar {
+  border-top: 3px solid #29a679;
+}
+.products-page .product-toolbar-heading .eyebrow {
+  color: #25875f;
+}
+.products-page .catalog-period {
+  background: #ddf4e8;
+  color: #267a55;
+}
+.products-page .primary-button {
+  background: linear-gradient(125deg, #14a373, #197c56);
+  box-shadow: 0 4px 10px #14986b28;
+}
+.products-page .primary-button:hover:not(:disabled) {
+  background: #10724f;
+}
+.products-page .presentation-select {
+  background: #fff;
+  border-color: #dbe9e0;
+}
+.products-page .presentation-value mat-icon {
+  color: var(--product-accent);
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .products-page .product-card {
+    transition:
+      transform 180ms ease,
+      box-shadow 180ms ease,
+      border-color 180ms ease;
+  }
+  .products-page .product-card:hover {
+    transform: translateY(-3px);
+  }
+}

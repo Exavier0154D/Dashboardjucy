@@ -562,91 +562,91 @@
   }
 }
 
-.material-page {
+.catalog-page {
   --green: #158a61;
   --muted: #647e70;
   background: radial-gradient(ellipse at 95% 0, #daf1e7, transparent 42%), #f2f6f3;
 }
-.material-page .surface {
+.catalog-page .surface {
   box-shadow: 0 5px 18px #244a3a0a;
 }
-.material-page .refresh-button {
+.catalog-page .refresh-button {
   background: linear-gradient(125deg, #14a373, #197c56);
   box-shadow: 0 5px 12px #14986b28;
 }
-.material-page .material-kpi {
+.catalog-page .material-kpi {
   border-color: #cdebd9;
   border-top: 3px solid #28a571;
   background: linear-gradient(120deg, #fff 30%, #e1f6e8);
 }
-.material-page .material-kpi:nth-child(2) {
+.catalog-page .material-kpi:nth-child(2) {
   border-color: #dce9f7;
   border-top-color: #5393da;
   background: linear-gradient(120deg, #fff 30%, #eaf3ff);
 }
-.material-page .material-kpi:nth-child(3) {
+.catalog-page .material-kpi:nth-child(3) {
   border-color: #f2e7c8;
   border-top-color: #e3b34f;
   background: linear-gradient(120deg, #fff 30%, #fff5db);
 }
-.material-page .material-kpi:nth-child(2) strong {
+.catalog-page .material-kpi:nth-child(2) strong {
   color: #356fae;
 }
-.material-page .material-kpi:nth-child(3) strong {
+.catalog-page .material-kpi:nth-child(3) strong {
   color: #a87924;
 }
-.material-page .material-kpi > span:not(.metric-icon) {
+.catalog-page .material-kpi > span:not(.metric-icon) {
   color: #536e5f;
 }
-.material-page .metric-icon {
+.catalog-page .metric-icon {
   background: #cff1de;
   color: #168352;
 }
-.material-page .material-kpi:nth-child(2) .metric-icon {
+.catalog-page .material-kpi:nth-child(2) .metric-icon {
   background: #dcecff;
   color: #3978bd;
 }
-.material-page .material-kpi:nth-child(3) .metric-icon {
+.catalog-page .material-kpi:nth-child(3) .metric-icon {
   background: #ffedbc;
   color: #aa7c22;
 }
-.material-page .material-tabs button.active {
+.catalog-page .material-tabs button.active {
   background: #ddf4e8;
   color: #167c55;
 }
-.material-page .chart-card,
-.material-page .catalog-health {
+.catalog-page .chart-card,
+.catalog-page .catalog-health {
   border-top: 3px solid #39ada4;
 }
-.material-page .catalog-health {
+.catalog-page .catalog-health {
   background: linear-gradient(150deg, #fff 65%, #edf9f3);
 }
-.material-page .ingredient-avatar {
+.catalog-page .ingredient-avatar {
   background: #ddf4e8;
   color: #25875f;
 }
-.material-page th {
+.catalog-page th {
   background: #eaf5ee;
   color: #547360;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .material-page .material-kpi {
+  .catalog-page .material-kpi {
     animation: product-search-a 350ms ease-out backwards;
   }
-  .material-page .material-kpi:nth-child(2) {
+  .catalog-page .material-kpi:nth-child(2) {
     animation-delay: 45ms;
   }
-  .material-page .material-kpi:nth-child(3) {
+  .catalog-page .material-kpi:nth-child(3) {
     animation-delay: 90ms;
   }
 }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .material-page .material-kpi {
+  .catalog-page .material-kpi {
     transition:
       transform 180ms ease,
       box-shadow 180ms ease;
   }
-  .material-page .material-kpi:hover {
+  .catalog-page .material-kpi:hover {
     transform: translateY(-3px);
     box-shadow: 0 9px 22px #244a3a12;
   }

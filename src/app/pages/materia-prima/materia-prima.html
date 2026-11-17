@@ -1,5 +1,6 @@
 <div
   class="page"
+  [class.catalog-page]="!productoSeleccionado()"
   [class.product-detail-page]="!!productoSeleccionado()"
   [class.products-page]="vista() === 'productos' && !productoSeleccionado()"
   [class.material-page]="vista() === 'materias' && !productoSeleccionado()"
@@ -167,7 +168,11 @@
           >
             @for (producto of productosFiltrados(); track producto.id) {
               @let sku = presentacionTarjeta(producto);
-              <article class="product-card surface" [style.--reveal-order]="$index % 8">
+              <article
+                class="product-card surface"
+                [attr.data-category]="producto.categoria"
+                [style.--reveal-order]="$index % 8"
+              >
                 <div class="product-top">
                   <span class="category-tag" [attr.data-category]="producto.categoria">{{
                     producto.categoria
