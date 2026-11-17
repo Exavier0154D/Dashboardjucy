@@ -19,6 +19,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { coincideBusqueda } from '../../core/busqueda-texto';
+import { DESPLEGABLES_SCROLL_PROVIDERS } from '../../core/desplegables-scroll';
 
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData } from 'chart.js';
@@ -48,7 +49,7 @@ import {
     MatButtonModule,
     MatDatepickerModule,
   ],
-  providers: [provideNativeDateAdapter(), { provide: MAT_DATE_LOCALE, useValue: 'es-EC' }],
+  providers: [...DESPLEGABLES_SCROLL_PROVIDERS, provideNativeDateAdapter(), { provide: MAT_DATE_LOCALE, useValue: 'es-EC' }],
   templateUrl: './historico-costos.html',
   styleUrl: './historico-costos.css',
 })

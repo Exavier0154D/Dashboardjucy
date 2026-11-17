@@ -8,6 +8,7 @@ import { Presentacion, Producto } from '../../models/producto.model';
 import { coincideBusqueda } from '../../core/busqueda-texto';
 import { DataService } from '../../core/data.service';
 import { SelectionService } from '../../core/selection.service';
+import { DESPLEGABLES_SCROLL_PROVIDERS } from '../../core/desplegables-scroll';
 import { CostosPresentacion, CostosProduccionService } from '../../core/costos-produccion.service';
 import { mesActualEcuador, resolverManoObra, sumarCostoFinal } from '../../core/costos-calculos';
 import { resolverGastosIndirectos } from '../../core/gastos-indirectos-calculos';
@@ -21,6 +22,7 @@ interface Periodo {
 
 @Component({
   selector: 'app-comparativa',
+  providers: DESPLEGABLES_SCROLL_PROVIDERS,
   standalone: true,
   imports: [DecimalPipe, MatIconModule, MatAutocompleteModule, MatSelectModule],
   templateUrl: './comparativa.html',

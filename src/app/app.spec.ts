@@ -2,13 +2,27 @@ import { TestBed } from '@angular/core/testing';
 import { Component } from '@angular/core';
 import { Overlay } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
+import { By } from '@angular/platform-browser';
+import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { DESPLEGABLES_SCROLL_PROVIDERS } from './core/desplegables-scroll';
 import { App } from './app';
 import { SupabaseService } from './core/supabase.service';
 import { CatalogoAdminService } from './core/catalogo-admin.service';
 
 @Component({ template: 'Sugerencias de búsqueda' })
 class PanelBusquedaPrueba {}
+
+@Component({
+  imports: [MatAutocompleteModule],
+  providers: DESPLEGABLES_SCROLL_PROVIDERS,
+  template: `<input aria-label="Buscar materia prima" [matAutocomplete]="opciones" />
+    <mat-autocomplete #opciones="matAutocomplete">
+      <mat-option value="Coco">Coco</mat-option>
+      <mat-option value="Limón">Limón</mat-option>
+    </mat-autocomplete>`,
+})
+class BuscadorScrollPrueba {}
 
 describe('Acceso a la aplicación', () => {
   let cambiarSesion: (event: string, session: any) => void;
@@ -117,5 +131,47 @@ describe('Acceso a la aplicación', () => {
     } finally {
       panel.dispose();
     }
+  });
+
+  it('permite recorrer las opciones y cierra el buscador al desplazar la página sin perder la selección', async () => {
+    auth.onAuthStateChange.mockImplementationOnce((callback) => {
+      cambiarSesion = callback;
+      callback('INITIAL_SESSION', { user: { email: 'usuario@jucy.com' } });
+      return { data: { subscription: { unsubscribe: vi.fn() } } };
+    });
+    const router = TestBed.inject(Router);
+    router.resetConfig([{ path: 'prueba-scroll', component: BuscadorScrollPrueba }]);
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await router.navigateByUrl('/prueba-scroll');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const buscador = fixture.debugElement.query(By.directive(MatAutocompleteTrigger));
+    const trigger = buscador.injector.get(MatAutocompleteTrigger);
+    const contenido = fixture.nativeElement.querySelector('#contenido-principal') as HTMLElement;
+    trigger.openPanel();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    (trigger.autocomplete.panel.nativeElement.querySelector('mat-option') as HTMLElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(buscador.nativeElement.value).toBe('Coco');
+
+    trigger.openPanel();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const opciones = trigger.autocomplete.panel.nativeElement;
+    opciones.scrollTop = 50;
+    opciones.dispatchEvent(new Event('scroll'));
+    expect(trigger.panelOpen).toBe(true);
+
+    contenido.scrollTop = 200;
+    contenido.dispatchEvent(new Event('scroll'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(trigger.panelOpen).toBe(false);
+    expect(buscador.nativeElement.value).toBe('Coco');
+    expect(fixture.nativeElement.querySelector('#contenido-principal')).not.toBeNull();
   });
 });

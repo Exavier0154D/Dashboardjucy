@@ -20,11 +20,13 @@ import { agruparEnvases, catalogoEnvases, GrupoEnvase } from '../../core/catalog
 import { TIPOS_EMPAQUE } from '../../models/empaque.model';
 import { Estandar } from '../estandar/estandar';
 import { HistoricoCostos } from '../../shared/historico-costos/historico-costos';
+import { DESPLEGABLES_SCROLL_PROVIDERS } from '../../core/desplegables-scroll';
 
 type Vista = 'productos' | 'materias';
 
 @Component({
   selector: 'app-materia-prima',
+  providers: DESPLEGABLES_SCROLL_PROVIDERS,
   imports: [
     DecimalPipe,
     RouterLink,

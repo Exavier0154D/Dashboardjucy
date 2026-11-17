@@ -167,6 +167,10 @@ body {
   background: #f5f7f3;
   color: #18312b;
 }
+/* Desktop scroll belongs to .content; dropdowns must not scroll the document. */
+@media (min-width: 901px) {
+  html, body { height: 100%; overflow: hidden; overscroll-behavior-y: none; }
+}
 button,
 input,
 select {
