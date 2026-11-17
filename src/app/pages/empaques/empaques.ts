@@ -13,6 +13,7 @@ import {
   tiposEmpaqueRequeridos,
 } from '../../models/empaque.model';
 import { coincideBusqueda } from '../../core/busqueda-texto';
+import { MaterialesPorPresentacion } from './materiales-presentacion';
 
 const COLORES_EMPAQUE: Record<(typeof TIPOS_EMPAQUE_BASE)[number], string> = {
   Botella: '#16a679',
@@ -22,7 +23,7 @@ const COLORES_EMPAQUE: Record<(typeof TIPOS_EMPAQUE_BASE)[number], string> = {
 
 @Component({
   selector: 'app-empaques',
-  imports: [DecimalPipe, RouterLink, BaseChartDirective, MatIconModule],
+  imports: [DecimalPipe, RouterLink, BaseChartDirective, MatIconModule, MaterialesPorPresentacion],
   templateUrl: './empaques.html',
   styleUrl: './empaques.css',
 })
@@ -35,6 +36,7 @@ export class Empaques {
   readonly errorCarga = this.data.error.asReadonly();
   readonly tiposEmpaque = TIPOS_EMPAQUE_BASE;
   readonly busqueda = signal('');
+  readonly vista = signal<'costos' | 'materiales'>('costos');
   readonly soloIncompletos = signal(false);
   readonly mostrarGraficos = signal(true);
   readonly presentacionDetalleId = signal<number | null>(null);

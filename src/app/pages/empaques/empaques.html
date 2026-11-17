@@ -15,280 +15,302 @@
       >{{ cargando() ? 'Actualizando…' : 'Actualizar datos' }}
     </button>
   </header>
-  <details class="empaque-info">
-    <summary>
-      <mat-icon aria-hidden="true">info_outline</mat-icon>¿Cómo se calculan estos costos?<mat-icon
-        class="info-chevron"
-        aria-hidden="true"
-        >expand_more</mat-icon
-      >
-    </summary>
-    <p class="card-sub">
-      Las botellas, tapas, etiquetas y cartones también están en
-      <a routerLink="/insumos">Materia prima</a>.
-    </p>
-    <p class="card-sub">
-      Los envases se registran por unidad. El precio registrado de cada cartón se divide entre 12
-      unidades para presentaciones menores de 1 litro y entre 6 para las de 1 litro o más. El cartón
-      aplica únicamente a Agua de Coco y Lácteos.
-    </p>
-  </details>
-  @if (errorCarga()) {
-    <p class="error" role="alert">{{ errorCarga() }}</p>
-  }
-  @if (cargando() && !cargado()) {
-    <p role="status">Cargando empaques…</p>
-  }
-  @if (cargado()) {
-    <div class="kpi-grid">
-      <div class="card kpi">
-        <span class="kpi-icon kpi-icon--green"
-          ><mat-icon aria-hidden="true">inventory_2</mat-icon></span
-        >
-        <span>Presentaciones</span><strong>{{ resumen().length }}</strong
-        ><small>SKU en el catálogo de empaques</small>
-      </div>
-      <div class="card kpi">
-        <span class="kpi-icon kpi-icon--blue"
-          ><mat-icon aria-hidden="true">category</mat-icon></span
-        >
-        <span>Componentes de empaque</span><strong>{{ totalRegistros() }}</strong
-        ><small>Botellas, tapas y etiquetas registradas</small>
-      </div>
-      <div class="card kpi kpi--alerta">
-        <span class="kpi-icon kpi-icon--amber"
-          ><mat-icon aria-hidden="true">pending_actions</mat-icon></span
-        >
-        <span>Por completar</span><strong>{{ sinCosto() }}</strong
-        ><small>Presentaciones con componentes pendientes.</small>
-      </div>
-    </div>
-    <details class="analysis-panel" open #graficos (toggle)="mostrarGraficos.set(graficos.open)">
+  <nav class="empaque-tabs" aria-label="Secciones de empaques">
+    <button
+      type="button"
+      [class.active]="vista() === 'costos'"
+      [attr.aria-pressed]="vista() === 'costos'"
+      (click)="vista.set('costos')"
+    >
+      <mat-icon aria-hidden="true">payments</mat-icon>Costos de empaque y cartón
+    </button>
+    <button
+      type="button"
+      [class.active]="vista() === 'materiales'"
+      [attr.aria-pressed]="vista() === 'materiales'"
+      (click)="vista.set('materiales')"
+    >
+      <mat-icon aria-hidden="true">inventory_2</mat-icon>Materiales por presentación
+    </button>
+  </nav>
+  @if (vista() === 'materiales') {
+    <app-materiales-presentacion></app-materiales-presentacion>
+  } @else {
+    <details class="empaque-info">
       <summary>
-        <span class="analysis-icon"><mat-icon aria-hidden="true">insights</mat-icon></span
-        ><span class="analysis-copy"
-          ><strong>Panorama del empaque</strong
-          ><small>Analiza los costos por presentación y tipo de material.</small></span
-        ><mat-icon class="analysis-chevron" aria-hidden="true">expand_more</mat-icon>
+        <mat-icon aria-hidden="true">info_outline</mat-icon>¿Cómo se calculan estos costos?<mat-icon
+          class="info-chevron"
+          aria-hidden="true"
+          >expand_more</mat-icon
+        >
       </summary>
-      @if (mostrarGraficos()) {
-        <div class="charts-grid">
-          <div class="card ranking-card">
-            <span class="chart-kicker">COMPARATIVA DE COSTOS</span>
-            <h2>Empaque por presentación</h2>
-            <p class="card-sub">Los 15 costos unitarios más altos.</p>
-            <div class="chart-box">
-              <canvas
-                baseChart
-                [type]="barType"
-                [data]="barData()"
-                [options]="barOptions"
-                role="img"
-                aria-label="Costos de empaque de las quince presentaciones más caras"
-              ></canvas>
-            </div>
-          </div>
-          <div class="card distribucion-card">
-            <span class="chart-kicker">COMPOSICIÓN DEL EMPAQUE</span>
-            <h2>Distribución por tipo</h2>
-            <p class="card-sub">Suma de precios unitarios; no representa gasto de producción.</p>
-            <div class="chart-box">
-              <canvas
-                baseChart
-                [type]="doughnutType"
-                [data]="doughnutData()"
-                [options]="doughnutOptions"
-                role="img"
-                aria-label="Suma de precios unitarios por tipo de empaque"
-              ></canvas>
-            </div>
-            <div class="promedios">
-              @for (p of promedioPorTipo(); track p.tipo) {
-                <div>
-                  <span
-                    ><i class="material-dot" [attr.data-tipo]="p.tipo" aria-hidden="true"></i
-                    >{{ p.tipo === 'Tap' ? 'Tapa' : p.tipo }}</span
-                  ><strong>
-                    @if (p.promedio !== null) {
-                      ${{ p.promedio | number: '1.4-4' }}
-                    } @else {
-                      Sin dato
-                    }
-                  </strong>
-                </div>
-              }
-              <small>Promedio unitario por material con dato registrado.</small>
-            </div>
-          </div>
-        </div>
-      }
+      <p class="card-sub">
+        Las botellas, tapas, etiquetas y cartones también están en
+        <a routerLink="/insumos">Materia prima</a>.
+      </p>
+      <p class="card-sub">
+        Los envases se registran por unidad. El precio registrado de cada cartón se divide entre 12
+        unidades para presentaciones menores de 1 litro y entre 6 para las de 1 litro o más. El
+        cartón aplica únicamente a Agua de Coco y Lácteos.
+      </p>
     </details>
-    <div class="card tabla-card">
-      <div class="tabla-header">
-        <div>
-          <h2>Resumen por presentación</h2>
-          <p class="card-sub">
-            {{ resumenFiltrado().length }} de {{ resumen().length }} SKU. Selecciona uno para ver el
-            detalle.
-          </p>
-        </div>
-        <div class="filtros">
-          <input
-            type="search"
-            aria-label="Buscar SKU"
-            placeholder="Producto, marca, código o tecnología"
-            #q
-            [value]="busqueda()"
-            (input)="buscar(q.value)"
-          />
-          <label class="check"
-            ><input
-              type="checkbox"
-              [checked]="soloIncompletos()"
-              (change)="toggleIncompletos()"
-            />Solo incompletos</label
+    @if (errorCarga()) {
+      <p class="error" role="alert">{{ errorCarga() }}</p>
+    }
+    @if (cargando() && !cargado()) {
+      <p role="status">Cargando empaques…</p>
+    }
+    @if (cargado()) {
+      <div class="kpi-grid">
+        <div class="card kpi">
+          <span class="kpi-icon kpi-icon--green"
+            ><mat-icon aria-hidden="true">inventory_2</mat-icon></span
           >
+          <span>Presentaciones</span><strong>{{ resumen().length }}</strong
+          ><small>SKU en el catálogo de empaques</small>
+        </div>
+        <div class="card kpi">
+          <span class="kpi-icon kpi-icon--blue"
+            ><mat-icon aria-hidden="true">category</mat-icon></span
+          >
+          <span>Componentes de empaque</span><strong>{{ totalRegistros() }}</strong
+          ><small>Botellas, tapas y etiquetas registradas</small>
+        </div>
+        <div class="card kpi kpi--alerta">
+          <span class="kpi-icon kpi-icon--amber"
+            ><mat-icon aria-hidden="true">pending_actions</mat-icon></span
+          >
+          <span>Por completar</span><strong>{{ sinCosto() }}</strong
+          ><small>Presentaciones con componentes pendientes.</small>
         </div>
       </div>
-      <div
-        class="tabla-contenedor"
-        tabindex="0"
-        role="region"
-        aria-label="Costos por presentación, desplazable"
-      >
-        <table class="tabla-resumen">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Presentación</th>
-              <th>Botella</th>
-              <th>Tapa</th>
-              <th>Etiqueta</th>
-              <th>Total empaque</th>
-              <th>Cartón independiente</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (r of resumenFiltrado(); track r.id) {
-              <tr [class.seleccionado]="r.id === presentacionDetalleId()">
-                <td>
-                  <button
-                    class="sku-link"
-                    type="button"
-                    [attr.aria-pressed]="r.id === presentacionDetalleId()"
-                    (click)="elegirPresentacion(r.id)"
-                  >
-                    {{ r.nombre }}</button
-                  ><small>{{ r.producto.marca }}</small>
-                </td>
-                <td>{{ etiqueta(r.presentacion) }}</td>
-                <td>${{ r.botella | number: '1.4-4' }}</td>
-                <td>${{ r.tap | number: '1.4-4' }}</td>
-                <td>${{ r.etiqueta | number: '1.4-4' }}</td>
-                <td>
-                  <strong>${{ r.total | number: '1.4-4' }}</strong>
-                </td>
-                <td>
-                  @if (r.cartonPendiente) {
-                    Sin dato
-                  } @else if (r.tieneCarton) {
-                    ${{ r.carton | number: '1.4-4' }}
-                  } @else {
-                    No aplica
-                  }
-                </td>
-                <td>
-                  <span
-                    class="badge"
-                    [class.badge--ok]="!r.incompleto && !r.referencia"
-                    [class.badge--warn]="r.incompleto || r.referencia"
-                    >{{
-                      r.incompleto
-                        ? 'Sin datos completos'
-                        : r.referencia
-                          ? 'Referencia'
-                          : 'Confirmado'
-                    }}</span
-                  >
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="8">No se encontraron SKU.</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-    @if (detalle(); as d) {
-      <div class="card detalle-card" aria-live="polite">
-        <span class="page-kicker">DETALLE DE PRESENTACIÓN</span>
-        <h2>{{ d.nombre }} · {{ etiqueta(d.presentacion) }}</h2>
-        <p class="card-sub">Código: {{ d.presentacion.codigoBarras || 'Sin código' }}</p>
-        <div class="tabla-contenedor">
-          <table>
+      <details class="analysis-panel" open #graficos (toggle)="mostrarGraficos.set(graficos.open)">
+        <summary>
+          <span class="analysis-icon"><mat-icon aria-hidden="true">insights</mat-icon></span
+          ><span class="analysis-copy"
+            ><strong>Panorama del empaque</strong
+            ><small>Analiza los costos por presentación y tipo de material.</small></span
+          ><mat-icon class="analysis-chevron" aria-hidden="true">expand_more</mat-icon>
+        </summary>
+        @if (mostrarGraficos()) {
+          <div class="charts-grid">
+            <div class="card ranking-card">
+              <span class="chart-kicker">COMPARATIVA DE COSTOS</span>
+              <h2>Empaque por presentación</h2>
+              <p class="card-sub">Los 15 costos unitarios más altos.</p>
+              <div class="chart-box">
+                <canvas
+                  baseChart
+                  [type]="barType"
+                  [data]="barData()"
+                  [options]="barOptions"
+                  role="img"
+                  aria-label="Costos de empaque de las quince presentaciones más caras"
+                ></canvas>
+              </div>
+            </div>
+            <div class="card distribucion-card">
+              <span class="chart-kicker">COMPOSICIÓN DEL EMPAQUE</span>
+              <h2>Distribución por tipo</h2>
+              <p class="card-sub">Suma de precios unitarios; no representa gasto de producción.</p>
+              <div class="chart-box">
+                <canvas
+                  baseChart
+                  [type]="doughnutType"
+                  [data]="doughnutData()"
+                  [options]="doughnutOptions"
+                  role="img"
+                  aria-label="Suma de precios unitarios por tipo de empaque"
+                ></canvas>
+              </div>
+              <div class="promedios">
+                @for (p of promedioPorTipo(); track p.tipo) {
+                  <div>
+                    <span
+                      ><i class="material-dot" [attr.data-tipo]="p.tipo" aria-hidden="true"></i
+                      >{{ p.tipo === 'Tap' ? 'Tapa' : p.tipo }}</span
+                    ><strong>
+                      @if (p.promedio !== null) {
+                        ${{ p.promedio | number: '1.4-4' }}
+                      } @else {
+                        Sin dato
+                      }
+                    </strong>
+                  </div>
+                }
+                <small>Promedio unitario por material con dato registrado.</small>
+              </div>
+            </div>
+          </div>
+        }
+      </details>
+      <div class="card tabla-card">
+        <div class="tabla-header">
+          <div>
+            <h2>Resumen por presentación</h2>
+            <p class="card-sub">
+              {{ resumenFiltrado().length }} de {{ resumen().length }} SKU. Selecciona uno para ver
+              el detalle.
+            </p>
+          </div>
+          <div class="filtros">
+            <input
+              type="search"
+              aria-label="Buscar SKU"
+              placeholder="Producto, marca, código o tecnología"
+              #q
+              [value]="busqueda()"
+              (input)="buscar(q.value)"
+            />
+            <label class="check"
+              ><input
+                type="checkbox"
+                [checked]="soloIncompletos()"
+                (change)="toggleIncompletos()"
+              />Solo incompletos</label
+            >
+          </div>
+        </div>
+        <div
+          class="tabla-contenedor"
+          tabindex="0"
+          role="region"
+          aria-label="Costos por presentación, desplazable"
+        >
+          <table class="tabla-resumen">
             <thead>
               <tr>
-                <th>Tipo</th>
-                <th>Costo unitario</th>
-                <th>Origen</th>
+                <th>Producto</th>
+                <th>Presentación</th>
+                <th>Botella</th>
+                <th>Tapa</th>
+                <th>Etiqueta</th>
+                <th>Total empaque</th>
+                <th>Cartón independiente</th>
+                <th>Estado</th>
               </tr>
             </thead>
             <tbody>
-              @for (e of d.componentesEmpaque; track e.id) {
+              @for (r of resumenFiltrado(); track r.id) {
+                <tr [class.seleccionado]="r.id === presentacionDetalleId()">
+                  <td>
+                    <button
+                      class="sku-link"
+                      type="button"
+                      [attr.aria-pressed]="r.id === presentacionDetalleId()"
+                      (click)="elegirPresentacion(r.id)"
+                    >
+                      {{ r.nombre }}</button
+                    ><small>{{ r.producto.marca }}</small>
+                  </td>
+                  <td>{{ etiqueta(r.presentacion) }}</td>
+                  <td>${{ r.botella | number: '1.4-4' }}</td>
+                  <td>${{ r.tap | number: '1.4-4' }}</td>
+                  <td>${{ r.etiqueta | number: '1.4-4' }}</td>
+                  <td>
+                    <strong>${{ r.total | number: '1.4-4' }}</strong>
+                  </td>
+                  <td>
+                    @if (r.cartonPendiente) {
+                      Sin dato
+                    } @else if (r.tieneCarton) {
+                      ${{ r.carton | number: '1.4-4' }}
+                    } @else {
+                      No aplica
+                    }
+                  </td>
+                  <td>
+                    <span
+                      class="badge"
+                      [class.badge--ok]="!r.incompleto && !r.referencia"
+                      [class.badge--warn]="r.incompleto || r.referencia"
+                      >{{
+                        r.incompleto
+                          ? 'Sin datos completos'
+                          : r.referencia
+                            ? 'Referencia'
+                            : 'Confirmado'
+                      }}</span
+                    >
+                  </td>
+                </tr>
+              } @empty {
                 <tr>
-                  <td>{{ e.tipo }}</td>
-                  <td>${{ e.costo | number: '1.4-4' }}</td>
-                  <td>{{ nombreEstado(e.estado) }}</td>
+                  <td colspan="8">No se encontraron SKU.</td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
-        <p>
-          Materia prima:
-          @if (d.presentacion.totalCosto !== null) {
-            ${{ d.presentacion.totalCosto | number: '1.4-4' }}
-          } @else {
-            Sin fórmula
-          }
-        </p>
-        <p>Empaque: ${{ d.total | number: '1.4-4' }}</p>
-        <p>
-          Cartón independiente:
-          @if (d.cartonPendiente) {
-            Sin dato
-          } @else if (!d.tieneCarton) {
-            No aplica
-          } @else {
-            ${{ d.carton | number: '1.4-4' }}
-          }
-        </p>
-        @if (d.cartonPendiente) {
-          <p class="badge badge--warn">
-            Falta registrar el costo de cartón de este SKU. El subtotal está incompleto.
-          </p>
-        }
-        <p>
-          <strong
-            >Subtotal materia prima + empaque + cartón:
-            @if (d.preliminar !== null) {
-              ${{ d.preliminar | number: '1.4-4' }}
+      </div>
+      @if (detalle(); as d) {
+        <div class="card detalle-card" aria-live="polite">
+          <span class="page-kicker">DETALLE DE PRESENTACIÓN</span>
+          <h2>{{ d.nombre }} · {{ etiqueta(d.presentacion) }}</h2>
+          <p class="card-sub">Código: {{ d.presentacion.codigoBarras || 'Sin código' }}</p>
+          <div class="tabla-contenedor">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Costo unitario</th>
+                  <th>Origen</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (e of d.componentesEmpaque; track e.id) {
+                  <tr>
+                    <td>{{ e.tipo }}</td>
+                    <td>${{ e.costo | number: '1.4-4' }}</td>
+                    <td>{{ nombreEstado(e.estado) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p>
+            Materia prima:
+            @if (d.presentacion.totalCosto !== null) {
+              ${{ d.presentacion.totalCosto | number: '1.4-4' }}
             } @else {
               Sin fórmula
             }
-          </strong>
-        </p>
-        @if (d.pct !== null) {
-          <p>Empaque sobre el subtotal: {{ d.pct | number: '1.1-1' }} %</p>
-        }
-        <p class="card-sub">
-          No incluye mano de obra. Los costos de referencia requieren revisión para este tamaño y
-          tecnología.
-        </p>
-      </div>
+          </p>
+          <p>Empaque: ${{ d.total | number: '1.4-4' }}</p>
+          <p>
+            Cartón independiente:
+            @if (d.cartonPendiente) {
+              Sin dato
+            } @else if (!d.tieneCarton) {
+              No aplica
+            } @else {
+              ${{ d.carton | number: '1.4-4' }}
+            }
+          </p>
+          @if (d.cartonPendiente) {
+            <p class="badge badge--warn">
+              Falta registrar el costo de cartón de este SKU. El subtotal está incompleto.
+            </p>
+          }
+          <p>
+            <strong
+              >Subtotal materia prima + empaque + cartón:
+              @if (d.preliminar !== null) {
+                ${{ d.preliminar | number: '1.4-4' }}
+              } @else {
+                Sin fórmula
+              }
+            </strong>
+          </p>
+          @if (d.pct !== null) {
+            <p>Empaque sobre el subtotal: {{ d.pct | number: '1.1-1' }} %</p>
+          }
+          <p class="card-sub">
+            No incluye mano de obra. Los costos de referencia requieren revisión para este tamaño y
+            tecnología.
+          </p>
+        </div>
+      }
     }
   }
 </div>

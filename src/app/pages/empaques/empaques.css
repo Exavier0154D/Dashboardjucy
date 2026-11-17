@@ -1,6 +1,39 @@
 :host {
   display: block;
 }
+.empaque-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 4px 0 24px;
+}
+.empaque-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border: 1px solid #dce9e2;
+  border-radius: 24px;
+  background: #fff;
+  color: #647e70;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.empaque-tabs button.active {
+  border-color: #158a61;
+  background: #158a61;
+  color: #fff;
+  box-shadow: 0 4px 10px #14986b28;
+}
+.empaque-tabs button:hover:not(.active) {
+  background: #e5f4eb;
+}
+.empaque-tabs mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+}
 .empaques-container {
   --green: #158a61;
   --ink: #21463b;

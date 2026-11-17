@@ -1,0 +1,123 @@
+<section class="materiales" aria-label="Materiales por presentación">
+  <header class="intro">
+    <span class="intro-icon"><mat-icon aria-hidden="true">inventory_2</mat-icon></span>
+    <div>
+      <span class="eyebrow">GUÍA DE EMPAQUE</span>
+      <h2>Materiales por presentación</h2>
+      <p>Consulta qué preforma, tapa y etiqueta utiliza cada SKU.</p>
+    </div>
+  </header>
+  <div class="nota">
+    <mat-icon aria-hidden="true">info_outline</mat-icon>
+    <p>
+      Los envases de 5 litros ya vienen inflados y no utilizan preforma separada. Las etiquetas de
+      200 ml comparten un mismo tipo; las de 300 ml también. Sus referencias específicas están por
+      confirmar.
+    </p>
+  </div>
+  @if (data.error()) {
+    <p class="error" role="alert">{{ data.error() }}</p>
+  }
+  @if (data.cargando() && !data.cargado()) {
+    <p role="status">Cargando presentaciones…</p>
+  }
+  @if (data.cargado()) {
+    <div class="catalogo">
+      <div class="controles">
+        <label class="buscador"
+          ><mat-icon aria-hidden="true">search</mat-icon
+          ><span class="sr-only">Buscar producto o SKU</span
+          ><input
+            type="search"
+            placeholder="Buscar producto, marca o SKU…"
+            [value]="busqueda()"
+            (input)="busqueda.set($any($event.target).value)"
+        /></label>
+        <label class="selector"
+          >Presentación<select
+            [value]="capacidad()"
+            (change)="capacidad.set($any($event.target).value)"
+          >
+            <option value="">Todas las presentaciones</option>
+            @for (litros of capacidades(); track litros) {
+              <option [value]="litros">{{ presentacion(litros) }}</option>
+            }
+          </select></label
+        >
+      </div>
+      <div
+        class="tabla"
+        tabindex="0"
+        role="region"
+        aria-label="Materiales de cada SKU, tabla desplazable"
+      >
+        <table>
+          <caption>
+            {{
+              filtradas().length
+            }}
+            de
+            {{
+              filas().length
+            }}
+            presentaciones activas
+          </caption>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Presentación</th>
+              <th>Tecnología</th>
+              <th>Preforma</th>
+              <th>Tapa</th>
+              <th>Etiqueta</th>
+              <th>Clasificación</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (fila of filtradas(); track fila.presentacion.id) {
+              <tr>
+                <td>
+                  <strong>{{ fila.producto.nombre }}</strong
+                  ><small>{{ fila.producto.marca }} · {{ fila.presentacion.nombreSku }}</small>
+                </td>
+                <td>{{ presentacion(fila.presentacion.litros) }}</td>
+                <td>
+                  <span class="tecnologia">{{ fila.presentacion.tecnologia }}</span>
+                </td>
+                <td>
+                  {{ fila.materiales?.preforma || 'Por confirmar' }}
+                  @if (fila.materiales?.botellaInflada) {
+                    <small>Botella ya inflada</small>
+                  }
+                </td>
+                <td>
+                  @if (fila.materiales; as m) {
+                    <span class="tapa">{{ m.tapaMm }} mm</span>
+                  } @else {
+                    Por confirmar
+                  }
+                </td>
+                <td>
+                  @if (fila.materiales?.etiquetaCompartida; as etiqueta) {
+                    Compartida · {{ etiqueta }}<small>Referencia por confirmar</small>
+                  } @else {
+                    Por confirmar
+                  }
+                </td>
+                <td>
+                  <span class="estado" [class.pendiente]="!fila.materiales">{{
+                    fila.materiales ? 'Preforma y tapa asignadas' : 'Pendiente de clasificación'
+                  }}</span>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="vacio">No hay productos que coincidan con la búsqueda.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</section>
