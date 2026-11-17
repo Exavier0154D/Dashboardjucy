@@ -94,15 +94,65 @@ button:disabled {
   cursor: default;
 }
 .filters {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
-  gap: 14px;
+  gap: 14px 18px;
   margin: 20px 0 12px;
   padding: 18px;
   border: 1px solid #e5eae7;
   border-radius: 10px;
   background: #fafcf9;
+}
+.filters--material {
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(150px, 1fr));
+}
+.filter-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 20px;
+}
+.filter-label {
+  display: block;
+  color: #416451;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+}
+.search-count {
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #dff1e6;
+  color: #327352;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.material-filter,
+.date-filter {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.date-filter {
+  grid-template-rows: 20px auto;
+}
+.filter-help {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  grid-column: 1/-1;
+  margin: 0;
+  color: #6f8579;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.filter-help mat-icon {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  flex-shrink: 0;
 }
 label {
   display: flex;
@@ -127,12 +177,13 @@ select {
   min-height: 44px;
 }
 .material-filter {
-  flex: 2;
-  min-width: 240px;
+  min-width: 0;
 }
 .material-search,
 .history-date {
   width: 100%;
+  background: #fff;
+  border-radius: 14px;
   --mat-form-field-container-height: 50px;
   --mat-form-field-container-vertical-padding: 13px;
   --mat-form-field-container-text-size: 13px;
@@ -145,8 +196,7 @@ select {
   --mat-form-field-outlined-container-color: #fff;
 }
 .history-date {
-  flex: 1;
-  min-width: 180px;
+  min-width: 0;
 }
 .material-search input[matInput],
 .history-date input[matInput] {
@@ -163,13 +213,12 @@ select {
   border: 0;
   color: #748078;
   padding: 0;
+  width: 36px;
+  height: 36px;
+  margin-right: 6px;
 }
 .material-search mat-icon {
   color: #8c9c90;
-}
-.selector-count {
-  margin: 6px 0 0;
-  font-size: 10px;
 }
 .availability-note {
   display: inline-block;
@@ -331,6 +380,9 @@ select {
     border-color 200ms ease;
 }
 @media (max-width: 700px) {
+  .filters--material {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
@@ -346,10 +398,13 @@ select {
   }
   .material-filter {
     min-width: 0;
-    flex-basis: 100%;
+    grid-column: 1/-1;
   }
 }
 @media (max-width: 420px) {
+  .filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
   label {
     min-width: 0;
     flex-basis: 100%;

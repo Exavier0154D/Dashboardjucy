@@ -27,7 +27,7 @@
         <button type="button" (click)="cerrarSesion()" [disabled]="ocupado()">Cerrar sesión</button>
       </div>
       @if (error()) { <p class="session-error" role="alert">{{ error() }}</p> }
-      <main class="content" id="contenido-principal" tabindex="-1">
+      <main class="content" id="contenido-principal" tabindex="-1" cdkScrollable>
         <router-outlet></router-outlet>
       </main>
     </div>

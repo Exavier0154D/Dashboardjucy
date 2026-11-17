@@ -1,12 +1,13 @@
 import { Component, DestroyRef, afterNextRender, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
+import { CdkScrollable } from '@angular/cdk/scrolling';
 import { Sidebar } from './layout/sidebar/sidebar';
 import { SupabaseService } from './core/supabase.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Sidebar, ReactiveFormsModule],
+  imports: [RouterOutlet, Sidebar, ReactiveFormsModule, CdkScrollable],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

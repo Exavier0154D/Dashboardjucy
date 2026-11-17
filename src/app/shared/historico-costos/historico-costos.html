@@ -31,21 +31,27 @@
       <mat-icon>refresh</mat-icon>{{ cargando() ? 'Actualizando…' : 'Actualizar datos' }}
     </button>
   </p>
-  <div class="filters">
+  <div class="filters" [class.filters--material]="modo() === 'materia'">
     @if (modo() === 'materia') {
       <div class="material-filter">
+        <div class="filter-heading">
+          <span class="filter-label">Materia prima</span
+          ><span class="search-count" aria-live="polite"
+            >{{ materiasSelector().length }} opciones</span
+          >
+        </div>
         <mat-form-field appearance="outline" class="material-search" subscriptSizing="dynamic">
-          <mat-label>Buscar y seleccionar materia prima</mat-label>
-          <mat-icon matPrefix>search</mat-icon>
+          <mat-icon matPrefix aria-hidden="true">search</mat-icon>
           <input
             matInput
             #busquedaMateria
-            placeholder="Ej. azucar, limon, mora pulpa…"
+            aria-label="Buscar y seleccionar materia prima"
+            placeholder="Busca un ingrediente…"
             autocomplete="off"
             [value]="textoMateria()"
             [disabled]="cargando()"
             [matAutocomplete]="opcionesMateria"
-            (focus)="prepararBusquedaMateria()"
+            (focus)="prepararBusquedaMateria(); busquedaMateria.select()"
             (input)="buscarMateria(busquedaMateria.value)"
           />
           @if (textoMateria()) {
@@ -54,6 +60,7 @@
               matSuffix
               type="button"
               aria-label="Limpiar selección de materia prima"
+              [disabled]="cargando()"
               (click)="limpiarSelectorMateria(); busquedaMateria.focus()"
             >
               <mat-icon>close</mat-icon>
@@ -63,6 +70,7 @@
             class="jucy-history-options"
             #opcionesMateria="matAutocomplete"
             [displayWith]="mostrarMateria"
+            [autoActiveFirstOption]="true"
             (optionSelected)="seleccionarMateria($event.option.value)"
           >
             @for (m of materiasSelector(); track m.id) {
@@ -76,38 +84,48 @@
             }
           </mat-autocomplete>
         </mat-form-field>
-        <p class="note selector-count" aria-live="polite">
-          {{ materiasSelector().length }} de {{ materiales().length }} materias primas. Selecciona
-          una sugerencia con clic o con flechas y Enter.
-        </p>
       </div>
     }
-    <mat-form-field appearance="outline" class="history-date" subscriptSizing="dynamic">
-      <mat-label>Desde</mat-label>
-      <input
-        matInput
-        readonly
-        [matDatepicker]="calendarioDesde"
-        [value]="fechaCalendario(desde())"
-        (click)="calendarioDesde.open()"
-        (dateChange)="seleccionarFecha('desde', $event.value)"
-      />
-      <mat-datepicker-toggle matIconSuffix [for]="calendarioDesde"></mat-datepicker-toggle>
-      <mat-datepicker #calendarioDesde panelClass="jucy-history-calendar"></mat-datepicker>
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="history-date" subscriptSizing="dynamic">
-      <mat-label>Hasta</mat-label>
-      <input
-        matInput
-        readonly
-        [matDatepicker]="calendarioHasta"
-        [value]="fechaCalendario(hasta())"
-        (click)="calendarioHasta.open()"
-        (dateChange)="seleccionarFecha('hasta', $event.value)"
-      />
-      <mat-datepicker-toggle matIconSuffix [for]="calendarioHasta"></mat-datepicker-toggle>
-      <mat-datepicker #calendarioHasta panelClass="jucy-history-calendar"></mat-datepicker>
-    </mat-form-field>
+    <div class="date-filter">
+      <span class="filter-label">Desde</span>
+      <mat-form-field appearance="outline" class="history-date" subscriptSizing="dynamic">
+        <input
+          matInput
+          aria-label="Fecha desde"
+          readonly
+          [matDatepicker]="calendarioDesde"
+          [value]="fechaCalendario(desde())"
+          (click)="calendarioDesde.open()"
+          (keydown.enter)="calendarioDesde.open()"
+          (dateChange)="seleccionarFecha('desde', $event.value)"
+        />
+        <mat-datepicker-toggle matIconSuffix [for]="calendarioDesde"></mat-datepicker-toggle>
+        <mat-datepicker #calendarioDesde panelClass="jucy-history-calendar"></mat-datepicker>
+      </mat-form-field>
+    </div>
+    <div class="date-filter">
+      <span class="filter-label">Hasta</span>
+      <mat-form-field appearance="outline" class="history-date" subscriptSizing="dynamic">
+        <input
+          matInput
+          aria-label="Fecha hasta"
+          readonly
+          [matDatepicker]="calendarioHasta"
+          [value]="fechaCalendario(hasta())"
+          (click)="calendarioHasta.open()"
+          (keydown.enter)="calendarioHasta.open()"
+          (dateChange)="seleccionarFecha('hasta', $event.value)"
+        />
+        <mat-datepicker-toggle matIconSuffix [for]="calendarioHasta"></mat-datepicker-toggle>
+        <mat-datepicker #calendarioHasta panelClass="jucy-history-calendar"></mat-datepicker>
+      </mat-form-field>
+    </div>
+    @if (modo() === 'materia') {
+      <p class="filter-help">
+        <mat-icon aria-hidden="true">keyboard</mat-icon>Escribe para buscar y selecciona una
+        sugerencia con clic o Enter.
+      </p>
+    }
   </div>
   @if (fechaLimitePrecios()) {
     <p class="note availability-note">

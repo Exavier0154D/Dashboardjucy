@@ -1,6 +1,13 @@
 @import './styles/jucy-surfaces.css';
 @import './styles/jucy-dashboard-pages.css';
 
+.jucy-history-options.mat-mdc-autocomplete-panel,
+.jucy-product-options.mat-mdc-autocomplete-panel,
+.jucy-filter-panel.mat-mdc-select-panel,
+.jucy-presentation-panel.mat-mdc-select-panel {
+  overscroll-behavior-y: contain;
+}
+
 .jucy-product-options .mat-mdc-option { padding: 10px 14px; }
 .compare-product-option { display: flex; flex-direction: column; gap: 5px; padding: 4px 0; }
 .compare-product-option strong { color: #214438; font-size: 13px; font-weight: 600; }

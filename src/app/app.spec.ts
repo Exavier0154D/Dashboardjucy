@@ -1,8 +1,14 @@
 import { TestBed } from '@angular/core/testing';
+import { Component } from '@angular/core';
+import { Overlay } from '@angular/cdk/overlay';
+import { ComponentPortal } from '@angular/cdk/portal';
 import { provideRouter } from '@angular/router';
 import { App } from './app';
 import { SupabaseService } from './core/supabase.service';
 import { CatalogoAdminService } from './core/catalogo-admin.service';
+
+@Component({ template: 'Sugerencias de búsqueda' })
+class PanelBusquedaPrueba {}
 
 describe('Acceso a la aplicación', () => {
   let cambiarSesion: (event: string, session: any) => void;
@@ -86,5 +92,30 @@ describe('Acceso a la aplicación', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('router-outlet')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('#login-email')).toBeNull();
+  });
+
+  it('reposiciona las sugerencias al desplazar el panel principal con la rueda', async () => {
+    auth.onAuthStateChange.mockImplementationOnce((callback) => {
+      cambiarSesion = callback;
+      callback('INITIAL_SESSION', { user: { email: 'usuario@jucy.com' } });
+      return { data: { subscription: { unsubscribe: vi.fn() } } };
+    });
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const contenido = fixture.nativeElement.querySelector('#contenido-principal') as HTMLElement;
+    const overlay = TestBed.inject(Overlay);
+    const panel = overlay.create({ scrollStrategy: overlay.scrollStrategies.reposition() });
+    try {
+      panel.attach(new ComponentPortal(PanelBusquedaPrueba));
+      const reposicionar = vi.spyOn(panel, 'updatePosition');
+      contenido.scrollTop = 200;
+      contenido.dispatchEvent(new Event('scroll'));
+      expect(reposicionar).toHaveBeenCalled();
+      expect(fixture.nativeElement.querySelector('router-outlet')).not.toBeNull();
+    } finally {
+      panel.dispose();
+    }
   });
 });
