@@ -1,4 +1,8 @@
-﻿<div class="page" [attr.aria-busy]="cargando() || actualizando() || catalogoCargando()">
+﻿<div
+  class="page"
+  [class.embedded-detail]="!!presentacionInicial()"
+  [attr.aria-busy]="cargando() || actualizando() || catalogoCargando()"
+>
   <header class="page-header jucy-compare-header">
     <div>
       <span class="eyebrow">CONTROL DE COSTOS</span>
@@ -31,40 +35,44 @@
       </div>
       <div class="fields" [class.fields--embedded]="presentacionInicial()">
         @if (!presentacionInicial()) {
-        <label class="product-field"
-          >Producto y presentación
-          <span class="product-search">
-            <mat-icon aria-hidden="true">search</mat-icon>
-            <input
-              #buscadorProducto
-              type="text"
-              autocomplete="off"
-              placeholder="Buscar producto, presentación o SKU"
-              [value]="busquedaProducto() ?? mostrarProducto(seleccion.presentacion.id)"
-              [matAutocomplete]="resultadosProducto"
-              (focus)="buscadorProducto.select()"
-              (input)="busquedaProducto.set(buscadorProducto.value)"
-            />
-          </span>
-          <mat-autocomplete
-            class="jucy-history-options jucy-product-options"
-            #resultadosProducto="matAutocomplete"
-            [displayWith]="mostrarProducto"
-            (optionSelected)="seleccionarSku($event.option.value)"
-            (closed)="busquedaProducto.set(null)"
-          >
-            @for (o of opcionesFiltradas(); track o.presentacion.id) {
-              <mat-option [value]="o.presentacion.id">
-                <span class="compare-product-option">
-                  <strong>{{ o.producto.nombre }}</strong>
-                  <span>{{ o.presentacion.nombreSku || o.presentacion.claveSku }} · {{ o.presentacion.litros * 1000 | number: '1.0-3' }} ml · {{ o.presentacion.tecnologia }} · {{ o.presentacion.claveSku }}</span>
-                </span>
-              </mat-option>
-            } @empty {
-              <mat-option disabled>No se encontraron productos</mat-option>
-            }
-          </mat-autocomplete>
-        </label>
+          <label class="product-field"
+            >Producto y presentación
+            <span class="product-search">
+              <mat-icon aria-hidden="true">search</mat-icon>
+              <input
+                #buscadorProducto
+                type="text"
+                autocomplete="off"
+                placeholder="Buscar producto, presentación o SKU"
+                [value]="busquedaProducto() ?? mostrarProducto(seleccion.presentacion.id)"
+                [matAutocomplete]="resultadosProducto"
+                (focus)="buscadorProducto.select()"
+                (input)="busquedaProducto.set(buscadorProducto.value)"
+              />
+            </span>
+            <mat-autocomplete
+              class="jucy-history-options jucy-product-options"
+              #resultadosProducto="matAutocomplete"
+              [displayWith]="mostrarProducto"
+              (optionSelected)="seleccionarSku($event.option.value)"
+              (closed)="busquedaProducto.set(null)"
+            >
+              @for (o of opcionesFiltradas(); track o.presentacion.id) {
+                <mat-option [value]="o.presentacion.id">
+                  <span class="compare-product-option">
+                    <strong>{{ o.producto.nombre }}</strong>
+                    <span
+                      >{{ o.presentacion.nombreSku || o.presentacion.claveSku }} ·
+                      {{ o.presentacion.litros * 1000 | number: '1.0-3' }} ml ·
+                      {{ o.presentacion.tecnologia }} · {{ o.presentacion.claveSku }}</span
+                    >
+                  </span>
+                </mat-option>
+              } @empty {
+                <mat-option disabled>No se encontraron productos</mat-option>
+              }
+            </mat-autocomplete>
+          </label>
         }
         <label
           >Año
@@ -228,8 +236,8 @@
             <mat-icon>compare_arrows</mat-icon>
             <h3>Agrega el primer mes</h3>
             <p>
-              No hay meses registrados para este producto. El estándar se mostrará cuando exista
-              un período mensual disponible.
+              No hay meses registrados para este producto. El estándar se mostrará cuando exista un
+              período mensual disponible.
             </p>
           </div>
         }

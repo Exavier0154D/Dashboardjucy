@@ -86,8 +86,8 @@ export function calcularSerie(
     for (const [id, kg] of cantidadesPorId) {
       if (kg === 0) continue;
       const lista = porMateria.get(id) ?? [];
-      // Busca el último precio anterior o igual a esta fecha, incluyendo
-      // registros previos a Desde para conservar la vigencia correctamente.
+
+
       let inicio = 0,
         fin = lista.length - 1,
         indice = -1;

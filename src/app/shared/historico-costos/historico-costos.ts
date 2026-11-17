@@ -53,7 +53,6 @@ import {
   styleUrl: './historico-costos.css',
 })
 export class HistoricoCostos implements OnInit, OnDestroy {
-
   readonly modo = input<'materia' | 'producto'>('materia');
   readonly producto = input<Producto | null>(null);
   readonly presentacion = input<Presentacion | null>(null);
@@ -79,8 +78,12 @@ export class HistoricoCostos implements OnInit, OnDestroy {
   private readonly zona = inject(NgZone);
   readonly materiales = signal<MaterialBase[]>([]);
   private readonly precios = signal<PrecioSemanal[]>([]);
-  readonly fechaLimitePrecios = computed(() =>
-    this.precios().map((precio) => precio.semana).sort().at(-1) ?? '',
+  readonly fechaLimitePrecios = computed(
+    () =>
+      this.precios()
+        .map((precio) => precio.semana)
+        .sort()
+        .at(-1) ?? '',
   );
   private readonly cantidades = signal<CantidadMaterial[]>([]);
   readonly materiaId = signal<number | null>(null);
@@ -100,9 +103,11 @@ export class HistoricoCostos implements OnInit, OnDestroy {
     return new Date(anio, mes - 1, dia);
   }
   seleccionarFecha(campo: 'desde' | 'hasta', fecha: Date | null): void {
-    this[campo].set(fecha && !Number.isNaN(fecha.getTime())
-      ? `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`
-      : '');
+    this[campo].set(
+      fecha && !Number.isNaN(fecha.getTime())
+        ? `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`
+        : '',
+    );
   }
   readonly cargando = signal(true);
   readonly cargandoProducto = signal(false);
@@ -205,17 +210,18 @@ export class HistoricoCostos implements OnInit, OnDestroy {
       {
         label: this.modo() === 'materia' ? 'Precio USD/kg' : 'Costo MP USD/presentación',
         data: this.serie().map((p) => p.costo),
-        borderColor: '#1d4ed8',
+        borderColor: '#2b8069',
         backgroundColor: (context) => {
           const area = context.chart.chartArea;
-          if (!area) return 'rgba(59, 130, 246, 0.12)';
+          const rgb = '43, 128, 105';
+          if (!area) return `rgba(${rgb}, 0.12)`;
           const gradient = context.chart.ctx.createLinearGradient(0, area.top, 0, area.bottom);
-          gradient.addColorStop(0, 'rgba(59, 130, 246, 0.26)');
-          gradient.addColorStop(1, 'rgba(59, 130, 246, 0.02)');
+          gradient.addColorStop(0, `rgba(${rgb}, 0.22)`);
+          gradient.addColorStop(1, `rgba(${rgb}, 0.02)`);
           return gradient;
         },
-        pointBackgroundColor: this.serie().map((p) => (p.conBase > 0 ? '#94a3b8' : '#1d4ed8')),
-        pointBorderColor: this.serie().map((p) => (p.conBase > 0 ? '#64748b' : '#1d4ed8')),
+        pointBackgroundColor: this.serie().map((p) => (p.conBase > 0 ? '#94a3b8' : '#2b8069')),
+        pointBorderColor: this.serie().map((p) => (p.conBase > 0 ? '#64748b' : '#2b8069')),
         pointRadius: 3,
         pointHoverRadius: 6,
         pointHitRadius: 16,
@@ -248,8 +254,8 @@ export class HistoricoCostos implements OnInit, OnDestroy {
           labels: { usePointStyle: true, padding: 22, color: '#64748b', font: { size: 11 } },
         },
         tooltip: {
-          backgroundColor: '#172554',
-          borderColor: '#60a5fa',
+          backgroundColor: '#194c3e',
+          borderColor: '#98c9b9',
           borderWidth: 1,
           padding: 14,
           cornerRadius: 10,
@@ -289,7 +295,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
           border: { display: false },
           grid: { display: false },
           title: { display: true, text: 'Fecha' },
-          ticks: { maxRotation: 45, autoSkip: true },
+          ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 12 },
         },
         y: {
           border: { display: false },
@@ -297,8 +303,14 @@ export class HistoricoCostos implements OnInit, OnDestroy {
           beginAtZero: false,
           min: Math.max(0, minimo - margen),
           max: maximo + margen,
-          title: { display: true, text: 'Costo (USD)' },
-          ticks: { callback: (valor) => `$${valor}` },
+          title: {
+            display: true,
+            text: this.modo() === 'materia' ? 'Precio (USD/kg)' : 'Costo (USD)',
+          },
+          ticks: {
+            callback: (valor) =>
+              `$${Number(valor).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`,
+          },
         },
       },
     };
@@ -343,7 +355,6 @@ export class HistoricoCostos implements OnInit, OnDestroy {
     this.solicitud++;
     if (this.temporizador !== null) clearInterval(this.temporizador);
   }
-
 
   private async todasLasFilas(tabla: string, columnas: string): Promise<Record<string, unknown>[]> {
     const filas: Record<string, unknown>[] = [];
@@ -391,10 +402,10 @@ export class HistoricoCostos implements OnInit, OnDestroy {
         costo_kg: Number(m['costo_base_historico'] ?? m['costo_kg']),
       }));
       const historicos: PrecioSemanal[] = precios.map((p) => ({
-          materia_prima_id: Number(p['materia_prima_id']),
-          semana: String(p['semana']),
-          costo_kg: Number(p['costo_kg']),
-        }));
+        materia_prima_id: Number(p['materia_prima_id']),
+        semana: String(p['semana']),
+        costo_kg: Number(p['costo_kg']),
+      }));
       if (
         materiales.some((m) => !Number.isFinite(m.costo_kg) || m.costo_kg < 0) ||
         historicos.some(

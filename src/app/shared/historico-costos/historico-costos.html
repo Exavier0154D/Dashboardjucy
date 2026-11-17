@@ -1,4 +1,7 @@
-<section class="history-card jucy-history">
+<section
+  class="history-card jucy-history material-history"
+  [class.product-history]="modo() === 'producto'"
+>
   <header>
     <span class="eyebrow">ANÁLISIS HISTÓRICO / USD</span>
     <h3>
@@ -63,7 +66,11 @@
             (optionSelected)="seleccionarMateria($event.option.value)"
           >
             @for (m of materiasSelector(); track m.id) {
-              <mat-option [value]="m"><span class="history-material-option"><mat-icon aria-hidden="true">eco</mat-icon>{{ m.nombre }}</span></mat-option>
+              <mat-option [value]="m"
+                ><span class="history-material-option"
+                  ><mat-icon aria-hidden="true">eco</mat-icon>{{ m.nombre }}</span
+                ></mat-option
+              >
             } @empty {
               <mat-option disabled>No se encontraron materias primas</mat-option>
             }
@@ -77,30 +84,40 @@
     }
     <mat-form-field appearance="outline" class="history-date" subscriptSizing="dynamic">
       <mat-label>Desde</mat-label>
-      <input matInput readonly [matDatepicker]="calendarioDesde"
-        [value]="fechaCalendario(desde())" (click)="calendarioDesde.open()"
-        (dateChange)="seleccionarFecha('desde', $event.value)" />
+      <input
+        matInput
+        readonly
+        [matDatepicker]="calendarioDesde"
+        [value]="fechaCalendario(desde())"
+        (click)="calendarioDesde.open()"
+        (dateChange)="seleccionarFecha('desde', $event.value)"
+      />
       <mat-datepicker-toggle matIconSuffix [for]="calendarioDesde"></mat-datepicker-toggle>
       <mat-datepicker #calendarioDesde panelClass="jucy-history-calendar"></mat-datepicker>
     </mat-form-field>
     <mat-form-field appearance="outline" class="history-date" subscriptSizing="dynamic">
       <mat-label>Hasta</mat-label>
-      <input matInput readonly [matDatepicker]="calendarioHasta"
-        [value]="fechaCalendario(hasta())" (click)="calendarioHasta.open()"
-        (dateChange)="seleccionarFecha('hasta', $event.value)" />
+      <input
+        matInput
+        readonly
+        [matDatepicker]="calendarioHasta"
+        [value]="fechaCalendario(hasta())"
+        (click)="calendarioHasta.open()"
+        (dateChange)="seleccionarFecha('hasta', $event.value)"
+      />
       <mat-datepicker-toggle matIconSuffix [for]="calendarioHasta"></mat-datepicker-toggle>
       <mat-datepicker #calendarioHasta panelClass="jucy-history-calendar"></mat-datepicker>
     </mat-form-field>
   </div>
   @if (fechaLimitePrecios()) {
     <p class="note availability-note">
-      Último precio registrado: {{ fechaLimitePrecios() | date: 'dd/MM/yyyy':'UTC' }}.
+      Último precio registrado: {{ fechaLimitePrecios() | date: 'dd/MM/yyyy' : 'UTC' }}.
     </p>
   }
   <details class="methodology">
     <summary>Cómo interpretar el histórico<mat-icon>expand_more</mat-icon></summary>
     <p class="note">
-      La línea mantiene cada precio hasta su próxima actualización. Puntos azules: precios
+      La línea mantiene cada precio hasta su próxima actualización. Puntos verdes: precios
       históricos vigentes. Puntos grises: alguna materia utiliza el precio base de referencia
       anterior al primer registro (si no hay base histórica conservada, se usa el precio actual como
       estimación). Se incluyen los límites del rango y las fechas registradas. Los precios de
@@ -108,7 +125,7 @@
     </p>
     @if (modo() === 'producto') {
       <p class="note">
-        La línea azul representa la materia prima. El detalle por fecha incluye el costo final
+        La línea verde representa la materia prima. El detalle por fecha incluye el costo final
         estimado cuando existen todos sus componentes. Empaque y cartón actuales se suman por
         separado en todo el período; no disponemos de su histórico. La mano de obra mantiene el
         último valor conocido hasta su próxima actualización. Los gastos indirectos se suman

@@ -39,7 +39,7 @@ import { Comparativa } from '../comparativa/comparativa';
     Comparativa,
   ],
   templateUrl: './estandar.html',
-  styleUrl: './estandar.css',
+  styleUrls: ['./estandar.css', './estandar-dashboard.css'],
 })
 export class Estandar {
   // SERVICIOS
@@ -71,15 +71,11 @@ export class Estandar {
     this.selectionService.seleccionarPresentacion(presentacion);
   }
 
-
-
   readonly ingredientes = computed<Ingrediente[]>(() => {
     return [...(this.presentacionActual()?.ingredientes ?? [])].sort(
       (a, b) => b.porcentaje - a.porcentaje,
     );
   });
-
-
 
   readonly displayedColumns: string[] = ['componente', 'unidad', 'porcentaje', 'kg', 'litros'];
 
@@ -106,19 +102,17 @@ export class Estandar {
     });
   });
 
-
-
   readonly paleta: string[] = [
-    '#1d4ed8',
-    '#0ea5e9',
-    '#1e40af',
-    '#60a5fa',
-    '#0284c7',
-    '#93c5fd',
-    '#312e81',
-    '#38bdf8',
-    '#818cf8',
-    '#c7d2fe',
+    '#16a679',
+    '#48c5b4',
+    '#edb441',
+    '#8d7bd5',
+    '#50a0cf',
+    '#e083a4',
+    '#90bb50',
+    '#24765b',
+    '#e49a56',
+    '#81d8b7',
   ];
 
   readonly doughnutChartType = 'doughnut' as const;
@@ -155,8 +149,8 @@ export class Estandar {
         labels: { usePointStyle: true, pointStyle: 'circle', padding: 18, font: { size: 11 } },
       },
       tooltip: {
-        backgroundColor: '#172554',
-        borderColor: '#60a5fa',
+        backgroundColor: '#194c3e',
+        borderColor: '#98c9b9',
         borderWidth: 1,
         padding: 14,
         cornerRadius: 10,
@@ -164,8 +158,6 @@ export class Estandar {
       },
     },
   };
-
-
 
   readonly litrosBatch = signal<number>(0);
 
@@ -196,8 +188,6 @@ export class Estandar {
       litros: item.litros * factor,
     }));
   });
-
-
 
   readonly totalKg = computed(() => {
     return this.presentacionActual()?.totalKg ?? 0;
@@ -361,7 +351,9 @@ export class Estandar {
       this.costos.set(costos);
       const mesActual = this.mesSeleccionado();
       const presentacion = this.presentacionActual();
-      const mesesConDatos = presentacion ? this.data.mesesMateriaPrima(presentacion).slice().sort() : [];
+      const mesesConDatos = presentacion
+        ? this.data.mesesMateriaPrima(presentacion).slice().sort()
+        : [];
 
       if (!mesActual) {
         const fallback = mesesConDatos.at(-1) ?? costos.meses.at(-1) ?? mesActualEcuador();

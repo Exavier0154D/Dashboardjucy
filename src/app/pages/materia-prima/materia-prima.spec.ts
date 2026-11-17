@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { signal } from '@angular/core';
+import { Component, input, signal } from '@angular/core';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatSelectHarness } from '@angular/material/select/testing';
@@ -8,6 +8,12 @@ import { DataService } from '../../core/data.service';
 import { SelectionService } from '../../core/selection.service';
 import { Empaque } from '../../models/empaque.model';
 import { MateriaPrima as Insumo, Presentacion, Producto } from '../../models/producto.model';
+import { HistoricoCostos } from '../../shared/historico-costos/historico-costos';
+
+@Component({ selector: 'app-historico-costos', template: '' })
+class HistoricoCostosStub {
+  readonly modo = input('materia');
+}
 
 describe('Materia prima con ingredientes y envases', () => {
   let fixture: ComponentFixture<MateriaPrima>;
@@ -77,6 +83,10 @@ describe('Materia prima con ingredientes y envases', () => {
   };
 
   beforeEach(async () => {
+    TestBed.overrideComponent(MateriaPrima, {
+      remove: { imports: [HistoricoCostos] },
+      add: { imports: [HistoricoCostosStub] },
+    });
     datos.materiasPrimas.set([
       { id: 1, nombre: 'Agua', unidad: 'kg', costoKg: 2.5, costoBaseHistorico: null, activo: true },
     ]);
@@ -147,54 +157,23 @@ describe('Materia prima con ingredientes y envases', () => {
     expect(datos.materiasPrimas().map((m) => m.id)).toEqual([1, 2]);
   });
 
-  it('exporta solo ingredientes filtrados, conserva cero y escapa texto y fórmulas CSV', () => {
-    const component = fixture.componentInstance;
-    const base = datos.materiasPrimas()[0];
-    datos.materiasPrimas.set([base, { ...base, id: 2, nombre: '=Agua,"especial"', costoKg: 0 }]);
-    component.buscarMateriaPrima('especial');
-    let contenido: unknown[] = [];
-    const crearUrl = vi.fn().mockReturnValue('blob:export-test');
-    const urlOriginal = URL;
-    vi.stubGlobal(
-      'URL',
-      class extends urlOriginal {
-        static override createObjectURL = crearUrl;
-        static override revokeObjectURL = vi.fn();
-      },
-    );
-    vi.stubGlobal(
-      'Blob',
-      class {
-        constructor(partes: unknown[]) {
-          contenido = partes;
-        }
-      },
-    );
-    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
-    vi.useFakeTimers();
-    try {
-      component.exportarMateriales();
-      const csv = contenido.join('');
-      expect(csv).toContain('"\'=Agua,""especial"""');
-      expect(csv).toContain('"kg","0"');
-      expect(csv).not.toContain('"2.5"');
-      expect(click).toHaveBeenCalledOnce();
-      expect(component.exportacionMensaje()).toBe('1 registros exportados');
-      vi.runAllTimers();
-      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:export-test');
-    } finally {
-      vi.useRealTimers();
-      vi.unstubAllGlobals();
-      click.mockRestore();
-    }
-  });
-
-  it('abre materia prima directamente con el catálogo antes de los gráficos', () => {
+  it('abre materia prima con el histórico principal antes de indicadores y catálogo', () => {
     const html = fixture.nativeElement as HTMLElement;
     expect(html.querySelector('h1')?.textContent).toBe('Materia prima');
     expect(html.querySelector('table')?.textContent).toContain('Precio de formulacion por kg');
-    expect(html.querySelector('app-historico-costos')).toBeNull();
+    expect(html.querySelector('.history-primary app-historico-costos')).not.toBeNull();
     expect(html.querySelector('details')?.open).toBe(false);
+    const grafico = html.querySelector('.analytics-grid')!;
+    const catalogo = html.querySelector('.material-catalog')!;
+    expect(
+      grafico.compareDocumentPosition(catalogo) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(html.querySelectorAll('.material-kpi').length).toBe(3);
+    const historico = html.querySelector('.history-primary')!;
+    const indicadores = html.querySelector('.material-kpis')!;
+    expect(
+      historico.compareDocumentPosition(indicadores) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it('muestra envases por unidad y distingue un costo pendiente de un cero confirmado', () => {
@@ -212,10 +191,14 @@ describe('Materia prima con ingredientes y envases', () => {
     mostrarEnvases();
     fixture.componentInstance.paginaEnvases.set(5);
     const loader = TestbedHarnessEnvironment.loader(fixture);
-    const tipo = await loader.getHarness(MatSelectHarness.with({ selector: '#tipo-envase-select' }));
+    const tipo = await loader.getHarness(
+      MatSelectHarness.with({ selector: '#tipo-envase-select' }),
+    );
     await tipo.open();
     await tipo.clickOptions({ text: 'Cartón' });
-    const precio = await loader.getHarness(MatSelectHarness.with({ selector: '#precio-envase-select' }));
+    const precio = await loader.getHarness(
+      MatSelectHarness.with({ selector: '#precio-envase-select' }),
+    );
     await precio.open();
     await precio.clickOptions({ text: 'Sin dato' });
     fixture.detectChanges();
@@ -310,7 +293,9 @@ describe('Materia prima con ingredientes y envases', () => {
     contenido.appendChild(fixture.nativeElement);
     contenido.scrollTop = 500;
 
-    (fixture.nativeElement.querySelector('.product-card .primary-button') as HTMLButtonElement).click();
+    (
+      fixture.nativeElement.querySelector('.product-card .primary-button') as HTMLButtonElement
+    ).click();
 
     expect(contenido.scrollTop).toBe(0);
     expect(TestBed.inject(SelectionService).productoSeleccionado()?.id).toBe(producto.id);

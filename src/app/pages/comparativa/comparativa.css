@@ -176,9 +176,13 @@ select {
   background: #fff;
   color: #214438;
   font-size: 13px;
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
-.fields mat-select:hover:not([aria-disabled='true']) { border-color: #9bc6aa; }
+.fields mat-select:hover:not([aria-disabled='true']) {
+  border-color: #9bc6aa;
+}
 .fields mat-select:focus-visible,
 .fields mat-select[aria-expanded='true'],
 .fields .product-search input:focus-visible {
@@ -186,9 +190,21 @@ select {
   border-color: #23825c;
   box-shadow: 0 0 0 3px #23825c1c;
 }
-.fields mat-select[aria-disabled='true'] { background: #f3f6f3; opacity: .6; }
-.month-entry button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 10px; white-space: nowrap; }
-.fields .product-search input { border-radius: 10px; }
+.fields mat-select[aria-disabled='true'] {
+  background: #f3f6f3;
+  opacity: 0.6;
+}
+.month-entry button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.fields .product-search input {
+  border-radius: 10px;
+}
 .months {
   display: flex;
   flex-wrap: wrap;
@@ -428,6 +444,97 @@ li {
   color: #18312b;
   font-family: 'Inter', 'Roboto', sans-serif;
 }
+.page.embedded-detail {
+  padding: 0;
+  gap: 20px;
+}
+.embedded-detail .page-header {
+  justify-content: flex-end;
+  border: 0;
+  padding: 0;
+}
+.embedded-detail .page-header > div {
+  display: none;
+}
+.embedded-detail .refresh {
+  border-radius: 24px;
+  background: #158a61;
+  color: #fff;
+  padding: 10px 18px;
+  font-size: 12px;
+}
+.embedded-detail .refresh:hover:not(:disabled) {
+  background: #10724f;
+}
+.embedded-detail .panel {
+  border-radius: 16px;
+  background: #fff;
+  border-color: #edf1ef;
+  padding: 20px;
+}
+.embedded-detail .configuration {
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
+.embedded-detail .section-heading h2 {
+  color: #21463b;
+  font-size: 16px;
+  font-weight: 650;
+}
+.embedded-detail p {
+  color: #7b8c85;
+  font-size: 12px;
+}
+.embedded-detail .fields {
+  border-color: #e6eeea;
+  border-radius: 16px;
+  background: #f6f9f7;
+}
+.embedded-detail .counter,
+.embedded-detail .base-chip {
+  background: #eaf3ee;
+  color: #59816c;
+}
+.embedded-detail .month-entry button {
+  border-radius: 24px;
+  background: #287c64;
+}
+.embedded-detail .month-chip {
+  border-radius: 20px;
+  background: #ddf4e8;
+  border-color: #bde5d0;
+  color: #267a55;
+}
+.embedded-detail .report {
+  max-width: none;
+  border: 0;
+  padding: 0;
+  box-shadow: none;
+}
+.embedded-detail .table-scroll {
+  border-radius: 12px;
+  box-shadow: none;
+  border-color: #e6eeea;
+}
+.embedded-detail thead th {
+  background: #f7faf8;
+  color: #6f8579;
+}
+.embedded-detail .base-column,
+.embedded-detail .total-row > * {
+  background: #e2f3e9;
+}
+.embedded-detail .total-row > * {
+  background: #d5efdf;
+}
+.embedded-detail tbody tr:hover > * {
+  background-color: #f6faf7;
+}
+.embedded-detail .scope-note,
+.embedded-detail .observations {
+  color: #7b8c85;
+}
 .page {
   max-width: 1440px;
   margin: 0 auto;
@@ -496,12 +603,22 @@ h1 {
   gap: 16px;
 }
 @media (max-width: 760px) {
-  .fields.fields--embedded { grid-template-columns: minmax(0, 1fr); }
-  .fields--embedded > label { max-width: 120px; }
+  .fields.fields--embedded {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fields--embedded > label {
+    max-width: 120px;
+  }
 }
 @media (max-width: 480px) {
-  .month-entry { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-  .month-entry button { width: 150px; justify-self: end; }
+  .month-entry {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .month-entry button {
+    width: 150px;
+    justify-self: end;
+  }
 }
 .fields label {
   color: #64786b;

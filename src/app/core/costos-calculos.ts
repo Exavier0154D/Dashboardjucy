@@ -17,7 +17,7 @@ function fechaValida(fecha: string): boolean {
   return Number.isFinite(valor.getTime()) && valor.toISOString().slice(0, 10) === fecha;
 }
 
-// MANO DE OBRA
+
 
 export function resolverManoObra(
   registros: ManoObraMensual[],
@@ -47,7 +47,7 @@ export function resolverManoObra(
       throw new Error('Costo de mano de obra inválido.');
     }
 
-    // No utiliza registros futuros y conserva un cero válido.
+
     if (registro.mes <= mes && (!vigente || registro.mes > vigente.mes)) {
       vigente = registro;
     }
@@ -104,15 +104,7 @@ export function mesesManoObra(registros: ManoObraMensual[], actual = mesActualEc
   return meses;
 }
 
-// COSTO POR UNIDAD
 
-/**
- * Suma materia prima, empaque, cartón, mano de obra e indirectos como rubros separados.
- *
- * null indica un dato pendiente.
- * Un costo de cero registrado es válido.
- *
- */
 export function sumarCostoFinal(
   materiaPrima: number | null,
   empaque: number,
@@ -146,7 +138,7 @@ export function sumarCostoFinal(
   return materiaPrima + empaque + carton + manoObra + indirectos;
 }
 
-// EMPAQUES
+
 
 export interface ResumenEmpaque {
   costo: number;
@@ -159,9 +151,7 @@ export interface ResumenEmpaque {
   sinDato: boolean;
 }
 
-/**
- * Lee precios unitarios de envases y precios por cartón de la base de datos.
- */
+
 export function calcularEmpaque(
   filas: Record<string, unknown>[],
   presentacionId: number,

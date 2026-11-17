@@ -198,7 +198,8 @@ export function mapearCatalogo(tablas: TablasCatalogo): Catalogo {
     };
   });
   const productos: Producto[] = tablas.productos
-    .filter((p) => p.activo)
+    // Guacamole retirado del catálogo operativo; conservar sus registros en Supabase.
+    .filter((p) => p.activo && p.id !== 'catalogo-2026-e8135f8cf789aa3647559064')
     .map((p) => {
       const skus = presentaciones
         .filter((s) => s.productoId === p.id && s.activo)

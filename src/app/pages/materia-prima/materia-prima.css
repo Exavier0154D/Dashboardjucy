@@ -735,31 +735,6 @@ h1 {
   font-size: 12px;
   line-height: 1.6;
 }
-.export-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  border: 1px solid #21634e;
-  border-radius: 8px;
-  padding: 10px 14px;
-  background: #21634e;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-  cursor: pointer;
-  box-shadow: 0 2px 3px #173b2614;
-}
-.export-button mat-icon {
-  font-size: 17px;
-  width: 17px;
-  height: 17px;
-}
-.export-button:hover:not(:disabled) {
-  background: #174d3c;
-  transform: translateY(-1px);
-}
 .material-tabs {
   background: #fcfdfb;
 }
@@ -874,14 +849,6 @@ tbody tr:hover {
   color: var(--muted);
   font-size: 10px;
   line-height: 1.8;
-}
-.export-feedback {
-  margin: 0;
-  color: var(--green);
-  font-size: 12px;
-}
-.export-feedback:empty {
-  display: none;
 }
 .analytics-grid {
   display: grid;

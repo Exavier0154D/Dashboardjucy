@@ -1,19 +1,16 @@
-<div class="page jucy-workspace">
-
+<div class="page product-detail-dashboard" [attr.data-category]="productoSeleccionado()?.categoria">
   <header class="page-header">
     <span class="eyebrow">PRODUCCIÓN / FICHA DEL PRODUCTO</span>
     <h1>Formulación y costos</h1>
     <p>Explora cada presentación, su fórmula y el detalle de fabricación.</p>
   </header>
   @if (!productoSeleccionado()) {
-
     <div class="empty-state empty-state--large">
       <div class="empty-icon"><mat-icon>inventory_2</mat-icon></div>
       <h2>Selecciona un producto</h2>
       <p>Elige un producto desde el catálogo para consultar su estándar de producción.</p>
     </div>
   } @else {
-
     <mat-card class="product-card" appearance="outlined">
       <div class="product-info">
         <div class="product-icon">
@@ -23,7 +20,11 @@
           <span class="product-label">Producto seleccionado</span>
           <h2>{{ productoSeleccionado()!.nombre }}</h2>
           <div class="product-meta">
-            <span class="chip">{{ productoSeleccionado()!.categoria }}</span>
+            <span
+              class="chip category-tag"
+              [attr.data-category]="productoSeleccionado()!.categoria"
+              >{{ productoSeleccionado()!.categoria }}</span
+            >
             <span class="chip">{{ productoSeleccionado()!.marca }}</span>
             <span class="meta-item">Variante: {{ productoSeleccionado()!.variante }}</span>
             <span class="meta-item">
@@ -119,206 +120,206 @@
       <div class="card-header">
         <span class="eyebrow">DESGLOSE DE FABRICACIÓN</span>
         <h3>Comparación de costos</h3>
-        <p>
-          Estándar base frente a los meses de fabricación seleccionados.
-        </p>
+        <p>Estándar base frente a los meses de fabricación seleccionados.</p>
       </div>
       <mat-card-content>
         <div class="legacy-cost-breakdown">
-        <div class="cost-controls">
-          <label
-            >Mes de costos de fabricación
-            <select
-              [ngModel]="mesSeleccionado()"
-              [disabled]="cargandoCostos() || meses().length === 0"
-              (ngModelChange)="cambiarMes($event)"
-            >
-              @for (m of meses(); track m) {
-                <option [value]="m">
-                  {{ nombreMes(m) }}{{ esCostoReferencia(m) ? ' · Costo de referencia' : '' }}
-                </option>
-              }
-            </select>
-          </label>
-          <label
-            >Semana de precios
-            <select
-              [ngModel]="semanaSeleccionada()"
-              [disabled]="cargandoCostos() || !semanas().length"
-              (ngModelChange)="cambiarSemana($event)"
-            >
-              @for (fecha of semanas(); track fecha; let i = $index) {
-                <option [value]="fecha">
-                  Semana {{ i + 1 }} · {{ fecha | date: 'dd/MM/yyyy' : 'UTC' }}
-                </option>
-              }
-            </select>
-          </label>
-          <button
-            type="button"
-            [disabled]="cargandoCostos() || !presentacionActual()"
-            (click)="actualizarCostos()"
-          >
-            <mat-icon>refresh</mat-icon>Actualizar costos
-          </button>
-        </div>
-        @if (cargandoCostos()) {
-          <p role="status">Cargando costos del SKU…</p>
-        } @else if (errorCostos()) {
-          <p class="cost-error" role="alert">{{ errorCostos() }}</p>
-        } @else if (costosActuales(); as detalle) {
-          @if (esCostoReferencia(mesSeleccionado())) {
-            <p class="cost-note" role="status">
-              No hay precios de materias primas registrados para este producto en
-              {{ nombreMes(mesSeleccionado()) }}. Se usan los últimos precios vigentes o la base histórica.
-            </p>
-          }
-          <div class="cost-lines">
-            <div class="cost-line">
-              <span class="cost-line__label">Materia prima de la semana</span>
-              <span class="cost-line__value">
-                @if (costoMateriaPrima() !== null) {
-                  ${{ costoMateriaPrima() | number: '1.4-4' }}
-                } @else {
-                  Sin fórmula
-                }
-              </span>
-            </div>
-            <div class="cost-line">
-              <span class="cost-line__label">Empaque: botella, tapa y etiqueta</span>
-              <span class="cost-line__value">${{ costoEmpaque() | number: '1.4-4' }}</span>
-            </div>
-            <div class="cost-line cost-line--carton">
-              <span class="cost-line__label">Cartón por unidad</span>
-              <span class="cost-line__value">
-                @if (!detalle.cartonAplica) {
-                  No aplica
-                } @else if (detalle.cartonSinDato) {
-                  Sin dato
-                } @else {
-                  ${{ costoCarton() | number: '1.4-4' }}
-                }
-              </span>
-            </div>
-            <div class="cost-line">
-              <span class="cost-line__label">Mano de obra por unidad</span>
-              <span class="cost-line__value">
-                @if (costoManoObra() !== null) {
-                  ${{ costoManoObra() | number: '1.4-4' }}
-                } @else {
-                  Sin registro anterior
-                }
-              </span>
-            </div>
-            <div class="cost-line">
-              <span class="cost-line__label">Gastos indirectos de fabricación por unidad</span>
-              <span class="cost-line__value">
-                @if (costoGastosIndirectos() !== null) {
-                  ${{ costoGastosIndirectos() | number: '1.4-4' }}
-                } @else {
-                  Sin registro del mes
-                }
-              </span>
-            </div>
-            <div class="cost-line cost-line--total">
-              <span class="cost-line__label">{{
-                costoFinal() === null
-                  ? esCostoReferencia(mesSeleccionado())
-                    ? 'Subtotal de referencia: materia prima + empaque + cartón'
-                    : 'Subtotal disponible: materia prima + empaque + cartón'
-                  : esCostoReferencia(mesSeleccionado())
-                    ? 'Costo de referencia por unidad'
-                    : 'Costo calculado por unidad'
-              }}</span>
-              <span class="cost-line__value">
-                @if (costoFinal() !== null) {
-                  ${{ costoFinal() | number: '1.4-4' }}
-                } @else if (costoPreliminar() !== null) {
-                  ${{ costoPreliminar() | number: '1.4-4' }}
-                } @else {
-                  —
-                }
-              </span>
-            </div>
-          </div>
-          <details class="calculation-details">
-            <summary>
-              <mat-icon>calculate</mat-icon>Cómo se calcula la materia prima<mat-icon
-                class="details-chevron"
-                >expand_more</mat-icon
+          <div class="cost-controls">
+            <label
+              >Mes de costos de fabricación
+              <select
+                [ngModel]="mesSeleccionado()"
+                [disabled]="cargandoCostos() || meses().length === 0"
+                (ngModelChange)="cambiarMes($event)"
               >
-            </summary>
-            <p class="cost-note">
-              Materia prima: kg necesarios por ingrediente × precio por kg vigente en la semana
-              seleccionada. Sin cambios, se conserva el precio anterior; antes del primer registro
-              se usa el precio base histórico.
-            </p>
-            @for (ingrediente of valoracionMateriaPrima()?.detalle ?? []; track $index) {
-              <p class="cost-note">
-                {{ ingrediente.nombre }}: {{ ingrediente.kg | number: '1.3-6' }} kg × ${{
-                  ingrediente.precioKg | number: '1.4-6'
-                }}/kg
-                @if (ingrediente.fechaPrecio) {
-                  (precio del {{ ingrediente.fechaPrecio | date: 'dd/MM/yyyy' : 'UTC' }})
-                } @else {
-                  (precio base histórico)
+                @for (m of meses(); track m) {
+                  <option [value]="m">
+                    {{ nombreMes(m) }}{{ esCostoReferencia(m) ? ' · Costo de referencia' : '' }}
+                  </option>
                 }
+              </select>
+            </label>
+            <label
+              >Semana de precios
+              <select
+                [ngModel]="semanaSeleccionada()"
+                [disabled]="cargandoCostos() || !semanas().length"
+                (ngModelChange)="cambiarSemana($event)"
+              >
+                @for (fecha of semanas(); track fecha; let i = $index) {
+                  <option [value]="fecha">
+                    Semana {{ i + 1 }} · {{ fecha | date: 'dd/MM/yyyy' : 'UTC' }}
+                  </option>
+                }
+              </select>
+            </label>
+            <button
+              type="button"
+              [disabled]="cargandoCostos() || !presentacionActual()"
+              (click)="actualizarCostos()"
+            >
+              <mat-icon>refresh</mat-icon>Actualizar costos
+            </button>
+          </div>
+          @if (cargandoCostos()) {
+            <p role="status">Cargando costos del SKU…</p>
+          } @else if (errorCostos()) {
+            <p class="cost-error" role="alert">{{ errorCostos() }}</p>
+          } @else if (costosActuales(); as detalle) {
+            @if (esCostoReferencia(mesSeleccionado())) {
+              <p class="cost-note" role="status">
+                No hay precios de materias primas registrados para este producto en
+                {{ nombreMes(mesSeleccionado()) }}. Se usan los últimos precios vigentes o la base
+                histórica.
               </p>
             }
-          </details>
-          @if (manoObraVigente(); as mo) {
-            @if (mo.mes.slice(0, 7) !== mesSeleccionado()) {
+            <div class="cost-lines">
+              <div class="cost-line">
+                <span class="cost-line__label">Materia prima de la semana</span>
+                <span class="cost-line__value">
+                  @if (costoMateriaPrima() !== null) {
+                    ${{ costoMateriaPrima() | number: '1.4-4' }}
+                  } @else {
+                    Sin fórmula
+                  }
+                </span>
+              </div>
+              <div class="cost-line">
+                <span class="cost-line__label">Empaque: botella, tapa y etiqueta</span>
+                <span class="cost-line__value">${{ costoEmpaque() | number: '1.4-4' }}</span>
+              </div>
+              <div class="cost-line cost-line--carton">
+                <span class="cost-line__label">Cartón por unidad</span>
+                <span class="cost-line__value">
+                  @if (!detalle.cartonAplica) {
+                    No aplica
+                  } @else if (detalle.cartonSinDato) {
+                    Sin dato
+                  } @else {
+                    ${{ costoCarton() | number: '1.4-4' }}
+                  }
+                </span>
+              </div>
+              <div class="cost-line">
+                <span class="cost-line__label">Mano de obra por unidad</span>
+                <span class="cost-line__value">
+                  @if (costoManoObra() !== null) {
+                    ${{ costoManoObra() | number: '1.4-4' }}
+                  } @else {
+                    Sin registro anterior
+                  }
+                </span>
+              </div>
+              <div class="cost-line">
+                <span class="cost-line__label">Gastos indirectos de fabricación por unidad</span>
+                <span class="cost-line__value">
+                  @if (costoGastosIndirectos() !== null) {
+                    ${{ costoGastosIndirectos() | number: '1.4-4' }}
+                  } @else {
+                    Sin registro del mes
+                  }
+                </span>
+              </div>
+              <div class="cost-line cost-line--total">
+                <span class="cost-line__label">{{
+                  costoFinal() === null
+                    ? esCostoReferencia(mesSeleccionado())
+                      ? 'Subtotal de referencia: materia prima + empaque + cartón'
+                      : 'Subtotal disponible: materia prima + empaque + cartón'
+                    : esCostoReferencia(mesSeleccionado())
+                      ? 'Costo de referencia por unidad'
+                      : 'Costo calculado por unidad'
+                }}</span>
+                <span class="cost-line__value">
+                  @if (costoFinal() !== null) {
+                    ${{ costoFinal() | number: '1.4-4' }}
+                  } @else if (costoPreliminar() !== null) {
+                    ${{ costoPreliminar() | number: '1.4-4' }}
+                  } @else {
+                    —
+                  }
+                </span>
+              </div>
+            </div>
+            <details class="calculation-details">
+              <summary>
+                <mat-icon>calculate</mat-icon>Cómo se calcula la materia prima<mat-icon
+                  class="details-chevron"
+                  >expand_more</mat-icon
+                >
+              </summary>
               <p class="cost-note">
-                Se mantiene la mano de obra de {{ nombreMes(mo.mes.slice(0, 7)) }} hasta la
-                siguiente actualización.
+                Materia prima: kg necesarios por ingrediente × precio por kg vigente en la semana
+                seleccionada. Sin cambios, se conserva el precio anterior; antes del primer registro
+                se usa el precio base histórico.
+              </p>
+              @for (ingrediente of valoracionMateriaPrima()?.detalle ?? []; track $index) {
+                <p class="cost-note">
+                  {{ ingrediente.nombre }}: {{ ingrediente.kg | number: '1.3-6' }} kg × ${{
+                    ingrediente.precioKg | number: '1.4-6'
+                  }}/kg
+                  @if (ingrediente.fechaPrecio) {
+                    (precio del {{ ingrediente.fechaPrecio | date: 'dd/MM/yyyy' : 'UTC' }})
+                  } @else {
+                    (precio base histórico)
+                  }
+                </p>
+              }
+            </details>
+            @if (manoObraVigente(); as mo) {
+              @if (mo.mes.slice(0, 7) !== mesSeleccionado()) {
+                <p class="cost-note">
+                  Se mantiene la mano de obra de {{ nombreMes(mo.mes.slice(0, 7)) }} hasta la
+                  siguiente actualización.
+                </p>
+              }
+              @if (mo.estimado) {
+                <p class="cost-note">La mano de obra utilizada está registrada como estimada.</p>
+              }
+            } @else {
+              <p class="cost-note" role="status">
+                No existe mano de obra para este SKU en el mes elegido ni antes. El subtotal
+                disponible no incluye mano de obra.
               </p>
             }
-            @if (mo.estimado) {
-              <p class="cost-note">La mano de obra utilizada está registrada como estimada.</p>
+            @if (detalle.empaqueEstimado) {
+              <p class="cost-note">
+                Empaque de referencia copiado del producto anterior. Revisa su costo para este
+                tamaño y tecnología.
+              </p>
             }
-          } @else {
-            <p class="cost-note" role="status">
-              No existe mano de obra para este SKU en el mes elegido ni antes. El subtotal
-              disponible no incluye mano de obra.
-            </p>
-          }
-          @if (detalle.empaqueEstimado) {
-            <p class="cost-note">
-              Empaque de referencia copiado del producto anterior. Revisa su costo para este tamaño
-              y tecnología.
-            </p>
-          }
-          @if (detalle.empaqueSinDato) {
-            <p class="cost-note">
-              Faltan datos de empaque: los tipos sin dato aportan 0 al subtotal.
-            </p>
-          }
-          @if (detalle.cartonEstimado) {
-            <p class="cost-note">El cartón utiliza un precio de referencia.</p>
-          }
-          @if (detalle.cartonSinDato) {
-            <p class="cost-note">Falta el precio de cartón; aporta 0 al subtotal disponible.</p>
-          }
-          @if (gastosIndirectosDelMes(); as gif) {
-            <p class="cost-note">
-              Se suman {{ gif.conceptos }} conceptos de gastos indirectos para
-              {{ nombreMes(mesSeleccionado()) }}.
-            </p>
-            @if (gif.estimado) {
-              <p class="cost-note">Los gastos indirectos incluyen valores estimados.</p>
+            @if (detalle.empaqueSinDato) {
+              <p class="cost-note">
+                Faltan datos de empaque: los tipos sin dato aportan 0 al subtotal.
+              </p>
             }
-          } @else {
-            <p class="cost-note" role="status">
-              Faltan gastos indirectos de fabricación para este SKU en el mes elegido. El costo
-              final queda pendiente; el subtotal disponible incluye materia prima, empaque y cartón.
+            @if (detalle.cartonEstimado) {
+              <p class="cost-note">El cartón utiliza un precio de referencia.</p>
+            }
+            @if (detalle.cartonSinDato) {
+              <p class="cost-note">Falta el precio de cartón; aporta 0 al subtotal disponible.</p>
+            }
+            @if (gastosIndirectosDelMes(); as gif) {
+              <p class="cost-note">
+                Se suman {{ gif.conceptos }} conceptos de gastos indirectos para
+                {{ nombreMes(mesSeleccionado()) }}.
+              </p>
+              @if (gif.estimado) {
+                <p class="cost-note">Los gastos indirectos incluyen valores estimados.</p>
+              }
+            } @else {
+              <p class="cost-note" role="status">
+                Faltan gastos indirectos de fabricación para este SKU en el mes elegido. El costo
+                final queda pendiente; el subtotal disponible incluye materia prima, empaque y
+                cartón.
+              </p>
+            }
+            <p class="cost-note">
+              El mes determina la mano de obra vigente y los gastos indirectos registrados en ese
+              mes. La materia prima usa el historial de la semana elegida; empaque y cartón usan sus
+              valores actuales.
             </p>
           }
-          <p class="cost-note">
-            El mes determina la mano de obra vigente y los gastos indirectos registrados en ese mes.
-            La materia prima usa el historial de la semana elegida; empaque y cartón usan sus
-            valores actuales.
-          </p>
-        }
         </div>
         @if (productoSeleccionado() && presentacionActual()) {
           <div class="embedded-comparison">

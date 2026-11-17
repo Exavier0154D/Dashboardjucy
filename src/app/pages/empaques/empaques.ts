@@ -15,9 +15,9 @@ import {
 import { coincideBusqueda } from '../../core/busqueda-texto';
 
 const COLORES_EMPAQUE: Record<(typeof TIPOS_EMPAQUE_BASE)[number], string> = {
-  Botella: '#2563eb',
-  Tap: '#059669',
-  Etiqueta: '#f59e0b',
+  Botella: '#16a679',
+  Tap: '#48c5b4',
+  Etiqueta: '#edb441',
 };
 
 @Component({
@@ -36,7 +36,7 @@ export class Empaques {
   readonly tiposEmpaque = TIPOS_EMPAQUE_BASE;
   readonly busqueda = signal('');
   readonly soloIncompletos = signal(false);
-  readonly mostrarGraficos = signal(false);
+  readonly mostrarGraficos = signal(true);
   readonly presentacionDetalleId = signal<number | null>(null);
   actualizarAhora(): void {
     void this.data.actualizarAhora();
@@ -177,8 +177,8 @@ export class Empaques {
     plugins: {
       legend: { position: 'bottom', labels: { usePointStyle: true, padding: 18 } },
       tooltip: {
-        backgroundColor: '#172554',
-        borderColor: '#60a5fa',
+        backgroundColor: '#194c3e',
+        borderColor: '#48c5b4',
         borderWidth: 1,
         padding: 14,
         cornerRadius: 9,
@@ -226,8 +226,8 @@ export class Empaques {
     plugins: {
       legend: { position: 'bottom', labels: { usePointStyle: true, padding: 18 } },
       tooltip: {
-        backgroundColor: '#172554',
-        borderColor: '#60a5fa',
+        backgroundColor: '#194c3e',
+        borderColor: '#48c5b4',
         borderWidth: 1,
         padding: 14,
         cornerRadius: 9,

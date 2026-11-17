@@ -36,7 +36,7 @@ type Vista = 'productos' | 'materias';
     HistoricoCostos,
   ],
   templateUrl: './materia-prima.html',
-  styleUrl: './materia-prima.css',
+  styleUrls: ['./materia-prima.css', './materia-prima-dashboard.css'],
 })
 export class MateriaPrima {
   private readonly elemento = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -75,7 +75,6 @@ export class MateriaPrima {
   readonly tipoEnvase = signal('Todos');
   readonly estadoEnvase = signal('Todos');
   readonly paginaEnvases = signal(1);
-  readonly mostrarAnalisis = signal(false);
   readonly tiposEnvase = TIPOS_EMPAQUE;
   readonly envases = computed(() => catalogoEnvases(this.productos(), this.data.empaques()));
   readonly gruposEnvases = computed(() => agruparEnvases(this.envases()));
@@ -147,6 +146,7 @@ export class MateriaPrima {
     if (presentacion) this.elegirPresentacionTarjeta(producto, presentacion);
   }
   readonly textoBusquedaProducto = signal('');
+  readonly animacionBusqueda = signal(0);
   readonly categoriaSeleccionada = signal('Todas');
   readonly marcaSeleccionada = signal('Todas');
   readonly tecnologiaSeleccionada = signal('Todas');
@@ -154,7 +154,6 @@ export class MateriaPrima {
   readonly estadoIngrediente = signal('Todos');
   readonly categoriaIngrediente = signal('Todas');
   readonly ordenIngredientes = signal('nombre');
-  readonly exportacionMensaje = signal('');
   readonly categoriasIngredientes = computed(() =>
     [...new Set(this.productos().map((p) => p.categoria))].sort((a, b) => a.localeCompare(b, 'es')),
   );
@@ -173,58 +172,6 @@ export class MateriaPrima {
     this.ordenIngredientes.set('nombre');
   }
 
-  /** Exporta los registros filtrados; protege texto frente a fórmulas de hojas de cálculo. */
-  exportarMateriales(): void {
-    const ingrediente = this.tipoMaterial() === 'ingredientes';
-    const filas: (string | number)[][] = ingrediente
-      ? [
-          [
-            'Ingrediente',
-            'Unidad',
-            'Precio por kg (USD)',
-            'Variación vs. base (%)',
-            'Estado',
-            'Productos',
-          ],
-          ...this.materiasPrimasFiltradas().map((m) => [
-            m.nombre,
-            m.unidad,
-            m.costoKg,
-            this.variacionMateria(m) ?? '',
-            this.estadoMateria(m),
-            this.listaProductosMateriaPrima(m.id).join('; '),
-          ]),
-        ]
-      : [
-          ['Envase', 'Producto', 'Presentación', 'Precio por unidad (USD)', 'Estado'],
-          ...this.envasesFiltrados().map((e) => [
-            e.empaque.tipo === 'Tap' ? 'Tapa' : e.empaque.tipo,
-            e.producto.nombre,
-            this.etiquetaPresentacion(e.presentacion),
-            e.precio ?? '',
-            e.empaque.estado,
-          ]),
-        ];
-    const csv = filas
-      .map((fila) =>
-        fila
-          .map((valor) => {
-            const texto = String(valor);
-            const seguro =
-              typeof valor === 'string' && /^[\s]*[=+@-]/.test(texto) ? `'${texto}` : texto;
-            return `"${seguro.replace(/"/g, '""')}"`;
-          })
-          .join(','),
-      )
-      .join('\r\n');
-    const url = URL.createObjectURL(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8;' }));
-    const enlace = document.createElement('a');
-    enlace.href = url;
-    enlace.download = `jucy-${ingrediente ? 'ingredientes' : 'envases'}.csv`;
-    enlace.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    this.exportacionMensaje.set(`${filas.length - 1} registros exportados`);
-  }
   private readonly seleccionTarjetas = signal<Record<string, number>>({});
 
   readonly totalSku = computed(() =>
@@ -280,7 +227,9 @@ export class MateriaPrima {
     this.vista.set(vista);
   }
   buscarProducto(valor: string): void {
+    if (valor === this.textoBusquedaProducto()) return;
     this.textoBusquedaProducto.set(valor);
+    this.animacionBusqueda.update((fase) => fase + 1);
   }
   filtrarPorCategoria(categoria: string): void {
     this.categoriaSeleccionada.set(categoria);
@@ -422,6 +371,59 @@ export class MateriaPrima {
     return this.productosPorMateriaPrima().get(materiaId) ?? [];
   }
   readonly totalMateriasPrimas = computed(() => this.materiasPrimas().length);
+  readonly estadoCatalogo = computed(() => {
+    if (this.tipoMaterial() === 'envases') {
+      const envases = this.envases();
+      return [
+        {
+          nombre: 'Confirmados',
+          cantidad: envases.filter((e) => e.empaque.estado === 'confirmado').length,
+          color: '#16a679',
+        },
+        {
+          nombre: 'De referencia',
+          cantidad: envases.filter((e) => e.empaque.estado === 'referencia_producto').length,
+          color: '#48c5b4',
+        },
+        {
+          nombre: 'Sin precio',
+          cantidad: envases.filter((e) => e.empaque.estado === 'sin_dato').length,
+          color: '#edb441',
+        },
+      ];
+    }
+    const materias = this.materiasPrimas();
+    return [
+      {
+        nombre: 'Sin alerta',
+        cantidad: materias.filter((m) => this.estadoMateria(m) === 'Activo').length,
+        color: '#16a679',
+      },
+      {
+        nombre: 'Alerta de costo',
+        cantidad: materias.filter((m) => this.estadoMateria(m) === 'Alerta de costo').length,
+        color: '#edb441',
+      },
+      { nombre: 'Inactivos', cantidad: materias.filter((m) => !m.activo).length, color: '#c3d7ce' },
+    ];
+  });
+  readonly estadoChartData = computed<ChartData<'doughnut'>>(() => ({
+    labels: this.estadoCatalogo().map((e) => e.nombre),
+    datasets: [
+      {
+        data: this.estadoCatalogo().map((e) => e.cantidad),
+        backgroundColor: this.estadoCatalogo().map((e) => e.color),
+        borderWidth: 3,
+        borderColor: '#ffffff',
+      },
+    ],
+  }));
+  readonly estadoChartOptions: ChartConfiguration<'doughnut'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '76%',
+    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#194c3e', padding: 12 } },
+  };
   // ============================================================
   // BARRA DE COSTO
   // ============================================================
@@ -440,6 +442,22 @@ export class MateriaPrima {
     [...this.materiasPrimas()].sort((a, b) => b.costoKg - a.costoKg).slice(0, 6),
   );
   readonly barChartData = computed<ChartData<'bar'>>(() => {
+    if (this.tipoMaterial() === 'envases') {
+      return {
+        labels: this.tiposEnvase.map((t) => (t === 'Tap' ? 'Tapa' : t)),
+        datasets: [
+          {
+            label: 'Grupos de envases',
+            data: this.tiposEnvase.map(
+              (t) => this.gruposEnvases().filter((g) => g.tipo === t).length,
+            ),
+            backgroundColor: ['#16a679', '#48c5b4', '#edb441', '#c3d7ce'],
+            borderRadius: 6,
+            barThickness: 20,
+          },
+        ],
+      };
+    }
     const materias = this.mayoresPrecios();
     return {
       labels: materias.map((materia) => materia.nombre),
@@ -449,13 +467,13 @@ export class MateriaPrima {
           label: 'Costo / kg',
           backgroundColor: (context) => {
             const area = context.chart.chartArea;
-            if (!area) return '#2563eb';
+            if (!area) return '#16a679';
             const gradient = context.chart.ctx.createLinearGradient(area.left, 0, area.right, 0);
-            gradient.addColorStop(0, '#bfdbfe');
-            gradient.addColorStop(1, '#2563eb');
+            gradient.addColorStop(0, '#91e0be');
+            gradient.addColorStop(1, '#16a679');
             return gradient;
           },
-          hoverBackgroundColor: '#1d4ed8',
+          hoverBackgroundColor: '#1d624e',
           borderRadius: 6,
           barThickness: 20,
         },
@@ -476,13 +494,16 @@ export class MateriaPrima {
         display: false,
       },
       tooltip: {
-        backgroundColor: '#172554',
-        borderColor: '#60a5fa',
+        backgroundColor: '#194c3e',
+        borderColor: '#48c5b4',
         borderWidth: 1,
         padding: 14,
         cornerRadius: 9,
         callbacks: {
-          label: (ctx) => ` $${Number(ctx.parsed.x).toFixed(4)} / kg`,
+          label: (ctx) =>
+            this.tipoMaterial() === 'ingredientes'
+              ? ` $${Number(ctx.parsed.x).toFixed(4)} / kg`
+              : ` ${ctx.parsed.x} grupos de envases`,
         },
       },
     },
@@ -492,7 +513,7 @@ export class MateriaPrima {
         grid: { color: '#eef2f0' },
         beginAtZero: true,
         ticks: {
-          callback: (valor) => `$${valor}`,
+          callback: (valor) => (this.tipoMaterial() === 'ingredientes' ? `$${valor}` : valor),
         },
       },
       y: {

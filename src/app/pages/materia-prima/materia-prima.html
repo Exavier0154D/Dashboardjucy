@@ -1,4 +1,10 @@
-<div class="page jucy-workspace" [attr.aria-busy]="cargando()">
+<div
+  class="page"
+  [class.product-detail-page]="!!productoSeleccionado()"
+  [class.products-page]="vista() === 'productos' && !productoSeleccionado()"
+  [class.material-page]="vista() === 'materias' && !productoSeleccionado()"
+  [attr.aria-busy]="cargando()"
+>
   @if (errorCarga(); as error) {
     <div class="status-banner" role="alert">
       <div>
@@ -21,12 +27,12 @@
       <header class="page-header">
         <div>
           <span class="eyebrow">CATÁLOGO DE PRODUCCIÓN</span>
-          <h1>{{ vista() === 'productos' ? 'Costos de materia prima' : 'Materia prima' }}</h1>
+          <h1>{{ vista() === 'productos' ? 'Productos' : 'Materia prima' }}</h1>
           <p>
             {{
               vista() === 'productos'
                 ? 'Una visión clara de tus insumos. Mejores decisiones para tu producción.'
-                : 'Consulta ingredientes, envases y cartones en un solo lugar.'
+                : 'Sigue la evolución de precios y consulta tus ingredientes, envases y cartones.'
             }}
           </p>
         </div>
@@ -41,7 +47,31 @@
       </header>
       @if (vista() === 'productos') {
         <section class="section" aria-label="Catálogo de productos">
+          <div class="material-kpis" aria-label="Resumen de productos">
+            <div class="surface material-kpi">
+              <span class="metric-icon"><mat-icon aria-hidden="true">grid_view</mat-icon></span>
+              <span>Productos</span><strong>{{ productos().length }}</strong
+              ><small>Productos activos en el catálogo</small>
+            </div>
+            <div class="surface material-kpi">
+              <span class="metric-icon"><mat-icon aria-hidden="true">inventory_2</mat-icon></span>
+              <span>Presentaciones</span><strong>{{ totalSku() }}</strong
+              ><small>SKU para consultar sus costos</small>
+            </div>
+            <div class="surface material-kpi">
+              <span class="metric-icon"><mat-icon aria-hidden="true">category</mat-icon></span>
+              <span>Categorías</span><strong>{{ categoriasConConteo().length - 1 }}</strong
+              ><small>Líneas de productos del catálogo</small>
+            </div>
+          </div>
           <div class="catalog-toolbar surface">
+            <div class="product-toolbar-heading">
+              <div>
+                <span class="eyebrow">EXPLORA TU CATÁLOGO</span>
+                <h2>Encuentra tu producto</h2>
+              </div>
+              <span class="catalog-period">Costos de {{ anioConsulta() }}</span>
+            </div>
             <label class="search-box"
               ><mat-icon>search</mat-icon><span class="sr-only">Buscar producto</span
               ><input
@@ -53,17 +83,36 @@
             /></label>
             <div class="filter-row">
               <label
-                ><span id="categoria-filtro-label">Categoría</span><mat-select panelClass="jucy-filter-panel" aria-labelledby="categoria-filtro-label" [value]="categoriaSeleccionada()" (selectionChange)="filtrarPorCategoria($event.value)"
+                ><span id="categoria-filtro-label">Categoría</span
+                ><mat-select
+                  panelClass="jucy-filter-panel"
+                  aria-labelledby="categoria-filtro-label"
+                  [value]="categoriaSeleccionada()"
+                  (selectionChange)="filtrarPorCategoria($event.value)"
                 >
                   @for (cat of categoriasConConteo(); track cat.nombre) {
                     <mat-option [value]="cat.nombre">
-                      <span class="filter-option-content"><span class="filter-category-dot" [attr.data-category]="cat.nombre" aria-hidden="true"></span><span>{{ cat.nombre === 'Todas' ? 'Todas las categorías' : cat.nombre }}</span></span>
+                      <span class="filter-option-content"
+                        ><span
+                          class="filter-category-dot"
+                          [attr.data-category]="cat.nombre"
+                          aria-hidden="true"
+                        ></span
+                        ><span>{{
+                          cat.nombre === 'Todas' ? 'Todas las categorías' : cat.nombre
+                        }}</span></span
+                      >
                     </mat-option>
                   }
                 </mat-select></label
               >
               <label
-                ><span id="marca-filtro-label">Marca</span><mat-select panelClass="jucy-filter-panel" aria-labelledby="marca-filtro-label" [value]="marcaSeleccionada()" (selectionChange)="marcaSeleccionada.set($event.value)"
+                ><span id="marca-filtro-label">Marca</span
+                ><mat-select
+                  panelClass="jucy-filter-panel"
+                  aria-labelledby="marca-filtro-label"
+                  [value]="marcaSeleccionada()"
+                  (selectionChange)="marcaSeleccionada.set($event.value)"
                 >
                   <mat-option value="Todas">Todas las marcas</mat-option>
                   @for (nombre of marcas(); track nombre) {
@@ -72,7 +121,12 @@
                 </mat-select></label
               >
               <label
-                ><span id="tecnologia-filtro-label">Tecnología</span><mat-select panelClass="jucy-filter-panel" aria-labelledby="tecnologia-filtro-label" [value]="tecnologiaSeleccionada()" (selectionChange)="tecnologiaSeleccionada.set($event.value)"
+                ><span id="tecnologia-filtro-label">Tecnología</span
+                ><mat-select
+                  panelClass="jucy-filter-panel"
+                  aria-labelledby="tecnologia-filtro-label"
+                  [value]="tecnologiaSeleccionada()"
+                  (selectionChange)="tecnologiaSeleccionada.set($event.value)"
                 >
                   <mat-option value="Todas">Todas las tecnologías</mat-option>
                   @for (nombre of tecnologias(); track nombre) {
@@ -106,7 +160,11 @@
               ><strong>{{ productosFiltrados().length }}</strong> productos encontrados</span
             ><span>{{ skuFiltrados() }} presentaciones</span>
           </div>
-          <div class="products-grid">
+          <div
+            class="products-grid"
+            [class.search-phase-a]="animacionBusqueda() % 2 === 0"
+            [class.search-phase-b]="animacionBusqueda() % 2 !== 0"
+          >
             @for (producto of productosFiltrados(); track producto.id) {
               @let sku = presentacionTarjeta(producto);
               <article class="product-card surface" [style.--reveal-order]="$index % 8">
@@ -116,7 +174,12 @@
                   }}</span
                   ><span class="brand-label">{{ producto.marca }}</span>
                 </div>
-                <h2>{{ tituloTarjeta(producto) }}</h2>
+                <div class="product-heading">
+                  <span class="product-mark"
+                    ><mat-icon aria-hidden="true">local_drink</mat-icon></span
+                  >
+                  <h2>{{ tituloTarjeta(producto) }}</h2>
+                </div>
                 <div class="presentation-picker">
                   <span class="presentation-label">Presentación</span>
                   <mat-select
@@ -168,6 +231,137 @@
         </section>
       } @else {
         <section class="section" aria-label="Catálogo de materiales">
+          <section class="history-primary" aria-label="Historial de precios de materias primas">
+            <app-historico-costos modo="materia"></app-historico-costos>
+          </section>
+          <div class="material-kpis" aria-label="Resumen del catálogo">
+            <div class="surface material-kpi">
+              <span class="metric-icon"><mat-icon aria-hidden="true">eco</mat-icon></span
+              ><span>Ingredientes</span><strong>{{ totalMateriasPrimas() }}</strong
+              ><small>Materias primas en el catálogo</small>
+            </div>
+            <div class="surface material-kpi">
+              <span class="metric-icon"><mat-icon aria-hidden="true">inventory_2</mat-icon></span
+              ><span>Envases y cartones</span><strong>{{ gruposEnvases().length }}</strong
+              ><small>Grupos por tipo y presentación</small>
+            </div>
+            <div class="surface material-kpi">
+              <span class="metric-icon"><mat-icon aria-hidden="true">category</mat-icon></span
+              ><span>Presentaciones</span><strong>{{ totalSku() }}</strong
+              ><small>SKU para consultar sus costos</small>
+            </div>
+          </div>
+          <div class="panorama-heading">
+            <span class="panorama-icon"><mat-icon aria-hidden="true">insights</mat-icon></span>
+            <div>
+              <strong>Panorama de materia prima</strong
+              ><small
+                >Indicadores del catálogo completo ·
+                {{
+                  tipoMaterial() === 'ingredientes' ? 'Ingredientes' : 'Envases y cartones'
+                }}</small
+              >
+            </div>
+          </div>
+          <section class="analytics-grid" aria-label="Análisis del catálogo">
+            <div class="surface chart-card">
+              <div class="chart-heading">
+                <span class="eyebrow">{{
+                  tipoMaterial() === 'ingredientes'
+                    ? 'ANÁLISIS DE PRECIOS'
+                    : 'DISTRIBUCIÓN DE ENVASES'
+                }}</span>
+                <h2>
+                  {{
+                    tipoMaterial() === 'ingredientes'
+                      ? '¿Qué insumos cuestan más?'
+                      : 'Tus envases por tipo'
+                  }}
+                </h2>
+                <p>
+                  {{
+                    tipoMaterial() === 'ingredientes'
+                      ? 'Los 6 mayores precios de formulación por kg · USD'
+                      : 'Cantidad de grupos del catálogo por tipo de envase'
+                  }}
+                </p>
+              </div>
+              @if (
+                tipoMaterial() === 'ingredientes' ? totalMateriasPrimas() : gruposEnvases().length
+              ) {
+                <div class="overview-chart">
+                  <canvas
+                    baseChart
+                    [type]="barChartType"
+                    [data]="barChartData()"
+                    [options]="barChartOptions"
+                    role="img"
+                    [attr.aria-label]="
+                      tipoMaterial() === 'ingredientes'
+                        ? 'Comparación de los seis ingredientes de mayor precio por kilogramo'
+                        : 'Cantidad de grupos de envases por tipo'
+                    "
+                  ></canvas>
+                </div>
+                @if (tipoMaterial() === 'ingredientes') {
+                  <details class="chart-accessible">
+                    <summary>Ver valores de la gráfica</summary>
+                    <ul>
+                      @for (materia of mayoresPrecios(); track materia.id) {
+                        <li>
+                          {{ materia.nombre }}: ${{ materia.costoKg | number: '1.4-4' }}
+                          / kg
+                        </li>
+                      }
+                    </ul>
+                  </details>
+                }
+              } @else {
+                <p class="empty-cell">No hay materiales para visualizar en esta categoría.</p>
+              }
+            </div>
+            <aside class="surface catalog-health">
+              <span class="eyebrow">ESTADO DEL CATÁLOGO</span>
+              <h2>
+                {{
+                  tipoMaterial() === 'ingredientes'
+                    ? 'Ingredientes bajo control'
+                    : 'Precios de tus envases'
+                }}
+              </h2>
+              <p>
+                {{
+                  tipoMaterial() === 'ingredientes'
+                    ? 'La alerta identifica aumentos mayores al 10 % frente al precio base.'
+                    : 'Estado de cada registro por presentación, sin aplicar los filtros de la tabla.'
+                }}
+              </p>
+              @if (tipoMaterial() === 'ingredientes' ? totalMateriasPrimas() : envases().length) {
+                <div class="health-chart">
+                  <canvas
+                    baseChart
+                    type="doughnut"
+                    [data]="estadoChartData()"
+                    [options]="estadoChartOptions"
+                    role="img"
+                    aria-label="Distribución de estados del catálogo"
+                  ></canvas>
+                </div>
+              } @else {
+                <p class="empty-cell">No hay registros para mostrar.</p>
+              }
+              <div class="health-legend">
+                @for (estado of estadoCatalogo(); track estado.nombre) {
+                  <div>
+                    <span
+                      ><i [style.background-color]="estado.color" aria-hidden="true"></i
+                      >{{ estado.nombre }}</span
+                    ><strong>{{ estado.cantidad }}</strong>
+                  </div>
+                }
+              </div>
+            </aside>
+          </section>
           <div class="surface material-catalog">
             <div class="catalog-heading">
               <div>
@@ -175,18 +369,6 @@
                 <h2>Materiales de producción</h2>
                 <p>Consulta precios, identifica cambios y explora cada insumo.</p>
               </div>
-              <button
-                class="export-button"
-                type="button"
-                (click)="exportarMateriales()"
-                [disabled]="
-                  tipoMaterial() === 'ingredientes'
-                    ? !materiasPrimasFiltradas().length
-                    : !envasesFiltrados().length
-                "
-              >
-                <mat-icon>file_download</mat-icon>Exportar CSV
-              </button>
             </div>
             <nav class="material-tabs" aria-label="Tipo de material">
               <button
@@ -224,19 +406,30 @@
               @if (tipoMaterial() === 'ingredientes') {
                 <div class="filter-row ingredient-filters">
                   <label
-                    >Categoría de producto<mat-select panelClass="jucy-filter-panel"
+                    >Categoría de producto<mat-select
+                      panelClass="jucy-filter-panel"
                       aria-label="Categoría de producto"
                       [value]="categoriaIngrediente()"
                       (selectionChange)="categoriaIngrediente.set($event.value)"
                     >
                       <mat-option value="Todas">Todas las categorías</mat-option>
                       @for (categoria of categoriasIngredientes(); track categoria) {
-                        <mat-option [value]="categoria"><span class="filter-option-content"><span class="filter-category-dot" [attr.data-category]="categoria" aria-hidden="true"></span>{{ categoria }}</span></mat-option>
+                        <mat-option [value]="categoria"
+                          ><span class="filter-option-content"
+                            ><span
+                              class="filter-category-dot"
+                              [attr.data-category]="categoria"
+                              aria-hidden="true"
+                            ></span
+                            >{{ categoria }}</span
+                          ></mat-option
+                        >
                       }
                     </mat-select></label
                   >
                   <label
-                    >Estado<mat-select panelClass="jucy-filter-panel"
+                    >Estado<mat-select
+                      panelClass="jucy-filter-panel"
                       aria-label="Estado"
                       [value]="estadoIngrediente()"
                       (selectionChange)="estadoIngrediente.set($event.value)"
@@ -248,7 +441,8 @@
                     </mat-select></label
                   >
                   <label
-                    >Ordenar por<mat-select panelClass="jucy-filter-panel"
+                    >Ordenar por<mat-select
+                      panelClass="jucy-filter-panel"
                       aria-label="Ordenar por"
                       [value]="ordenIngredientes()"
                       (selectionChange)="ordenIngredientes.set($event.value)"
@@ -582,83 +776,6 @@
               }
             </footer>
           </div>
-          <p class="export-feedback" role="status">{{ exportacionMensaje() }}</p>
-          @if (tipoMaterial() === 'ingredientes') {
-            <section class="analytics-grid" aria-label="Análisis del catálogo">
-              <div class="surface chart-card">
-                <div class="chart-heading">
-                  <span class="eyebrow">ANÁLISIS DE PRECIOS</span>
-                  <h2>¿Qué insumos cuestan más?</h2>
-                  <p>Los 6 mayores precios de formulación por kg · USD</p>
-                </div>
-                @if (totalMateriasPrimas()) {
-                  <div class="overview-chart">
-                    <canvas
-                      baseChart
-                      [type]="barChartType"
-                      [data]="barChartData()"
-                      [options]="barChartOptions"
-                      role="img"
-                      aria-label="Comparación de los seis ingredientes de mayor precio por kilogramo"
-                    ></canvas>
-                  </div>
-                  <details class="chart-accessible">
-                    <summary>Ver valores de la gráfica</summary>
-                    <ul>
-                      @for (materia of mayoresPrecios(); track materia.id) {
-                        <li>
-                          {{ materia.nombre }}: ${{ materia.costoKg | number: '1.4-4' }}
-                          / kg
-                        </li>
-                      }
-                    </ul>
-                  </details>
-                } @else {
-                  <p class="empty-cell">Añade ingredientes para visualizar sus precios.</p>
-                }
-              </div>
-              <aside class="surface insight-card">
-                <span class="insight-icon"><mat-icon>lightbulb</mat-icon></span
-                ><span class="eyebrow">EL DETALLE IMPORTA</span>
-                <h2>Del precio a la decisión.</h2>
-                <p>
-                  Un precio alto por kilogramo no siempre implica un mayor costo de producción. La
-                  cantidad en cada fórmula marca la diferencia.
-                </p>
-                <div class="insight-stat">
-                  <strong>{{ totalSku() }}</strong
-                  ><span>presentaciones para analizar</span>
-                </div>
-                <button type="button" class="text-button" (click)="cambiarVista('productos')">
-                  Explorar costos por producto<mat-icon>arrow_forward</mat-icon>
-                </button>
-              </aside>
-            </section>
-            <details
-              class="analysis-panel surface"
-              #analisis
-              (toggle)="mostrarAnalisis.set(analisis.open)"
-            >
-              <summary>
-                <span class="analysis-intro">
-                  <span class="analysis-symbol"><mat-icon>insights</mat-icon></span>
-                  <span class="analysis-copy"
-                    ><strong>Gráficos e histórico de ingredientes</strong
-                    ><small>Explora la evolución de precios y compara períodos.</small></span
-                  >
-                </span>
-                <span class="analysis-toggle"
-                  ><span>{{ mostrarAnalisis() ? 'Cerrar análisis' : 'Explorar histórico' }}</span
-                  ><mat-icon class="expand-icon">expand_more</mat-icon></span
-                >
-              </summary>
-              @if (mostrarAnalisis()) {
-                <div class="analysis-content">
-                  <app-historico-costos modo="materia"></app-historico-costos>
-                </div>
-              }
-            </details>
-          }
         </section>
       }
     } @else {
