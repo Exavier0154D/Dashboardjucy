@@ -181,7 +181,13 @@
           ><input
             type="search"
             aria-label="Buscar en esta sección"
-            placeholder="Buscar nombre, marca, tecnología…"
+            [placeholder]="
+              pestana() === 'productos'
+                ? 'Buscar producto, marca o variante…'
+                : pestana() === 'materias'
+                  ? 'Buscar materia prima o unidad…'
+                  : 'Buscar nombre, marca, tecnología…'
+            "
             [value]="busqueda()"
             (input)="busqueda.set($any($event.target).value)"
         /></label>
@@ -249,6 +255,44 @@
       </div>
     }
 
+    @if (pestana() === 'productos') {
+      <div
+        class="admin-categorias-productos"
+        role="group"
+        aria-label="Categorías de productos de Administración"
+      >
+        <button
+          type="button"
+          [class.activa]="!categoriaProductos()"
+          [attr.aria-pressed]="!categoriaProductos()"
+          [disabled]="guardando()"
+          (click)="categoriaProductos.set('')"
+        >
+          Todas
+        </button>
+        @for (categoria of categoriasProductos(); track categoria) {
+          <button
+            type="button"
+            [class.activa]="categoriaProductos() === categoria"
+            [attr.aria-pressed]="categoriaProductos() === categoria"
+            [disabled]="guardando()"
+            (click)="categoriaProductos.set(categoria)"
+          >
+            {{ categoria }}
+          </button>
+        }
+        @if (busqueda() || categoriaProductos()) {
+          <button
+            type="button"
+            class="admin-limpiar-categorias"
+            [disabled]="guardando()"
+            (click)="busqueda.set(''); categoriaProductos.set('')"
+          >
+            Limpiar filtros
+          </button>
+        }
+      </div>
+    }
     @switch (pestana()) {
       @case ('estandar') {
         <section

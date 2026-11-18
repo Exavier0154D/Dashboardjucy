@@ -118,6 +118,68 @@ describe('Vista de costos estándar', () => {
     ).toBe(false);
   });
 
+  it('filtra Productos de Administración por categoría y búsqueda, sin categorías en Materias primas', async () => {
+    const fixture = await vista(true);
+    const c = fixture.componentInstance;
+    c.catalogo.update((catalogo) => ({
+      ...catalogo,
+      productos: [
+        {
+          id: 'coco',
+          nombre: 'Agua de Coco',
+          categoria: 'Agua de Coco',
+          marca: 'Jucy',
+          variante: 'Original',
+          activo: true,
+          fecha_revision: null,
+          producto_origen_id: null,
+        },
+        {
+          id: 'leche',
+          nombre: 'Leche',
+          categoria: 'Lacteos',
+          marca: 'Jucy',
+          variante: 'Natural',
+          activo: true,
+          fecha_revision: null,
+          producto_origen_id: null,
+        },
+      ],
+      materias: [
+        {
+          id: 1,
+          nombre: 'Azúcar',
+          unidad: 'kg',
+          costo_kg: 1,
+          costo_base_historico: null,
+          activo: true,
+        },
+      ],
+    }));
+    c.cambiarPestana('productos');
+    fixture.detectChanges();
+    const categorias: HTMLButtonElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('.admin-categorias-productos button'),
+    );
+    categorias.find((b) => b.textContent?.includes('Lacteos'))!.click();
+    fixture.detectChanges();
+    expect(c.productosFiltrados().map((p) => p.id)).toEqual(['leche']);
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('input[type="search"]');
+    input.value = 'inexistente';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(c.productosFiltrados()).toEqual([]);
+    c.cambiarPestana('materias');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.admin-categorias-productos')).toBeNull();
+    const materiaInput: HTMLInputElement =
+      fixture.nativeElement.querySelector('input[type="search"]');
+    materiaInput.value = 'azucar';
+    materiaInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(c.materiasFiltradas().map((m) => m.id)).toEqual([1]);
+  });
+
   it('muestra la coincidencia y carga sus costos automáticamente al escribir', async () => {
     const fixture = await vista(true);
     const c = fixture.componentInstance;

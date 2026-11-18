@@ -6,6 +6,40 @@
   border-radius: 16px;
   background: linear-gradient(115deg, #f4fbf7, #fff);
 }
+.admin-categorias-productos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.admin-categorias-productos button {
+  padding: 8px 13px;
+  min-height: 36px;
+  border: 1px solid #d5e8dd;
+  border-radius: 20px;
+  background: #fff;
+  color: #42735b;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.admin-categorias-productos button:hover:not(:disabled) {
+  background: #eaf7ef;
+  border-color: #83b99b;
+}
+.admin-categorias-productos button.activa {
+  color: #fff;
+  background: #158a61;
+  border-color: #158a61;
+}
+.admin-categorias-productos button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.admin-categorias-productos button.admin-limpiar-categorias {
+  background: transparent;
+  border-color: transparent;
+  text-decoration: underline;
+}
 .estandar-explorador-heading {
   display: flex;
   align-items: center;

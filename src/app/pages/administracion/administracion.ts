@@ -372,6 +372,16 @@ export class Administracion implements OnInit, OnDestroy {
   readonly errorHistorial = signal<string | null>(null);
   readonly confirmacion = signal<{ titulo: string; mensaje: string } | null>(null);
   readonly busqueda = signal('');
+  readonly categoriaProductos = signal('');
+  readonly categoriasProductos = computed(() =>
+    [
+      ...new Set(
+        this.productos()
+          .map((p) => p.categoria)
+          .filter(Boolean),
+      ),
+    ].sort((a, b) => a.localeCompare(b, 'es')),
+  );
   readonly filtroProducto = signal('');
   readonly filtroHistorial = signal('');
   readonly editando = signal<Pestana | null>(null);
@@ -404,7 +414,11 @@ export class Administracion implements OnInit, OnDestroy {
     this.materias().filter((m) => this.coincide(m.nombre, m.unidad)),
   );
   readonly productosFiltrados = computed(() =>
-    this.productos().filter((p) => this.coincide(p.nombre, p.marca, p.variante, p.categoria)),
+    this.productos().filter(
+      (p) =>
+        (!this.categoriaProductos() || p.categoria === this.categoriaProductos()) &&
+        this.coincide(p.nombre, p.marca, p.variante, p.categoria),
+    ),
   );
   readonly presentacionesFiltradas = computed(() =>
     this.presentaciones().filter(
