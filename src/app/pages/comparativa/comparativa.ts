@@ -12,6 +12,7 @@ import { DESPLEGABLES_SCROLL_PROVIDERS } from '../../core/desplegables-scroll';
 import { CostosPresentacion, CostosProduccionService } from '../../core/costos-produccion.service';
 import { mesActualEcuador, resolverManoObra, sumarCostoFinal } from '../../core/costos-calculos';
 import { resolverGastosIndirectos } from '../../core/gastos-indirectos-calculos';
+import { CostosEstandarService } from '../../core/costos-estandar.service';
 
 type Rubro = 'materiaPrima' | 'empaque' | 'carton' | 'manoObra' | 'gif' | 'total' | 'litro';
 interface Periodo {
@@ -34,6 +35,11 @@ export class Comparativa {
   private readonly data = inject(DataService);
   private readonly selection = inject(SelectionService);
   private readonly servicioCostos = inject(CostosProduccionService);
+  private readonly estandares = inject(CostosEstandarService);
+  readonly baseManual = computed(() => {
+    const id = this.opcion()?.presentacion.id;
+    return id ? this.estandares.obtener(id) : null;
+  });
   private readonly revision = signal(0);
   readonly catalogoCargando = this.data.cargando.asReadonly();
   readonly errorCatalogo = this.data.error.asReadonly();
@@ -70,7 +76,10 @@ export class Comparativa {
       ),
   );
   readonly opcion = computed(() => {
-    const id = this.presentacionInicial()?.id ?? this.skuId() ?? this.selection.presentacionSeleccionada()?.id;
+    const id =
+      this.presentacionInicial()?.id ??
+      this.skuId() ??
+      this.selection.presentacionSeleccionada()?.id;
     return this.opciones().find((o) => o.presentacion.id === id) ?? this.opciones()[0] ?? null;
   });
   readonly opcionesFiltradas = computed(() =>
@@ -98,6 +107,7 @@ export class Comparativa {
       ...new Set([
         ...(datos?.manoObra.map((r) => r.mes.slice(0, 7)) ?? []),
         ...(datos?.gastosIndirectos.map((r) => r.mes.slice(0, 7)) ?? []),
+        ...(p ? this.estandares.mesesGuardados(p.id) : []),
         ...(p ? this.data.mesesMateriaPrima(p) : []),
       ]),
     ]
@@ -140,9 +150,12 @@ export class Comparativa {
       this.error.set('');
       this.cargando.set(!!id);
       if (!id) return;
-      void this.servicioCostos
-        .cargar(id)
-        .then((datos) => {
+      void Promise.all([
+        this.servicioCostos.cargar(id),
+        this.estandares.cargar(id),
+        this.estandares.cargarMensuales(id),
+      ])
+        .then(([datos]) => {
           if (!cancelado) this.costos.set(datos);
         })
         .catch((error: unknown) => {
@@ -234,6 +247,23 @@ export class Comparativa {
 
   private calcularPeriodo(mes: string): Periodo {
     const p = this.opcion()?.presentacion;
+    const manual = mes && p ? this.estandares.obtener(p.id, mes) : !mes ? this.baseManual() : null;
+    if (manual) {
+      const total = sumarCostoFinal(
+        manual.materiaPrima,
+        manual.empaque,
+        manual.manoObra,
+        manual.gif,
+        manual.carton,
+      )!;
+      const litros = p?.litros ?? 0;
+      const volumenValido = Number.isFinite(litros) && litros > 0;
+      return {
+        mes,
+        valores: { ...manual, total, litro: volumenValido ? total / litros : null },
+        avisos: volumenValido ? [] : ['Volumen inválido para calcular el costo por litro.'],
+      };
+    }
     const datos = this.costos();
     const avisos: string[] = [];
     const materia = p

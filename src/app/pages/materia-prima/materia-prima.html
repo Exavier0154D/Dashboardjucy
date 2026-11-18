@@ -26,16 +26,23 @@
   } @else if (cargado()) {
     @if (!productoSeleccionado()) {
       <header class="page-header">
-        <div>
-          <span class="eyebrow">CATÁLOGO DE PRODUCCIÓN</span>
-          <h1>{{ vista() === 'productos' ? 'Productos' : 'Materia prima' }}</h1>
-          <p>
-            {{
-              vista() === 'productos'
-                ? 'Una visión clara de tus insumos. Mejores decisiones para tu producción.'
-                : 'Sigue la evolución de precios y consulta tus ingredientes, envases y cartones.'
-            }}
-          </p>
+        <div class="titulo-seccion-con-icono">
+          <span class="icono-seccion"
+            ><mat-icon aria-hidden="true">{{
+              vista() === 'productos' ? 'grid_view' : 'inventory_2'
+            }}</mat-icon></span
+          >
+          <div>
+            <span class="eyebrow">CATÁLOGO DE PRODUCCIÓN</span>
+            <h1>{{ vista() === 'productos' ? 'Productos' : 'Materia prima' }}</h1>
+            <p>
+              {{
+                vista() === 'productos'
+                  ? 'Una visión clara de tus insumos. Mejores decisiones para tu producción.'
+                  : 'Sigue la evolución de precios y consulta tus ingredientes, envases y cartones.'
+              }}
+            </p>
+          </div>
         </div>
         <button
           class="refresh-button"

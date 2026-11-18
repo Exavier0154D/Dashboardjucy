@@ -24,6 +24,7 @@ import { DESPLEGABLES_SCROLL_PROVIDERS } from '../../core/desplegables-scroll';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData } from 'chart.js';
 import { SupabaseService } from '../../core/supabase.service';
+import { SelectionService } from '../../core/selection.service';
 import { Producto, Presentacion } from '../../models/producto.model';
 import { CostosProduccionService, CostosPresentacion } from '../../core/costos-produccion.service';
 import {
@@ -49,7 +50,11 @@ import {
     MatButtonModule,
     MatDatepickerModule,
   ],
-  providers: [...DESPLEGABLES_SCROLL_PROVIDERS, provideNativeDateAdapter(), { provide: MAT_DATE_LOCALE, useValue: 'es-EC' }],
+  providers: [
+    ...DESPLEGABLES_SCROLL_PROVIDERS,
+    provideNativeDateAdapter(),
+    { provide: MAT_DATE_LOCALE, useValue: 'es-EC' },
+  ],
   templateUrl: './historico-costos.html',
   styleUrl: './historico-costos.css',
 })
@@ -75,6 +80,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
       (this.costosActuales()?.gastosIndirectos.length ?? 0) > 0,
   );
   private readonly db = inject(SupabaseService).client;
+  private readonly selection = inject(SelectionService);
   private readonly navegador = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly zona = inject(NgZone);
   readonly materiales = signal<MaterialBase[]>([]);
@@ -422,8 +428,10 @@ export class HistoricoCostos implements OnInit, OnDestroy {
       this.precios.set(historicos);
       if (!this.seleccionInicializada) {
         this.seleccionInicializada = true;
-        const primera = materiales[0];
-        if (primera) this.seleccionarMateria(primera);
+        const anterior =
+          this.modo() === 'materia' ? this.selection.materiaPrimaHistoricoId() : null;
+        const elegida = materiales.find((m) => m.id === anterior) ?? materiales[0];
+        if (elegida) this.seleccionarMateria(elegida);
       } else if (this.materiaId() !== null && !materiales.some((m) => m.id === this.materiaId())) {
         this.limpiarSelectorMateria();
       } else if (this.materiaId() !== null) {
@@ -500,7 +508,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
   }
 
   prepararBusquedaMateria(): void {
-    this.filtroMateria.set(this.materiaId() === null ? this.textoMateria() : '');
+    this.filtroMateria.set(this.textoMateria());
   }
 
   buscarMateria(valor: string): void {
@@ -513,10 +521,20 @@ export class HistoricoCostos implements OnInit, OnDestroy {
   seleccionarMateria(materia: MaterialBase): void {
     this.materiaId.set(materia.id);
     this.textoMateria.set(materia.nombre);
-    this.filtroMateria.set('');
+    this.filtroMateria.set(materia.nombre);
+    if (this.modo() === 'materia') this.selection.materiaPrimaHistoricoId.set(materia.id);
+  }
+
+  restaurarSeleccionMateria(): void {
+    if (this.modo() !== 'materia') return;
+    const anterior = this.materiales().find(
+      (m) => m.id === this.selection.materiaPrimaHistoricoId(),
+    );
+    if (anterior) this.seleccionarMateria(anterior);
   }
 
   limpiarSelectorMateria(): void {
+    if (this.modo() === 'materia') this.selection.materiaPrimaHistoricoId.set(null);
     this.materiaId.set(null);
     this.textoMateria.set('');
     this.filtroMateria.set('');

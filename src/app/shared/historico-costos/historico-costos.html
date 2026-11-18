@@ -70,14 +70,18 @@
             class="jucy-history-options"
             #opcionesMateria="matAutocomplete"
             [displayWith]="mostrarMateria"
-            [autoActiveFirstOption]="true"
+            [autoActiveFirstOption]="false"
             (optionSelected)="seleccionarMateria($event.option.value)"
+            (closed)="restaurarSeleccionMateria()"
           >
             @for (m of materiasSelector(); track m.id) {
-              <mat-option [value]="m"
+              <mat-option [value]="m" [class.history-option-selected]="m.id === materiaId()"
                 ><span class="history-material-option"
-                  ><mat-icon aria-hidden="true">eco</mat-icon>{{ m.nombre }}</span
-                ></mat-option
+                  ><mat-icon aria-hidden="true">eco</mat-icon>{{ m.nombre }}
+                  @if (m.id === materiaId()) {
+                    <mat-icon class="history-selected-check" aria-hidden="true">check</mat-icon>
+                  }
+                </span></mat-option
               >
             } @empty {
               <mat-option disabled>No se encontraron materias primas</mat-option>
@@ -123,7 +127,7 @@
     @if (modo() === 'materia') {
       <p class="filter-help">
         <mat-icon aria-hidden="true">keyboard</mat-icon>Escribe para buscar y selecciona una
-        sugerencia con clic o Enter.
+        sugerencia con clic o con las flechas y Enter.
       </p>
     }
   </div>

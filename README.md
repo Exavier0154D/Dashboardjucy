@@ -8,6 +8,35 @@ La pantalla de inicio de sesión solo controla la interfaz. Para proteger los da
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.25.
 
+## Costos estándar desde Administración
+
+La pestaña **Costos estándar** permite seleccionar un SKU y guardar materia prima,
+empaque, cartón, mano de obra y gastos indirectos en USD por unidad. Solo las cuentas
+con el permiso existente `catalogo_es_editor()` pueden guardar. Los totales por unidad
+y litro se calculan automáticamente. El selector **Base fija / Costos por mes** separa
+la referencia estándar de las ediciones mensuales. Elige **Costos por mes**, selecciona
+el mes y la presentación, revisa los cinco rubros y pulsa **Guardar mes**.
+
+Los meses con edición manual usan sus cinco valores guardados en la comparativa.
+Los demás conservan sus cálculos originales. La edición mensual no cambia la base
+fija, la formulación ni los registros de precios de materias primas.
+
+Antes de desplegar esta funcionalidad, aplicar la migración
+`supabase/migrations/202611180001_costos_estandar.sql` al proyecto Supabase. Crea
+la tabla y las políticas RLS de lectura para usuarios autenticados y escritura
+exclusiva para editores. No modifica las bases calculadas de los SKU sin estándar manual.
+Si la migración está pendiente, Administración muestra los costos del catálogo en modo
+consulta y avisa que el guardado no está habilitado. La comparativa continúa usando
+su base calculada. Después de aplicar la migración, pulsa **Reintentar** para habilitar
+el guardado sin perder la selección.
+
+Para habilitar las ediciones mensuales, aplicar también
+`supabase/migrations/202611180002_costos_mensuales.sql`. Crea `costo_mensual` con
+clave única por presentación y mes, validación de costos y escritura restringida
+a editores. Esta migración conserva los estándares existentes. Si está pendiente,
+solo el guardado mensual permanece bloqueado; la base fija y la comparativa siguen
+disponibles. Tras ejecutarla, pulsa **Reintentar** en el modo mensual.
+
 ## Development server
 
 To start a local development server, run:

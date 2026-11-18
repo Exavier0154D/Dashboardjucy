@@ -1,18 +1,18 @@
 :host {
-  --c-primary: #1d4ed8;
-  --c-primary-dark: #1e40af;
-  --c-primary-soft: #eff4ff;
-  --c-text: #0f172a;
-  --c-muted: #64748b;
-  --c-border: #e2e8f0;
+  --c-primary: #158a61;
+  --c-primary-dark: #10724f;
+  --c-primary-soft: #e5f4eb;
+  --c-text: #21463b;
+  --c-muted: #647e70;
+  --c-border: #e6eeea;
   --c-surface: #ffffff;
-  --c-bg: #f6f8fb;
+  --c-bg: #f2f6f3;
   --c-danger: #dc2626;
   --c-danger-soft: #fef2f2;
   --c-ok: #15803d;
   --c-ok-soft: #ecfdf3;
-  --c-info-soft: #eff4ff;
-  --radius: 14px;
+  --c-info-soft: #edf5ef;
+  --radius: 20px;
   --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.04);
 
   display: block;

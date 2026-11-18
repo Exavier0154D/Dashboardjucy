@@ -8,16 +8,33 @@
   overscroll-behavior-y: contain;
 }
 
-.jucy-product-options .mat-mdc-option { padding: 10px 14px; }
-.compare-product-option { display: flex; flex-direction: column; gap: 5px; padding: 4px 0; }
-.compare-product-option strong { color: #214438; font-size: 13px; font-weight: 600; }
-.compare-product-option > span { color: #708579; font-size: 11px; line-height: 1.5; }
+.jucy-product-options .mat-mdc-option {
+  padding: 10px 14px;
+}
+.compare-product-option {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 4px 0;
+}
+.compare-product-option strong {
+  color: #214438;
+  font-size: 13px;
+  font-weight: 600;
+}
+.compare-product-option > span {
+  color: #708579;
+  font-size: 11px;
+  line-height: 1.5;
+}
 .embedded-comparison .scope-note,
 .embedded-comparison .observations {
   display: none !important;
 }
 
-app-materia-prima .material-controls .filter-row mat-select:hover { border-color: #9bc6aa; }
+app-materia-prima .material-controls .filter-row mat-select:hover {
+  border-color: #9bc6aa;
+}
 app-materia-prima .material-controls .filter-row mat-select:focus-visible,
 app-materia-prima .material-controls .filter-row mat-select[aria-expanded='true'] {
   outline: none;
@@ -39,16 +56,50 @@ app-materia-prima .material-controls .filter-row mat-select[aria-expanded='true'
   --mat-option-selected-state-layer-color: #e1f5e7;
   --mat-option-selected-state-label-text-color: #12633f;
 }
-.jucy-history-options .mat-mdc-option { min-height: 46px; margin: 3px 0; border-radius: 9px; }
-.history-material-option { display: flex; align-items: center; gap: 12px; }
-.history-material-option mat-icon { padding: 6px; box-sizing: content-box; border-radius: 9px; background: #edf8f0; color: #26835b; font-size: 18px; width: 18px; height: 18px; }
+.jucy-history-options .mat-mdc-option {
+  min-height: 46px;
+  margin: 3px 0;
+  border-radius: 9px;
+}
+.history-material-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.history-material-option mat-icon {
+  padding: 6px;
+  box-sizing: content-box;
+  border-radius: 9px;
+  background: #edf8f0;
+  color: #26835b;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+.jucy-history-options .history-option-selected {
+  background: #e1f5e7;
+}
+.jucy-history-options .mdc-list-item__primary-text {
+  flex: 1;
+}
+.history-material-option .history-selected-check {
+  margin-left: auto;
+  padding: 0;
+  background: transparent;
+  color: #158a61;
+}
 .jucy-history-calendar {
   --mat-sys-primary: #19734d;
   --mat-sys-on-primary: #fff;
   --mat-sys-primary-container: #e1f5e7;
   --mat-sys-on-primary-container: #174e36;
 }
-.jucy-history-calendar .mat-datepicker-content { border: 1px solid #dce9e0; border-radius: 18px; background: #fff; box-shadow: 0 16px 40px #163d2926; }
+.jucy-history-calendar .mat-datepicker-content {
+  border: 1px solid #dce9e0;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 16px 40px #163d2926;
+}
 
 app-materia-prima .catalog-toolbar {
   position: relative;
@@ -59,8 +110,11 @@ app-materia-prima .catalog-toolbar {
     linear-gradient(135deg, #ffffff 0%, #fbfdf9 100%);
   border: 1px solid #dfe8e1;
   border-radius: 18px;
-  box-shadow: 0 10px 28px rgba(31, 73, 53, 0.08), 0 2px 6px rgba(31, 73, 53, 0.04);
-}app-materia-prima .catalog-toolbar::before {
+  box-shadow:
+    0 10px 28px rgba(31, 73, 53, 0.08),
+    0 2px 6px rgba(31, 73, 53, 0.04);
+}
+app-materia-prima .catalog-toolbar::before {
   content: 'Explora el catálogo';
   display: block;
   margin-bottom: 16px;
@@ -82,13 +136,26 @@ app-materia-prima select {
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.9);
   appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, #287052 50%), linear-gradient(135deg, #287052 50%, transparent 50%);
-  background-position: calc(100% - 17px) 18px, calc(100% - 12px) 18px;
-  background-size: 5px 5px, 5px 5px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #287052 50%),
+    linear-gradient(135deg, #287052 50%, transparent 50%);
+  background-position:
+    calc(100% - 17px) 18px,
+    calc(100% - 12px) 18px;
+  background-size:
+    5px 5px,
+    5px 5px;
   background-repeat: no-repeat;
-  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
   cursor: pointer;
-}app-materia-prima select option { background: #fff; color: #18312b; }
+}
+app-materia-prima select option {
+  background: #fff;
+  color: #18312b;
+}
 app-materia-prima .catalog-toolbar mat-select,
 app-materia-prima .material-controls .filter-row mat-select {
   display: flex;
@@ -100,18 +167,40 @@ app-materia-prima .material-controls .filter-row mat-select {
   border: 1px solid var(--border);
   border-radius: 10px;
   font-size: 13px;
-  transition: border-color 180ms ease, box-shadow 180ms ease;
-}app-materia-prima .catalog-toolbar mat-select:hover { border-color: #9bc6aa; }app-materia-prima .catalog-toolbar mat-select:focus-visible,
-app-materia-prima .catalog-toolbar mat-select[aria-expanded='true'] { outline: none; border-color: var(--green); background: #f5fcf7; box-shadow: 0 0 0 3px rgba(42, 132, 88, 0.11); }app-materia-prima select:hover { border-color: #9bc6aa; }app-materia-prima select:focus { outline: 0; border-color: var(--green); box-shadow: 0 0 0 4px rgba(42, 132, 88, 0.11); }app-materia-prima .catalog-toolbar > .filter-row:first-of-type {
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+app-materia-prima .catalog-toolbar mat-select:hover {
+  border-color: #9bc6aa;
+}
+app-materia-prima .catalog-toolbar mat-select:focus-visible,
+app-materia-prima .catalog-toolbar mat-select[aria-expanded='true'] {
+  outline: none;
+  border-color: var(--green);
+  background: #f5fcf7;
+  box-shadow: 0 0 0 3px rgba(42, 132, 88, 0.11);
+}
+app-materia-prima select:hover {
+  border-color: #9bc6aa;
+}
+app-materia-prima select:focus {
+  outline: 0;
+  border-color: var(--green);
+  box-shadow: 0 0 0 4px rgba(42, 132, 88, 0.11);
+}
+app-materia-prima .catalog-toolbar > .filter-row:first-of-type {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
   align-items: end;
-}app-materia-prima .catalog-toolbar > .filter-row[aria-label='Período de costos'] {
+}
+app-materia-prima .catalog-toolbar > .filter-row[aria-label='Período de costos'] {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   padding-top: 18px;
   border-top: 1px solid #e5eee7;
-}app-materia-prima .catalog-toolbar > .filter-row[aria-label='Período de costos'] label {
+}
+app-materia-prima .catalog-toolbar > .filter-row[aria-label='Período de costos'] label {
   flex-basis: auto;
 }
 
@@ -122,7 +211,9 @@ app-materia-prima .catalog-toolbar mat-select[aria-expanded='true'] { outline: n
   border: 1px solid #dce9e0;
   border-radius: 14px;
   background: #fff;
-  box-shadow: 0 16px 40px #163d2926, 0 3px 10px #163d2910;
+  box-shadow:
+    0 16px 40px #163d2926,
+    0 3px 10px #163d2910;
   --mat-option-label-text-font: 'Roboto', Arial, sans-serif;
   --mat-option-label-text-size: 13px;
   --mat-option-label-text-color: #29483b;
@@ -143,16 +234,42 @@ app-materia-prima .catalog-toolbar mat-select[aria-expanded='true'] { outline: n
   font-weight: 600;
   box-shadow: inset 3px 0 #24a36a;
 }
-.filter-option-content { display: inline-flex; align-items: center; gap: 10px; }
-.filter-category-dot { width: 9px; height: 9px; flex-shrink: 0; border-radius: 50%; background: #789087; }
-.filter-category-dot[data-category='Agua de Coco'] { background: #16a085; }
-.filter-category-dot[data-category='Bebida'] { background: #8b5cf6; }
-.filter-category-dot[data-category='Jugos y Zumo'] { background: #ef8050; }
-.filter-category-dot[data-category='Lacteos'] { background: #6095d7; }
-.filter-category-dot[data-category='Limonada'] { background: #8aaa20; }
-.filter-category-dot[data-category='Naranja'] { background: #f59e0b; }
-.filter-category-dot[data-category='Nectar'] { background: #ec5988; }
-.filter-category-dot[data-category='P. Temporales y Salsa'] { background: #cf5950; }
+.filter-option-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.filter-category-dot {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #789087;
+}
+.filter-category-dot[data-category='Agua de Coco'] {
+  background: #16a085;
+}
+.filter-category-dot[data-category='Bebida'] {
+  background: #8b5cf6;
+}
+.filter-category-dot[data-category='Jugos y Zumo'] {
+  background: #ef8050;
+}
+.filter-category-dot[data-category='Lacteos'] {
+  background: #6095d7;
+}
+.filter-category-dot[data-category='Limonada'] {
+  background: #8aaa20;
+}
+.filter-category-dot[data-category='Naranja'] {
+  background: #f59e0b;
+}
+.filter-category-dot[data-category='Nectar'] {
+  background: #ec5988;
+}
+.filter-category-dot[data-category='P. Temporales y Salsa'] {
+  background: #cf5950;
+}
 
 * {
   box-sizing: border-box;
@@ -169,7 +286,12 @@ body {
 }
 /* Desktop scroll belongs to .content; dropdowns must not scroll the document. */
 @media (min-width: 901px) {
-  html, body { height: 100%; overflow: hidden; overscroll-behavior-y: none; }
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior-y: none;
+  }
 }
 button,
 input,
@@ -190,5 +312,47 @@ summary {
     scroll-behavior: auto !important;
     transition: none !important;
     animation: none !important;
+  }
+}
+
+.titulo-seccion-con-icono {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+.titulo-seccion-con-icono > div {
+  min-width: 0;
+}
+.icono-seccion {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  color: #fff;
+  background: linear-gradient(145deg, #2db78c, #157755);
+  box-shadow: 0 8px 20px #158a6126;
+}
+.icono-seccion mat-icon {
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+}
+@media (max-width: 600px) {
+  .titulo-seccion-con-icono {
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .icono-seccion {
+    width: 48px;
+    height: 48px;
+    border-radius: 15px;
+  }
+  .icono-seccion mat-icon {
+    width: 26px;
+    height: 26px;
+    font-size: 26px;
   }
 }

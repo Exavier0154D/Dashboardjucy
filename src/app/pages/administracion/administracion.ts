@@ -5,7 +5,18 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { A11yModule } from '@angular/cdk/a11y';
 import { DataService } from '../../core/data.service';
+import {
+  CostosEstandarService,
+  RUBROS_ESTANDAR,
+  validarCostosEstandar,
+  mesCostoValido,
+} from '../../core/costos-estandar.service';
+import { CostosProduccionService } from '../../core/costos-produccion.service';
+import { resolverManoObra, mesActualEcuador } from '../../core/costos-calculos';
+import { resolverGastosIndirectos } from '../../core/gastos-indirectos-calculos';
+import { DESPLEGABLES_SCROLL_PROVIDERS } from '../../core/desplegables-scroll';
 import { TIPOS_EMPAQUE } from '../../models/empaque.model';
+import { coincideBusqueda } from '../../core/busqueda-texto';
 import {
   precioUnitarioCarton,
   precioUnitarioEnvase,
@@ -25,7 +36,7 @@ import {
   versionSku,
 } from '../../core/catalogo-admin.service';
 
-type Pestana = 'productos' | 'materias' | 'empaques' | 'presentaciones' | 'historial';
+type Pestana = 'productos' | 'materias' | 'empaques' | 'presentaciones' | 'historial' | 'estandar';
 function texto(valor = '', requerido = true) {
   return new FormControl(valor, {
     nonNullable: true,
@@ -41,6 +52,9 @@ function numero(valor = 0, max?: number) {
       ...(max === undefined ? [] : [Validators.max(max)]),
     ],
   });
+}
+function costoEstandar() {
+  return new FormControl<number | null>(null, [Validators.required, Validators.min(0)]);
 }
 function filaFormula(f?: FilaFormula) {
   return new FormGroup({
@@ -65,13 +79,234 @@ const vacio: CatalogoAdmin = {
 
 @Component({
   selector: 'app-administracion',
+  providers: DESPLEGABLES_SCROLL_PROVIDERS,
   imports: [DatePipe, DecimalPipe, ReactiveFormsModule, MatIconModule, MatSelectModule, A11yModule],
   templateUrl: './administracion.html',
-  styleUrl: './administracion.css',
+  styleUrls: ['./administracion.css', './administracion-dashboard.css', './administracion-catalogo.css'],
 })
 export class Administracion implements OnInit, OnDestroy {
   private readonly api = inject(CatalogoAdminService);
   private readonly data = inject(DataService);
+  readonly estandares = inject(CostosEstandarService);
+  private readonly produccion = inject(CostosProduccionService);
+  readonly rubrosEstandar = RUBROS_ESTANDAR;
+  readonly skuEstandar = signal<number | null>(null);
+  readonly busquedaSkuEstandar = signal('');
+  readonly categoriaSkuEstandar = signal('');
+  readonly marcaSkuEstandar = signal('');
+  readonly tecnologiaSkuEstandar = signal('');
+  readonly categoriasSkuEstandar = computed(() =>
+    [
+      ...new Set(
+        this.productos()
+          .map((p) => p.categoria)
+          .filter(Boolean),
+      ),
+    ].sort((a, b) => a.localeCompare(b, 'es')),
+  );
+  readonly marcasSkuEstandar = computed(() =>
+    [
+      ...new Set(
+        this.productos()
+          .map((p) => p.marca)
+          .filter(Boolean),
+      ),
+    ].sort((a, b) => a.localeCompare(b, 'es')),
+  );
+  readonly tecnologiasSkuEstandar = computed(() =>
+    [
+      ...new Set(
+        this.presentaciones()
+          .map((p) => p.tecnologia)
+          .filter(Boolean),
+      ),
+    ].sort(),
+  );
+  readonly opcionesSkuEstandar = computed(() =>
+    this.presentaciones().filter((p) => {
+      const producto = this.productosPorId().get(p.producto_id);
+      return (
+        (!this.categoriaSkuEstandar() || producto?.categoria === this.categoriaSkuEstandar()) &&
+        (!this.marcaSkuEstandar() || producto?.marca === this.marcaSkuEstandar()) &&
+        (!this.tecnologiaSkuEstandar() || p.tecnologia === this.tecnologiaSkuEstandar()) &&
+        coincideBusqueda(
+          this.busquedaSkuEstandar(),
+          producto?.nombre ?? '',
+          producto?.marca ?? '',
+          producto?.variante ?? '',
+          producto?.categoria ?? '',
+          p.nombre_sku ?? '',
+          p.clave_sku ?? '',
+          p.codigo_barras ?? '',
+          p.tecnologia ?? '',
+          `${p.litros} L`,
+          `${p.litros * 1000} ml`,
+        )
+      );
+    }),
+  );
+  readonly seleccionFueraFiltroEstandar = computed(
+    () =>
+      this.skuEstandar() !== null &&
+      !this.opcionesSkuEstandar().some((p) => p.id === this.skuEstandar()),
+  );
+
+  limpiarFiltrosEstandar(): void {
+    if (this.guardando()) return;
+    this.busquedaSkuEstandar.set('');
+    this.categoriaSkuEstandar.set('');
+    this.marcaSkuEstandar.set('');
+    this.tecnologiaSkuEstandar.set('');
+  }
+  readonly periodoEstandar = signal<'base' | 'mes'>('base');
+  readonly mesEstandar = signal(mesActualEcuador());
+  readonly mesEdicion = computed(() =>
+    this.periodoEstandar() === 'mes' ? this.mesEstandar() : '',
+  );
+  readonly guardadoDisponible = computed(() => this.estandares.disponiblePara(this.mesEdicion()));
+
+  async cambiarPeriodoEstandar(periodo: 'base' | 'mes'): Promise<void> {
+    if (this.guardando()) return;
+    this.periodoEstandar.set(periodo);
+    if (this.skuEstandar()) await this.seleccionarEstandar(this.skuEstandar()!);
+  }
+
+  async cambiarMesEstandar(mes: string): Promise<void> {
+    if (this.guardando()) return;
+    this.mesEstandar.set(mes);
+    if (this.skuEstandar()) await this.seleccionarEstandar(this.skuEstandar()!);
+  }
+
+  nombreMesEstandar(): string {
+    const mes = this.mesEstandar();
+    return mesCostoValido(mes)
+      ? new Intl.DateTimeFormat('es-EC', {
+          month: 'long',
+          year: 'numeric',
+          timeZone: 'UTC',
+        }).format(new Date(`${mes}-01T00:00:00Z`))
+      : 'Selecciona un mes';
+  }
+  readonly formEstandar = new FormGroup({
+    materiaPrima: costoEstandar(),
+    empaque: costoEstandar(),
+    carton: costoEstandar(),
+    manoObra: costoEstandar(),
+    gif: costoEstandar(),
+  });
+
+  readonly cargandoEstandar = signal(false);
+  readonly estandarListo = signal(false);
+  readonly errorEstandar = signal('');
+  readonly origenEstandar = signal<'guardado' | 'catalogo'>('catalogo');
+  readonly presentacionEstandar = computed(
+    () => this.skuPorId().get(this.skuEstandar() ?? 0) ?? null,
+  );
+  private versionEstandar = 0;
+  async seleccionarEstandar(id: number): Promise<void> {
+    if (this.guardando()) return;
+    const version = ++this.versionEstandar;
+    const p = this.skuPorId().get(id);
+    this.skuEstandar.set(p?.id ?? null);
+    this.aviso.set(null);
+    this.errorEstandar.set('');
+    this.formEstandar.reset();
+    this.estandarListo.set(false);
+    this.cargandoEstandar.set(false);
+    if (!p) return;
+    const mes = this.mesEdicion();
+    if (this.periodoEstandar() === 'mes' && !mesCostoValido(mes)) {
+      this.errorEstandar.set('Selecciona un mes válido para consultar o editar.');
+      return;
+    }
+    this.cargandoEstandar.set(true);
+    try {
+      const costos = mes ? await this.estandares.cargar(id, mes) : await this.estandares.cargar(id);
+      if (version !== this.versionEstandar) return;
+      if (costos) {
+        this.formEstandar.reset(costos);
+        this.origenEstandar.set('guardado');
+      } else {
+        const datos = await this.produccion.cargar(id);
+        if (version !== this.versionEstandar) return;
+        const mesMano = mes ? `${mes}-01` : datos.manoObra.map((r) => r.mes).sort()[0];
+        const mesGif = mes || datos.gastosIndirectos.map((r) => r.mes.slice(0, 7)).sort()[0];
+        const presentacion = mes
+          ? this.data
+              .productos()
+              .flatMap((p) => p.presentaciones)
+              .find((p) => p.id === id)
+          : null;
+        this.formEstandar.reset({
+          materiaPrima: mes
+            ? presentacion
+              ? (this.data.materiaPrimaDelMes(presentacion, mes)?.costo ?? null)
+              : null
+            : this.costoSku(id),
+          empaque: datos.empaqueSinDato ? null : datos.costoEmpaque,
+          carton: datos.cartonSinDato ? null : datos.costoCarton,
+          manoObra: mesMano
+            ? (resolverManoObra(datos.manoObra, mesMano)?.costo_unitario ?? null)
+            : null,
+          gif: mesGif
+            ? (resolverGastosIndirectos(datos.gastosIndirectos, mesGif)?.costo ?? null)
+            : null,
+        });
+        this.origenEstandar.set('catalogo');
+      }
+      this.estandarListo.set(true);
+    } catch (e) {
+      if (version === this.versionEstandar) this.errorEstandar.set(this.mensaje(e));
+    } finally {
+      if (version === this.versionEstandar) this.cargandoEstandar.set(false);
+    }
+  }
+
+  totalEstandar(): number | null {
+    const costos = this.formEstandar.getRawValue();
+    return this.estandarListo() && validarCostosEstandar(costos)
+      ? Object.values(costos).reduce((suma, costo) => suma + costo, 0)
+      : null;
+  }
+
+  litroEstandar(): number | null {
+    const litros = this.skuPorId().get(this.skuEstandar() ?? 0)?.litros ?? 0;
+    const total = this.totalEstandar();
+    return total !== null && Number.isFinite(litros) && litros > 0 ? total / litros : null;
+  }
+
+  async guardarEstandar(): Promise<void> {
+    const id = this.skuEstandar();
+    this.formEstandar.markAllAsTouched();
+    const costos = this.formEstandar.getRawValue();
+    if (
+      !id ||
+      !this.estandarListo() ||
+      !this.guardadoDisponible() ||
+      (this.periodoEstandar() === 'mes' && !mesCostoValido(this.mesEdicion())) ||
+      !validarCostosEstandar(costos) ||
+      this.guardando() ||
+      !this.editor()
+    )
+      return;
+    this.guardando.set(true);
+    this.errorEstandar.set('');
+    this.aviso.set(null);
+    try {
+      const mes = this.mesEdicion();
+      if (mes) await this.estandares.guardar(id, costos, mes);
+      else await this.estandares.guardar(id, costos);
+      this.origenEstandar.set('guardado');
+      this.aviso.set(
+        mes ? `Costos de ${this.nombreMesEstandar()} guardados.` : 'Costos estándar guardados.',
+      );
+      this.formEstandar.markAsPristine();
+    } catch (e) {
+      this.errorEstandar.set(this.mensaje(e));
+    } finally {
+      this.guardando.set(false);
+    }
+  }
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
   private suscripcion?: { unsubscribe(): void };
   private sesionVersion = 0;
@@ -212,6 +447,7 @@ export class Administracion implements OnInit, OnDestroy {
   }
   ngOnDestroy(): void {
     this.destruido = true;
+    this.versionEstandar++;
     this.sesionVersion++;
     this.historialVersion++;
     this.suscripcion?.unsubscribe();
@@ -589,11 +825,16 @@ export class Administracion implements OnInit, OnDestroy {
   }
   puedeEliminar(): boolean {
     switch (this.editando()) {
-      case 'productos': return this.formProducto.controls.id.value !== null;
-      case 'materias': return this.formMateria.controls.id.value !== null;
-      case 'presentaciones': return this.formSku.controls.id.value !== null;
-      case 'empaques': return this.formEmpaque.controls.id.value !== null;
-      default: return false;
+      case 'productos':
+        return this.formProducto.controls.id.value !== null;
+      case 'materias':
+        return this.formMateria.controls.id.value !== null;
+      case 'presentaciones':
+        return this.formSku.controls.id.value !== null;
+      case 'empaques':
+        return this.formEmpaque.controls.id.value !== null;
+      default:
+        return false;
     }
   }
   async eliminarActual(): Promise<void> {
@@ -610,8 +851,10 @@ export class Administracion implements OnInit, OnDestroy {
         tabla = 'producto';
         id = this.formProducto.controls.id.value!;
         nombre = this.nombreProducto(id);
-        if (c.presentaciones.some(p => p.producto_id === id)) {
-          this.error.set('Elimina primero los SKU de este producto o desactívalo para conservar sus datos.');
+        if (c.presentaciones.some((p) => p.producto_id === id)) {
+          this.error.set(
+            'Elimina primero los SKU de este producto o desactívalo para conservar sus datos.',
+          );
           return;
         }
         break;
@@ -620,8 +863,13 @@ export class Administracion implements OnInit, OnDestroy {
         tabla = 'materia_prima';
         id = this.formMateria.controls.id.value!;
         nombre = this.materiasPorId().get(id)?.nombre ?? `Materia prima #${id}`;
-        if (c.formulas.some(f => f.materia_prima_id === id) || c.items.some(i => i.materia_prima_id === id)) {
-          this.error.set('Esta materia prima está en uso. Retírala de las fórmulas y cantidades antes de eliminarla, o desactívala.');
+        if (
+          c.formulas.some((f) => f.materia_prima_id === id) ||
+          c.items.some((i) => i.materia_prima_id === id)
+        ) {
+          this.error.set(
+            'Esta materia prima está en uso. Retírala de las fórmulas y cantidades antes de eliminarla, o desactívala.',
+          );
           return;
         }
         break;
@@ -630,16 +878,20 @@ export class Administracion implements OnInit, OnDestroy {
         tabla = 'presentacion';
         id = this.formSku.controls.id.value!;
         nombre = this.nombreSku(id);
-        detalle = ' Esto también puede eliminar su fórmula, cantidades, empaques y otros datos asociados.';
+        detalle =
+          ' Esto también puede eliminar su fórmula, cantidades, empaques y otros datos asociados.';
         break;
       case 'empaques': {
         tabla = 'empaque';
         id = this.formEmpaque.controls.id.value!;
-        const empaque = c.empaques.find(e => e.id === id);
-        nombre = empaque ? `${empaque.tipo} · ${this.nombreSku(empaque.presentacion_id)}` : `Empaque #${id}`;
+        const empaque = c.empaques.find((e) => e.id === id);
+        nombre = empaque
+          ? `${empaque.tipo} · ${this.nombreSku(empaque.presentacion_id)}`
+          : `Empaque #${id}`;
         break;
       }
-      default: return;
+      default:
+        return;
     }
     this.confirmacion.set({
       titulo: `¿Eliminar «${nombre}»?`,
@@ -647,7 +899,10 @@ export class Administracion implements OnInit, OnDestroy {
     });
     this.eliminacionPendiente = { tabla, id };
   }
-  private eliminacionPendiente: { tabla: 'producto' | 'materia_prima' | 'presentacion' | 'empaque'; id: string | number } | null = null;
+  private eliminacionPendiente: {
+    tabla: 'producto' | 'materia_prima' | 'presentacion' | 'empaque';
+    id: string | number;
+  } | null = null;
   cancelarConfirmacion(): void {
     this.confirmacion.set(null);
     this.eliminacionPendiente = null;
@@ -656,7 +911,10 @@ export class Administracion implements OnInit, OnDestroy {
     const pendiente = this.eliminacionPendiente;
     this.cancelarConfirmacion();
     if (!pendiente) return;
-    await this.guardar(() => this.api.eliminarRegistro(pendiente.tabla, pendiente.id), 'Registro eliminado.');
+    await this.guardar(
+      () => this.api.eliminarRegistro(pendiente.tabla, pendiente.id),
+      'Registro eliminado.',
+    );
   }
   private async guardar(accion: () => Promise<void>, exito = 'Cambios guardados.'): Promise<void> {
     if (this.guardando() || !this.editor()) return;

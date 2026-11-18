@@ -6,6 +6,10 @@
   align-items: center;
   gap: 14px;
   margin: 24px 0;
+  padding: 22px;
+  border: 1px solid #d4e8dc;
+  border-radius: 18px;
+  background: linear-gradient(115deg, #fff, #e9f7ef);
 }
 .intro-icon {
   display: grid;
@@ -14,8 +18,9 @@
   height: 48px;
   flex-shrink: 0;
   border-radius: 15px;
-  background: #cff1de;
-  color: #168352;
+  background: linear-gradient(145deg, #37b58c, #1a7f5c);
+  color: #fff;
+  box-shadow: 0 6px 14px #158a6120;
 }
 .eyebrow {
   color: #25875f;
@@ -64,6 +69,15 @@ h2 {
   border-radius: 20px;
   background: #fff;
   box-shadow: 0 5px 18px #244a3a0a;
+}
+.catalogo .controles {
+  background: linear-gradient(110deg, #f3faf6, #fff);
+}
+.catalogo tbody tr:hover {
+  background: #f1f9f4;
+}
+.catalogo .tecnologia {
+  box-shadow: 0 2px 5px #1d694408;
 }
 .controles {
   display: flex;

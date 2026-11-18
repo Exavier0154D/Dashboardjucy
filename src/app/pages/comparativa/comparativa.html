@@ -143,7 +143,7 @@
         }}
       </p>
     </section>
-    @if (!cargando() && !actualizando() && costos()) {
+    @if (!cargando() && !actualizando() && (costos() || baseManual())) {
       <section class="panel report" aria-labelledby="report-title">
         <div class="section-heading">
           <div>
@@ -152,7 +152,7 @@
           </div>
           <span class="currency">USD · por presentación</span>
         </div>
-        @if (costos()) {
+        @if (costos() || baseManual()) {
           <div
             class="table-scroll"
             tabindex="0"
@@ -167,7 +167,9 @@
                 <tr>
                   <th scope="col">Rubro</th>
                   <th scope="col" class="base-column">
-                    Estándar<small>Base fija del producto</small>
+                    Estándar<small>{{
+                      baseManual() ? 'Base guardada en Administración' : 'Base fija del producto'
+                    }}</small>
                   </th>
                   @for (periodo of comparaciones(); track periodo.mes) {
                     <th scope="col">
@@ -242,9 +244,15 @@
           </div>
         }
         <p class="scope-note">
-          El estándar usa el costo base del producto y los primeros registros de mano de obra e
-          indirectos. La materia prima usa el último precio vigente al cierre de cada mes y mantiene
-          la formulación actual. Empaque y cartón usan los valores actuales en todas las columnas
+          @if (baseManual()) {
+            El estándar usa los cinco costos guardados desde Administración.
+          } @else {
+            El estándar usa el costo base del producto y los primeros registros de mano de obra e
+            indirectos.
+          }
+          Los meses editados en Administración usan sus cinco costos guardados. Para los demás
+          meses, la materia prima usa el último precio vigente al cierre de cada mes y mantiene la
+          formulación actual. Empaque y cartón usan los valores actuales en todas las columnas
           porque no tienen historial mensual.
         </p>
         <p class="scope-note">

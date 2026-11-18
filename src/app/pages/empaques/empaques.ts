@@ -25,7 +25,7 @@ const COLORES_EMPAQUE: Record<(typeof TIPOS_EMPAQUE_BASE)[number], string> = {
   selector: 'app-empaques',
   imports: [DecimalPipe, RouterLink, BaseChartDirective, MatIconModule, MaterialesPorPresentacion],
   templateUrl: './empaques.html',
-  styleUrl: './empaques.css',
+  styleUrls: ['./empaques.css', './empaques-visual.css'],
 })
 export class Empaques {
   private readonly data = inject(DataService);

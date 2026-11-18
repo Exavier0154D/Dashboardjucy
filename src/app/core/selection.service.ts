@@ -6,6 +6,7 @@ export class SelectionService {
   readonly productoSeleccionado = signal<Producto | null>(null);
   readonly presentacionSeleccionada = signal<Presentacion | null>(null);
   readonly mesCostosSeleccionado = signal('');
+  readonly materiaPrimaHistoricoId = signal<number | null>(null);
 
   seleccionarMesCostos(mes: string): void {
     if (!/^(?!0000)\d{4}-(0[1-9]|1[0-2])$/.test(mes)) return;

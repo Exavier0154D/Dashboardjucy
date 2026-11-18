@@ -1,14 +1,42 @@
-<div class="admin jucy-dashboard">
+<div class="admin admin-dashboard" [attr.aria-busy]="cargando() || guardando()">
   <header class="admin-header">
-    <div>
-      <span class="page-kicker">ESPACIO DE TRABAJO / CONFIGURACIÓN</span>
-      <h1>Administración de catálogo</h1>
-      <p>Productos, materias primas, fórmulas por SKU y empaques.</p>
+    <div class="titulo-seccion-con-icono">
+      <span class="icono-seccion"><mat-icon aria-hidden="true">tune</mat-icon></span>
+      <div>
+        <span class="page-kicker">ESPACIO DE TRABAJO / CONFIGURACIÓN</span>
+        <h1>Administración de catálogo</h1>
+        <p>Productos, materias primas, fórmulas por SKU, empaques y costos estándar.</p>
+      </div>
     </div>
     <button class="btn" type="button" (click)="cargarTodo()" [disabled]="cargando() || guardando()">
       <mat-icon>refresh</mat-icon>Actualizar datos
     </button>
   </header>
+
+  @if (!cargando()) {
+    <section class="admin-kpis" aria-label="Resumen del catálogo administrativo">
+      <div class="admin-kpi">
+        <span class="admin-kpi-icon"><mat-icon aria-hidden="true">grid_view</mat-icon></span
+        ><span>Productos</span><strong>{{ productos().length }}</strong
+        ><small>Productos registrados</small>
+      </div>
+      <div class="admin-kpi">
+        <span class="admin-kpi-icon"><mat-icon aria-hidden="true">eco</mat-icon></span
+        ><span>Materias primas</span><strong>{{ materias().length }}</strong
+        ><small>Materiales registrados</small>
+      </div>
+      <div class="admin-kpi">
+        <span class="admin-kpi-icon"><mat-icon aria-hidden="true">category</mat-icon></span
+        ><span>Presentaciones</span><strong>{{ presentaciones().length }}</strong
+        ><small>SKU y fórmulas</small>
+      </div>
+      <div class="admin-kpi">
+        <span class="admin-kpi-icon"><mat-icon aria-hidden="true">view_in_ar</mat-icon></span
+        ><span>Empaques</span><strong>{{ empaques().length }}</strong
+        ><small>Registros de materiales</small>
+      </div>
+    </section>
+  }
 
   <section class="panel acceso" aria-label="Acceso de edición">
     @if (email()) {
@@ -67,12 +95,22 @@
     <button
       type="button"
       class="tab"
+      [class.active]="pestana() === 'estandar'"
+      [attr.aria-pressed]="pestana() === 'estandar'"
+      (click)="cambiarPestana('estandar')"
+      [disabled]="guardando()"
+    >
+      <mat-icon>payments</mat-icon>Costos estándar
+    </button>
+    <button
+      type="button"
+      class="tab"
       [class.active]="pestana() === 'productos'"
       [attr.aria-pressed]="pestana() === 'productos'"
       (click)="cambiarPestana('productos')"
       [disabled]="guardando()"
     >
-      <mat-icon>local_drink</mat-icon>Productos
+      <mat-icon>grid_view</mat-icon>Productos
       <span class="tab__count">{{ productos().length }}</span>
     </button>
     <button
@@ -105,7 +143,8 @@
       (click)="cambiarPestana('empaques')"
       [disabled]="guardando()"
     >
-      <mat-icon>inventory</mat-icon>Empaques <span class="tab__count">{{ empaques().length }}</span>
+      <mat-icon>view_in_ar</mat-icon>Empaques
+      <span class="tab__count">{{ empaques().length }}</span>
     </button>
     <button
       type="button"
@@ -135,7 +174,7 @@
       <p>Cargando catálogo…</p>
     </div>
   } @else {
-    @if (pestana() !== 'historial') {
+    @if (pestana() !== 'historial' && pestana() !== 'estandar') {
       <div class="toolbar">
         <label class="search"
           ><mat-icon>search</mat-icon
@@ -157,7 +196,9 @@
           >
             <mat-option value="">Todos los productos</mat-option>
             @for (p of productos(); track p.id) {
-              <mat-option [value]="p.id">{{ p.marca }} · {{ p.nombre }} · {{ p.variante }}</mat-option>
+              <mat-option [value]="p.id"
+                >{{ p.marca }} · {{ p.nombre }} · {{ p.variante }}</mat-option
+              >
             }
           </mat-select>
         }
@@ -209,6 +250,399 @@
     }
 
     @switch (pestana()) {
+      @case ('estandar') {
+        <section
+          class="panel estandar-panel"
+          aria-labelledby="estandar-title"
+          [attr.aria-busy]="cargandoEstandar()"
+        >
+          <div class="estandar-heading">
+            <div>
+              <span class="page-kicker">ESTÁNDAR Y PERÍODOS</span>
+              <h2 id="estandar-title">Costos por presentación</h2>
+              <p>Selecciona una presentación y actualiza sus costos por unidad en USD.</p>
+            </div>
+            <span class="estandar-permiso"
+              ><mat-icon aria-hidden="true">{{ editor() ? 'edit' : 'visibility' }}</mat-icon
+              >{{ editor() ? 'Permiso de edición' : 'Solo consulta' }}</span
+            >
+          </div>
+          @if (!editor()) {
+            <p class="hint">
+              Solo una cuenta con permiso de edición puede modificar estos valores.
+            </p>
+          }
+          <div class="estandar-periodo">
+            <div class="estandar-modos" role="group" aria-label="Período de los costos">
+              <button
+                type="button"
+                class="btn"
+                [class.estandar-modo-activo]="periodoEstandar() === 'base'"
+                [attr.aria-pressed]="periodoEstandar() === 'base'"
+                [disabled]="guardando()"
+                (click)="cambiarPeriodoEstandar('base')"
+              >
+                <mat-icon aria-hidden="true">flag</mat-icon>Base fija
+              </button>
+              <button
+                type="button"
+                class="btn"
+                [class.estandar-modo-activo]="periodoEstandar() === 'mes'"
+                [attr.aria-pressed]="periodoEstandar() === 'mes'"
+                [disabled]="guardando()"
+                (click)="cambiarPeriodoEstandar('mes')"
+              >
+                <mat-icon aria-hidden="true">calendar_month</mat-icon>Costos por mes
+              </button>
+            </div>
+            @if (periodoEstandar() === 'mes') {
+              <label class="field estandar-mes"
+                ><span class="field__label">Mes que deseas editar</span
+                ><input
+                  type="month"
+                  required
+                  min="0001-01"
+                  max="9999-12"
+                  aria-label="Mes de costos"
+                  [value]="mesEstandar()"
+                  [disabled]="guardando()"
+                  (change)="cambiarMesEstandar($any($event.target).value)"
+              /></label>
+            }
+          </div>
+          <p class="hint estandar-periodo-hint">
+            {{
+              periodoEstandar() === 'mes'
+                ? 'Editarás únicamente los costos de ' +
+                  nombreMesEstandar() +
+                  '. La base fija se conserva.'
+                : 'Esta base permanece fija al comparar los distintos meses.'
+            }}
+          </p>
+          <section class="estandar-explorador" aria-labelledby="estandar-explorador-title">
+            <div class="estandar-explorador-heading">
+              <div class="estandar-titulo-visual">
+                <span class="estandar-icono-portada"
+                  ><mat-icon aria-hidden="true">travel_explore</mat-icon></span
+                >
+                <div>
+                  <span class="page-kicker">EXPLORA TU CATÁLOGO</span>
+                  <h3 id="estandar-explorador-title">Encuentra tu producto</h3>
+                </div>
+              </div>
+              <span class="estandar-explorador-periodo">{{
+                periodoEstandar() === 'mes'
+                  ? 'Costos de ' + nombreMesEstandar()
+                  : 'Base fija del estándar'
+              }}</span>
+            </div>
+            <div class="estandar-explorador-grid">
+              <div class="estandar-columna-filtros">
+                <div class="estandar-columna-titulo">
+                  <span>01</span><strong>Busca y filtra</strong
+                  ><mat-icon aria-hidden="true">tune</mat-icon>
+                </div>
+                <label class="estandar-buscador"
+                  ><mat-icon aria-hidden="true">search</mat-icon
+                  ><input
+                    type="search"
+                    aria-label="Buscar presentación para editar costos"
+                    placeholder="Buscar producto, marca, SKU o código de barras…"
+                    [value]="busquedaSkuEstandar()"
+                    [disabled]="guardando()"
+                    (input)="busquedaSkuEstandar.set($any($event.target).value)"
+                /></label>
+                <div class="estandar-filtros">
+                  <label class="field"
+                    ><span class="field__label">Categoría</span
+                    ><mat-select
+                      class="estandar-selector"
+                      panelClass="jucy-filter-panel"
+                      aria-label="Categoría de la presentación"
+                      [value]="categoriaSkuEstandar()"
+                      [disabled]="guardando()"
+                      (selectionChange)="categoriaSkuEstandar.set($event.value)"
+                      ><mat-option value="">Todas las categorías</mat-option>
+                      @for (categoria of categoriasSkuEstandar(); track categoria) {
+                        <mat-option [value]="categoria">{{ categoria }}</mat-option>
+                      }
+                    </mat-select></label
+                  >
+                  <label class="field"
+                    ><span class="field__label">Marca</span
+                    ><mat-select
+                      class="estandar-selector"
+                      panelClass="jucy-filter-panel"
+                      aria-label="Marca de la presentación"
+                      [value]="marcaSkuEstandar()"
+                      [disabled]="guardando()"
+                      (selectionChange)="marcaSkuEstandar.set($event.value)"
+                      ><mat-option value="">Todas las marcas</mat-option>
+                      @for (marca of marcasSkuEstandar(); track marca) {
+                        <mat-option [value]="marca">{{ marca }}</mat-option>
+                      }
+                    </mat-select></label
+                  >
+                  <label class="field"
+                    ><span class="field__label">Tecnología</span
+                    ><mat-select
+                      class="estandar-selector"
+                      panelClass="jucy-filter-panel"
+                      aria-label="Tecnología de la presentación"
+                      [value]="tecnologiaSkuEstandar()"
+                      [disabled]="guardando()"
+                      (selectionChange)="tecnologiaSkuEstandar.set($event.value)"
+                      ><mat-option value="">Todas las tecnologías</mat-option>
+                      @for (tecnologia of tecnologiasSkuEstandar(); track tecnologia) {
+                        <mat-option [value]="tecnologia">{{ tecnologia }}</mat-option>
+                      }
+                    </mat-select></label
+                  >
+                  <button
+                    type="button"
+                    class="estandar-limpiar"
+                    [disabled]="guardando()"
+                    (click)="limpiarFiltrosEstandar()"
+                  >
+                    <mat-icon aria-hidden="true">filter_alt_off</mat-icon>Limpiar filtros
+                  </button>
+                </div>
+              </div>
+              <div class="estandar-columna-producto">
+                <div class="estandar-columna-titulo">
+                  <span>02</span><strong>Tu presentación</strong
+                  ><mat-icon aria-hidden="true">local_drink</mat-icon>
+                </div>
+                <div class="estandar-resultados-heading">
+                  <span role="status" class="estandar-conteo"
+                    >{{ opcionesSkuEstandar().length }}
+                    {{
+                      opcionesSkuEstandar().length === 1
+                        ? 'presentación encontrada'
+                        : 'presentaciones encontradas'
+                    }}</span
+                  >
+                </div>
+                @if (!opcionesSkuEstandar().length) {
+                  <p class="estandar-sin-resultados">
+                    No hay presentaciones que coincidan. Prueba otra búsqueda o limpia los filtros.
+                  </p>
+                }
+                <div class="estandar-seleccion">
+                  <label class="field"
+                    ><span class="field__label">Producto y presentación</span>
+                    <mat-select
+                      class="estandar-selector"
+                      panelClass="jucy-filter-panel"
+                      placeholder="Selecciona una presentación"
+                      aria-label="Presentación de costos estándar"
+                      [value]="skuEstandar()"
+                      [disabled]="guardando()"
+                      (selectionChange)="seleccionarEstandar($event.value)"
+                    >
+                      <mat-select-trigger>
+                        @if (presentacionEstandar(); as p) {
+                          {{ nombreProducto(p.producto_id) }} · {{ p.litros }} L ·
+                          {{ p.tecnologia }}
+                        }
+                      </mat-select-trigger>
+                      @if (seleccionFueraFiltroEstandar() && presentacionEstandar(); as actual) {
+                        <mat-option [value]="actual.id" disabled
+                          >Selección actual · {{ actual.nombre_sku }}</mat-option
+                        >
+                      }
+                      @for (p of opcionesSkuEstandar(); track p.id) {
+                        <mat-option [value]="p.id"
+                          >{{ nombreProducto(p.producto_id) }} · {{ p.litros }} L ·
+                          {{ p.tecnologia }} · {{ p.clave_sku }}</mat-option
+                        >
+                      } @empty {
+                        <mat-option disabled>No hay presentaciones para estos filtros</mat-option>
+                      }
+                    </mat-select>
+                  </label>
+                  @if (presentacionEstandar(); as p) {
+                    <div class="estandar-sku">
+                      <mat-icon class="estandar-producto-icono" aria-hidden="true"
+                        >task_alt</mat-icon
+                      >
+                      <strong>{{ p.nombre_sku }}</strong
+                      ><span>{{ p.litros }} L · {{ p.tecnologia }} · SKU {{ p.clave_sku }}</span>
+                      @if (seleccionFueraFiltroEstandar()) {
+                        <small
+                          >Tu selección actual se conserva aunque no coincida con los
+                          filtros.</small
+                        >
+                      }
+                    </div>
+                  } @else {
+                    <div class="estandar-seleccion-pendiente">
+                      <mat-icon aria-hidden="true">inventory_2</mat-icon>
+                      <strong>Selecciona tu presentación</strong>
+                      <p>
+                        Usa la búsqueda y los filtros para encontrarla. Aquí verás sus datos antes
+                        de editar los costos.
+                      </p>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </section>
+          @if (!guardadoDisponible()) {
+            <div class="estandar-aviso" role="status">
+              <mat-icon aria-hidden="true">info</mat-icon>
+              <div>
+                <strong>{{
+                  periodoEstandar() === 'mes'
+                    ? 'El guardado mensual aún no está habilitado'
+                    : 'El guardado aún no está habilitado'
+                }}</strong>
+                <p>
+                  Puedes consultar los costos actuales. Un administrador debe completar la
+                  configuración para habilitar su edición.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="btn"
+                [disabled]="cargandoEstandar() || guardando()"
+                (click)="seleccionarEstandar(skuEstandar()!)"
+              >
+                Reintentar
+              </button>
+            </div>
+          }
+          @if (errorEstandar()) {
+            <div class="alert alert--error" role="alert">
+              <span>{{ errorEstandar() }}</span>
+              @if (!estandarListo() && skuEstandar()) {
+                <button type="button" class="btn" (click)="seleccionarEstandar(skuEstandar()!)">
+                  Reintentar carga
+                </button>
+              }
+            </div>
+          }
+          @if (cargandoEstandar()) {
+            <div class="estandar-vacio" role="status">
+              <span class="spinner"></span>
+              <p>Cargando costos de la presentación…</p>
+            </div>
+          } @else if (estandarListo()) {
+            <form class="estandar-form" [formGroup]="formEstandar" (ngSubmit)="guardarEstandar()">
+              <div class="estandar-form-heading">
+                <h3>
+                  {{
+                    periodoEstandar() === 'mes'
+                      ? 'Costos de ' + nombreMesEstandar()
+                      : 'Costos de la base fija'
+                  }}
+                </h3>
+                <span class="chip">{{
+                  origenEstandar() === 'guardado' ? 'Valores guardados' : 'Valores de referencia'
+                }}</span>
+              </div>
+              @if (origenEstandar() === 'catalogo') {
+                <p class="hint">
+                  {{
+                    periodoEstandar() === 'mes'
+                      ? 'Aún no hay una edición manual de este mes. Se muestran sus costos calculados; empaque y cartón toman los valores actuales del catálogo.'
+                      : 'Se muestran los valores de referencia del catálogo.'
+                  }}
+                  Completa los rubros pendientes y guarda. Usa 0 si un rubro no aplica.
+                </p>
+              }
+              <div class="estandar-layout">
+                <fieldset
+                  class="estandar-campos"
+                  [disabled]="guardando() || !editor() || !guardadoDisponible()"
+                >
+                  @for (rubro of rubrosEstandar; track rubro.clave) {
+                    <label class="field"
+                      ><span class="field__label">{{ rubro.nombre }}</span>
+                      <span class="estandar-input"
+                        ><span aria-hidden="true">$</span
+                        ><input
+                          type="number"
+                          min="0"
+                          step="any"
+                          required
+                          placeholder="Sin dato"
+                          [attr.aria-label]="rubro.nombre + ' en USD por unidad'"
+                          [formControlName]="rubro.clave"
+                          [attr.aria-invalid]="
+                            formEstandar.controls[rubro.clave].touched &&
+                            formEstandar.controls[rubro.clave].invalid
+                          "
+                      /></span>
+                      @if (
+                        formEstandar.controls[rubro.clave].touched &&
+                        formEstandar.controls[rubro.clave].invalid
+                      ) {
+                        <small class="estandar-error">Ingresa un costo igual o mayor que 0.</small>
+                      }
+                    </label>
+                  }
+                </fieldset>
+                <aside class="estandar-resumen" aria-label="Totales calculados" aria-live="polite">
+                  <span class="page-kicker">{{
+                    periodoEstandar() === 'mes' ? nombreMesEstandar() : 'RESUMEN DE LA BASE FIJA'
+                  }}</span>
+                  <div>
+                    <span>Costo por unidad</span
+                    ><strong>{{
+                      totalEstandar() === null
+                        ? 'Sin dato'
+                        : '$' + (totalEstandar() | number: '1.4-4')
+                    }}</strong>
+                  </div>
+                  <div>
+                    <span>Costo por litro</span
+                    ><strong>{{
+                      litroEstandar() === null
+                        ? 'Sin dato'
+                        : '$' + (litroEstandar() | number: '1.4-4')
+                    }}</strong>
+                  </div>
+                  <p>
+                    Calculados automáticamente con los cinco rubros y el volumen de la presentación.
+                  </p>
+                </aside>
+              </div>
+              <div class="estandar-acciones">
+                <span class="hint">{{
+                  formEstandar.dirty
+                    ? 'Tienes cambios sin guardar.'
+                    : periodoEstandar() === 'mes'
+                      ? 'Se actualizará solo el mes seleccionado en la comparativa.'
+                      : 'Esta base se utiliza en la comparativa con los meses registrados.'
+                }}</span>
+                @if (editor()) {
+                  <button
+                    type="submit"
+                    class="btn btn--primary"
+                    [disabled]="
+                      !guardadoDisponible() ||
+                      guardando() ||
+                      formEstandar.invalid ||
+                      totalEstandar() === null
+                    "
+                  >
+                    <mat-icon aria-hidden="true">save</mat-icon
+                    >{{
+                      guardando()
+                        ? 'Guardando…'
+                        : periodoEstandar() === 'mes'
+                          ? 'Guardar mes'
+                          : 'Guardar base fija'
+                    }}
+                  </button>
+                }
+              </div>
+            </form>
+          }
+        </section>
+      }
       @case ('productos') {
         @if (editando() === 'productos' && editor()) {
           <form class="panel" [formGroup]="formProducto" (ngSubmit)="guardarProducto()">
@@ -245,7 +679,12 @@
             </p>
             <div class="panel__actions">
               @if (puedeEliminar()) {
-                <button class="btn btn--danger panel__delete" type="button" (click)="eliminarActual()" [disabled]="!editor() || guardando()">
+                <button
+                  class="btn btn--danger panel__delete"
+                  type="button"
+                  (click)="eliminarActual()"
+                  [disabled]="!editor() || guardando()"
+                >
                   <mat-icon>delete</mat-icon>Eliminar
                 </button>
               }
@@ -333,7 +772,12 @@
             </p>
             <div class="panel__actions">
               @if (puedeEliminar()) {
-                <button class="btn btn--danger panel__delete" type="button" (click)="eliminarActual()" [disabled]="!editor() || guardando()">
+                <button
+                  class="btn btn--danger panel__delete"
+                  type="button"
+                  (click)="eliminarActual()"
+                  [disabled]="!editor() || guardando()"
+                >
                   <mat-icon>delete</mat-icon>Eliminar
                 </button>
               }
@@ -561,7 +1005,12 @@
             </p>
             <div class="panel__actions">
               @if (puedeEliminar()) {
-                <button class="btn btn--danger panel__delete" type="button" (click)="eliminarActual()" [disabled]="!editor() || guardando()">
+                <button
+                  class="btn btn--danger panel__delete"
+                  type="button"
+                  (click)="eliminarActual()"
+                  [disabled]="!editor() || guardando()"
+                >
                   <mat-icon>delete</mat-icon>Eliminar
                 </button>
               }
@@ -699,7 +1148,12 @@
             </p>
             <div class="panel__actions">
               @if (puedeEliminar()) {
-                <button class="btn btn--danger panel__delete" type="button" (click)="eliminarActual()" [disabled]="!editor() || guardando()">
+                <button
+                  class="btn btn--danger panel__delete"
+                  type="button"
+                  (click)="eliminarActual()"
+                  [disabled]="!editor() || guardando()"
+                >
                   <mat-icon>delete</mat-icon>Eliminar
                 </button>
               }
@@ -868,13 +1322,30 @@
 </div>
 @if (confirmacion(); as confirm) {
   <div class="confirm-backdrop" role="presentation" (click)="cancelarConfirmacion()">
-    <section class="confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message" cdkTrapFocus [cdkTrapFocusAutoCapture]="true" (keydown.escape)="cancelarConfirmacion()" (click)="$event.stopPropagation()">
+    <section
+      class="confirm-modal"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="confirm-title"
+      aria-describedby="confirm-message"
+      cdkTrapFocus
+      [cdkTrapFocusAutoCapture]="true"
+      (keydown.escape)="cancelarConfirmacion()"
+      (click)="$event.stopPropagation()"
+    >
       <div class="confirm-modal__icon"><mat-icon>delete_outline</mat-icon></div>
       <h2 id="confirm-title">{{ confirm.titulo }}</h2>
       <p id="confirm-message">{{ confirm.mensaje }}</p>
       <div class="confirm-modal__actions">
-        <button type="button" class="btn" cdkFocusInitial (click)="cancelarConfirmacion()">Cancelar</button>
-        <button type="button" class="btn btn--danger confirm-modal__delete" (click)="confirmarEliminacion()" [disabled]="guardando()">
+        <button type="button" class="btn" cdkFocusInitial (click)="cancelarConfirmacion()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn--danger confirm-modal__delete"
+          (click)="confirmarEliminacion()"
+          [disabled]="guardando()"
+        >
           <mat-icon>delete</mat-icon>Eliminar
         </button>
       </div>

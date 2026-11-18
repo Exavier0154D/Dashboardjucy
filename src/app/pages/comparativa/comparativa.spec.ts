@@ -5,6 +5,7 @@ import { SelectionService } from '../../core/selection.service';
 import { CostosPresentacion, CostosProduccionService } from '../../core/costos-produccion.service';
 import { Producto, Presentacion } from '../../models/producto.model';
 import { Comparativa } from './comparativa';
+import { CostosEstandarService, CostosEstandar } from '../../core/costos-estandar.service';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatSelectHarness } from '@angular/material/select/testing';
 
@@ -67,6 +68,8 @@ describe('Comparativa con el estándar', () => {
   let actualizar: ReturnType<typeof vi.fn>;
   const productos = signal<Producto[]>([]);
   const mesesMateriaPrima = signal<string[]>([]);
+  const baseManual = signal<CostosEstandar | null>(null);
+  const mensuales = signal<Record<string, CostosEstandar>>({});
 
   function agregar(mes: string): void {
     component.mesPendiente.set(mes);
@@ -74,6 +77,8 @@ describe('Comparativa con el estándar', () => {
   }
 
   beforeEach(async () => {
+    baseManual.set(null);
+    mensuales.set({});
     productos.set([producto]);
     mesesMateriaPrima.set(
       Array.from({ length: 8 }, (_, i) => `2026-${String(i + 1).padStart(2, '0')}`),
@@ -83,6 +88,15 @@ describe('Comparativa con el estándar', () => {
     await TestBed.configureTestingModule({
       imports: [Comparativa],
       providers: [
+        {
+          provide: CostosEstandarService,
+          useValue: {
+            cargar: vi.fn().mockResolvedValue(null),
+            cargarMensuales: vi.fn().mockResolvedValue(undefined),
+            mesesGuardados: () => Object.keys(mensuales()),
+            obtener: (_id: number, mes = '') => (mes ? (mensuales()[mes] ?? null) : baseManual()),
+          },
+        },
         {
           provide: DataService,
           useValue: {
@@ -104,6 +118,42 @@ describe('Comparativa con el estándar', () => {
     fixture = TestBed.createComponent(Comparativa);
     component = fixture.componentInstance;
     await fixture.whenStable();
+  });
+
+  it('usa la base manual, recalcula los totales y conserva los costos mensuales', async () => {
+    baseManual.set({
+      materiaPrima: 0.3809,
+      empaque: 0.1601,
+      carton: 0.0373,
+      manoObra: 0.0123,
+      gif: 0.0265,
+    });
+    agregar('2026-02');
+    await fixture.whenStable();
+    expect(component.estandar().valores.total).toBeCloseTo(0.6171);
+    expect(component.estandar().valores.litro).toBeCloseTo(0.6171 / sku.litros);
+    expect(component.comparaciones()[0].valores.total).toBeCloseTo(1.6);
+    baseManual.set({ materiaPrima: 0, empaque: 0, carton: 0, manoObra: 0, gif: 0 });
+    expect(component.estandar().valores.total).toBe(0);
+  });
+
+  it('usa la edición mensual solo en su mes y permite comparar meses nuevos', async () => {
+    mensuales.set({
+      '2027-03': { materiaPrima: 2, empaque: 0.1, carton: 0, manoObra: 0.2, gif: 0.3 },
+    });
+    component.cambiarAnio('2027');
+    agregar('2027-03');
+    await fixture.whenStable();
+    expect(component.mesesDisponibles()).toContain('2027-03');
+    expect(component.comparaciones()[0].valores.total).toBeCloseTo(2.6);
+    expect(component.comparaciones()[0].valores.litro).toBeCloseTo(5.2);
+    expect(component.estandar().valores.total).toBeCloseTo(1.7);
+    component.cambiarAnio('2026');
+    agregar('2026-02');
+    await fixture.whenStable();
+    expect(component.comparaciones().find((p) => p.mes === '2026-02')?.valores.total).toBeCloseTo(
+      1.6,
+    );
   });
 
   it('compara cada mes con la misma base e incluye cartón una sola vez', async () => {
@@ -169,7 +219,9 @@ describe('Comparativa con el estándar', () => {
       Array.from({ length: 8 }, (_, i) => `2026-${String(i + 1).padStart(2, '0')}`),
     );
     const loader = TestbedHarnessEnvironment.loader(fixture);
-    const mes = await loader.getHarness(MatSelectHarness.with({ selector: '#mes-comparativa-select' }));
+    const mes = await loader.getHarness(
+      MatSelectHarness.with({ selector: '#mes-comparativa-select' }),
+    );
     await mes.open();
     expect((await mes.getOptions()).length).toBe(9);
     await mes.close();

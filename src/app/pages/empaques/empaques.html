@@ -1,9 +1,17 @@
 <div class="empaques-container" [attr.aria-busy]="cargando()">
-  <header class="encabezado">
-    <div>
-      <span class="page-kicker">TU PRODUCCIÓN, EN DETALLE</span>
-      <h1>Empaque y cartón</h1>
-      <p>Una mirada a tus envases, materiales y costos por presentación.</p>
+  <header class="encabezado empaque-portada">
+    <div class="empaque-portada-copy">
+      <span class="empaque-portada-icono"><mat-icon aria-hidden="true">view_in_ar</mat-icon></span>
+      <div>
+        <span class="page-kicker">TU PRODUCCIÓN, EN DETALLE</span>
+        <h1>Empaque y cartón</h1>
+        <p>Una mirada a tus envases, materiales y costos por presentación.</p>
+        <div class="empaque-familias">
+          <span><mat-icon aria-hidden="true">local_drink</mat-icon>Envases</span
+          ><span><mat-icon aria-hidden="true">sell</mat-icon>Etiquetas</span
+          ><span><mat-icon aria-hidden="true">all_inbox</mat-icon>Cartones</span>
+        </div>
+      </div>
     </div>
     <button
       class="btn btn-principal"
@@ -96,7 +104,7 @@
           <div class="charts-grid">
             <div class="card ranking-card">
               <span class="chart-kicker">COMPARATIVA DE COSTOS</span>
-              <h2>Empaque por presentación</h2>
+              <h2><mat-icon aria-hidden="true">bar_chart</mat-icon>Empaque por presentación</h2>
               <p class="card-sub">Los 15 costos unitarios más altos.</p>
               <div class="chart-box">
                 <canvas
@@ -111,7 +119,7 @@
             </div>
             <div class="card distribucion-card">
               <span class="chart-kicker">COMPOSICIÓN DEL EMPAQUE</span>
-              <h2>Distribución por tipo</h2>
+              <h2><mat-icon aria-hidden="true">donut_small</mat-icon>Distribución por tipo</h2>
               <p class="card-sub">Suma de precios unitarios; no representa gasto de producción.</p>
               <div class="chart-box">
                 <canvas
@@ -147,7 +155,7 @@
       <div class="card tabla-card">
         <div class="tabla-header">
           <div>
-            <h2>Resumen por presentación</h2>
+            <h2><mat-icon aria-hidden="true">view_list</mat-icon>Resumen por presentación</h2>
             <p class="card-sub">
               {{ resumenFiltrado().length }} de {{ resumen().length }} SKU. Selecciona uno para ver
               el detalle.
@@ -268,31 +276,33 @@
               </tbody>
             </table>
           </div>
-          <p>
-            Materia prima:
-            @if (d.presentacion.totalCosto !== null) {
-              ${{ d.presentacion.totalCosto | number: '1.4-4' }}
-            } @else {
-              Sin fórmula
-            }
-          </p>
-          <p>Empaque: ${{ d.total | number: '1.4-4' }}</p>
-          <p>
-            Cartón independiente:
-            @if (d.cartonPendiente) {
-              Sin dato
-            } @else if (!d.tieneCarton) {
-              No aplica
-            } @else {
-              ${{ d.carton | number: '1.4-4' }}
-            }
-          </p>
+          <div class="detalle-importes">
+            <p>
+              Materia prima:
+              @if (d.presentacion.totalCosto !== null) {
+                ${{ d.presentacion.totalCosto | number: '1.4-4' }}
+              } @else {
+                Sin fórmula
+              }
+            </p>
+            <p>Empaque: ${{ d.total | number: '1.4-4' }}</p>
+            <p>
+              Cartón independiente:
+              @if (d.cartonPendiente) {
+                Sin dato
+              } @else if (!d.tieneCarton) {
+                No aplica
+              } @else {
+                ${{ d.carton | number: '1.4-4' }}
+              }
+            </p>
+          </div>
           @if (d.cartonPendiente) {
             <p class="badge badge--warn">
               Falta registrar el costo de cartón de este SKU. El subtotal está incompleto.
             </p>
           }
-          <p>
+          <p class="detalle-total">
             <strong
               >Subtotal materia prima + empaque + cartón:
               @if (d.preliminar !== null) {
