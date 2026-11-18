@@ -82,7 +82,11 @@ const vacio: CatalogoAdmin = {
   providers: DESPLEGABLES_SCROLL_PROVIDERS,
   imports: [DatePipe, DecimalPipe, ReactiveFormsModule, MatIconModule, MatSelectModule, A11yModule],
   templateUrl: './administracion.html',
-  styleUrls: ['./administracion.css', './administracion-dashboard.css', './administracion-catalogo.css'],
+  styleUrls: [
+    './administracion.css',
+    './administracion-dashboard.css',
+    './administracion-catalogo.css',
+  ],
 })
 export class Administracion implements OnInit, OnDestroy {
   private readonly api = inject(CatalogoAdminService);
@@ -92,7 +96,43 @@ export class Administracion implements OnInit, OnDestroy {
   readonly rubrosEstandar = RUBROS_ESTANDAR;
   readonly skuEstandar = signal<number | null>(null);
   readonly busquedaSkuEstandar = signal('');
+  readonly mostrarSkuEstandar = (id: number | null): string => {
+    const p = this.skuPorId().get(id ?? 0);
+    return p ? `${this.nombreProducto(p.producto_id)} · ${p.litros} L · ${p.tecnologia}` : '';
+  };
+  private temporizadorBusqueda?: ReturnType<typeof setTimeout>;
+  buscarSkuParaCostos(valor: string): void {
+    if (this.guardando()) return;
+    clearTimeout(this.temporizadorBusqueda);
+    this.busquedaSkuEstandar.set(valor);
+    const opciones = this.opcionesSkuEstandar();
+    if (
+      (!valor.trim() && !this.categoriaSkuEstandar()) ||
+      opciones.length !== 1 ||
+      opciones[0].id === this.skuEstandar() ||
+      this.formEstandar.dirty
+    )
+      return;
+    const id = opciones[0].id;
+    this.temporizadorBusqueda = setTimeout(() => {
+      if (
+        !this.destruido &&
+        !this.guardando() &&
+        !this.formEstandar.dirty &&
+        this.opcionesSkuEstandar().length === 1 &&
+        this.opcionesSkuEstandar()[0].id === id &&
+        this.skuEstandar() !== id
+      ) {
+        void this.seleccionarEstandar(id);
+      }
+    }, 300);
+  }
   readonly categoriaSkuEstandar = signal('');
+  cambiarCategoriaCostos(categoria: string): void {
+    if (this.guardando()) return;
+    this.categoriaSkuEstandar.set(categoria);
+    this.buscarSkuParaCostos(this.busquedaSkuEstandar());
+  }
   readonly marcaSkuEstandar = signal('');
   readonly tecnologiaSkuEstandar = signal('');
   readonly categoriasSkuEstandar = computed(() =>
@@ -153,12 +193,13 @@ export class Administracion implements OnInit, OnDestroy {
 
   limpiarFiltrosEstandar(): void {
     if (this.guardando()) return;
+    clearTimeout(this.temporizadorBusqueda);
     this.busquedaSkuEstandar.set('');
     this.categoriaSkuEstandar.set('');
     this.marcaSkuEstandar.set('');
     this.tecnologiaSkuEstandar.set('');
   }
-  readonly periodoEstandar = signal<'base' | 'mes'>('base');
+  readonly periodoEstandar = signal<'base' | 'mes'>('mes');
   readonly mesEstandar = signal(mesActualEcuador());
   readonly mesEdicion = computed(() =>
     this.periodoEstandar() === 'mes' ? this.mesEstandar() : '',
@@ -446,6 +487,7 @@ export class Administracion implements OnInit, OnDestroy {
     await Promise.all([this.cargarTodo(), this.actualizarSesion()]);
   }
   ngOnDestroy(): void {
+    clearTimeout(this.temporizadorBusqueda);
     this.destruido = true;
     this.versionEstandar++;
     this.sesionVersion++;

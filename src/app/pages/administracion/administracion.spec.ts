@@ -36,6 +36,7 @@ describe('Vista de costos estándar', () => {
   async function vista(editor: boolean) {
     const fixture = TestBed.createComponent(Administracion);
     const c = fixture.componentInstance;
+    c.periodoEstandar.set('base');
     c.catalogo.set({
       materias: [],
       productos: [],
@@ -104,6 +105,68 @@ describe('Vista de costos estándar', () => {
     fixture.detectChanges();
     expect(fixture.componentInstance.opcionesSkuEstandar().length).toBe(1);
     expect(fixture.componentInstance.formEstandar.controls.empaque.value).toBe(costos.empaque);
+  });
+
+  it('abre en modo mensual y mantiene los filtros secundarios cerrados', () => {
+    const fixture = TestBed.createComponent(Administracion);
+    fixture.componentInstance.pestana.set('estandar');
+    fixture.detectChanges();
+    expect(fixture.componentInstance.periodoEstandar()).toBe('mes');
+    expect(fixture.nativeElement.querySelector('input[type="month"]')).not.toBeNull();
+    expect(
+      (fixture.nativeElement.querySelector('.estandar-filtros-extra') as HTMLDetailsElement).open,
+    ).toBe(false);
+  });
+
+  it('muestra la coincidencia y carga sus costos automáticamente al escribir', async () => {
+    const fixture = await vista(true);
+    const c = fixture.componentInstance;
+    c.catalogo.update((catalogo) => ({
+      ...catalogo,
+      presentaciones: [
+        ...catalogo.presentaciones,
+        {
+          ...catalogo.presentaciones[0],
+          id: 2,
+          litros: 1,
+          nombre_sku: 'Bebida 1 litro',
+          clave_sku: 'bebida-1',
+        },
+      ],
+    }));
+    fixture.detectChanges();
+    const buscador: HTMLInputElement = fixture.nativeElement.querySelector(
+      '.estandar-buscador input',
+    );
+    buscador.value = 'Bebida 1 litro';
+    buscador.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(c.busquedaSkuEstandar()).toBe('Bebida 1 litro');
+    expect(c.opcionesSkuEstandar().map((p) => p.id)).toEqual([2]);
+    expect(fixture.nativeElement.querySelectorAll('.estandar-resultado').length).toBe(1);
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    await fixture.whenStable();
+    expect(c.skuEstandar()).toBe(2);
+    expect(c.litroEstandar()).toBeCloseTo(0.62);
+    expect(buscador.value).toBe('Bebida 1 litro');
+  });
+
+  it('conserva las ediciones pendientes cuando la búsqueda coincide con otro producto', async () => {
+    const fixture = await vista(true);
+    const c = fixture.componentInstance;
+    c.catalogo.update((catalogo) => ({
+      ...catalogo,
+      presentaciones: [
+        ...catalogo.presentaciones,
+        { ...catalogo.presentaciones[0], id: 2, nombre_sku: 'Bebida grande', litros: 2 },
+      ],
+    }));
+    c.formEstandar.controls.empaque.setValue(9);
+    c.formEstandar.markAsDirty();
+    c.buscarSkuParaCostos('grande');
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    expect(c.skuEstandar()).toBe(1);
+    expect(c.formEstandar.controls.empaque.value).toBe(9);
   });
 });
 
@@ -325,6 +388,7 @@ describe('Costos estándar desde Administración', () => {
       ],
     });
     component = TestBed.runInInjectionContext(() => new Administracion());
+    component.periodoEstandar.set('base');
     component.catalogo.set({
       materias: [],
       productos: [],

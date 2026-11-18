@@ -272,223 +272,186 @@
               Solo una cuenta con permiso de edición puede modificar estos valores.
             </p>
           }
-          <div class="estandar-periodo">
-            <div class="estandar-modos" role="group" aria-label="Período de los costos">
-              <button
-                type="button"
-                class="btn"
-                [class.estandar-modo-activo]="periodoEstandar() === 'base'"
-                [attr.aria-pressed]="periodoEstandar() === 'base'"
-                [disabled]="guardando()"
-                (click)="cambiarPeriodoEstandar('base')"
-              >
-                <mat-icon aria-hidden="true">flag</mat-icon>Base fija
-              </button>
-              <button
-                type="button"
-                class="btn"
-                [class.estandar-modo-activo]="periodoEstandar() === 'mes'"
-                [attr.aria-pressed]="periodoEstandar() === 'mes'"
-                [disabled]="guardando()"
-                (click)="cambiarPeriodoEstandar('mes')"
-              >
-                <mat-icon aria-hidden="true">calendar_month</mat-icon>Costos por mes
-              </button>
-            </div>
-            @if (periodoEstandar() === 'mes') {
-              <label class="field estandar-mes"
-                ><span class="field__label">Mes que deseas editar</span
-                ><input
-                  type="month"
-                  required
-                  min="0001-01"
-                  max="9999-12"
-                  aria-label="Mes de costos"
-                  [value]="mesEstandar()"
-                  [disabled]="guardando()"
-                  (change)="cambiarMesEstandar($any($event.target).value)"
-              /></label>
-            }
-          </div>
-          <p class="hint estandar-periodo-hint">
-            {{
-              periodoEstandar() === 'mes'
-                ? 'Editarás únicamente los costos de ' +
-                  nombreMesEstandar() +
-                  '. La base fija se conserva.'
-                : 'Esta base permanece fija al comparar los distintos meses.'
-            }}
-          </p>
           <section class="estandar-explorador" aria-labelledby="estandar-explorador-title">
             <div class="estandar-explorador-heading">
-              <div class="estandar-titulo-visual">
-                <span class="estandar-icono-portada"
-                  ><mat-icon aria-hidden="true">travel_explore</mat-icon></span
-                >
-                <div>
-                  <span class="page-kicker">EXPLORA TU CATÁLOGO</span>
-                  <h3 id="estandar-explorador-title">Encuentra tu producto</h3>
-                </div>
-              </div>
+              <h3 id="estandar-explorador-title">
+                <mat-icon aria-hidden="true">edit_calendar</mat-icon>Elige qué costos actualizar
+              </h3>
               <span class="estandar-explorador-periodo">{{
-                periodoEstandar() === 'mes'
-                  ? 'Costos de ' + nombreMesEstandar()
-                  : 'Base fija del estándar'
+                periodoEstandar() === 'mes' ? nombreMesEstandar() : 'Base fija'
               }}</span>
             </div>
-            <div class="estandar-explorador-grid">
-              <div class="estandar-columna-filtros">
-                <div class="estandar-columna-titulo">
-                  <span>01</span><strong>Busca y filtra</strong
-                  ><mat-icon aria-hidden="true">tune</mat-icon>
-                </div>
-                <label class="estandar-buscador"
-                  ><mat-icon aria-hidden="true">search</mat-icon
-                  ><input
-                    type="search"
+            <div class="estandar-seleccion-rapida">
+              <label class="field"
+                ><span class="field__label">Producto y presentación</span>
+                <span class="estandar-buscador"
+                  ><mat-icon aria-hidden="true">search</mat-icon>
+                  <input
+                    #buscadorCostos
+                    type="text"
+                    autocomplete="off"
                     aria-label="Buscar presentación para editar costos"
-                    placeholder="Buscar producto, marca, SKU o código de barras…"
+                    placeholder="Escribe el producto o código para ver sus presentaciones…"
                     [value]="busquedaSkuEstandar()"
                     [disabled]="guardando()"
-                    (input)="busquedaSkuEstandar.set($any($event.target).value)"
-                /></label>
-                <div class="estandar-filtros">
-                  <label class="field"
-                    ><span class="field__label">Categoría</span
-                    ><mat-select
-                      class="estandar-selector"
-                      panelClass="jucy-filter-panel"
-                      aria-label="Categoría de la presentación"
-                      [value]="categoriaSkuEstandar()"
-                      [disabled]="guardando()"
-                      (selectionChange)="categoriaSkuEstandar.set($event.value)"
-                      ><mat-option value="">Todas las categorías</mat-option>
-                      @for (categoria of categoriasSkuEstandar(); track categoria) {
-                        <mat-option [value]="categoria">{{ categoria }}</mat-option>
-                      }
-                    </mat-select></label
-                  >
-                  <label class="field"
-                    ><span class="field__label">Marca</span
-                    ><mat-select
-                      class="estandar-selector"
-                      panelClass="jucy-filter-panel"
-                      aria-label="Marca de la presentación"
-                      [value]="marcaSkuEstandar()"
-                      [disabled]="guardando()"
-                      (selectionChange)="marcaSkuEstandar.set($event.value)"
-                      ><mat-option value="">Todas las marcas</mat-option>
-                      @for (marca of marcasSkuEstandar(); track marca) {
-                        <mat-option [value]="marca">{{ marca }}</mat-option>
-                      }
-                    </mat-select></label
-                  >
-                  <label class="field"
-                    ><span class="field__label">Tecnología</span
-                    ><mat-select
-                      class="estandar-selector"
-                      panelClass="jucy-filter-panel"
-                      aria-label="Tecnología de la presentación"
-                      [value]="tecnologiaSkuEstandar()"
-                      [disabled]="guardando()"
-                      (selectionChange)="tecnologiaSkuEstandar.set($event.value)"
-                      ><mat-option value="">Todas las tecnologías</mat-option>
-                      @for (tecnologia of tecnologiasSkuEstandar(); track tecnologia) {
-                        <mat-option [value]="tecnologia">{{ tecnologia }}</mat-option>
-                      }
-                    </mat-select></label
-                  >
-                  <button
-                    type="button"
-                    class="estandar-limpiar"
-                    [disabled]="guardando()"
-                    (click)="limpiarFiltrosEstandar()"
-                  >
-                    <mat-icon aria-hidden="true">filter_alt_off</mat-icon>Limpiar filtros
-                  </button>
-                </div>
-              </div>
-              <div class="estandar-columna-producto">
-                <div class="estandar-columna-titulo">
-                  <span>02</span><strong>Tu presentación</strong
-                  ><mat-icon aria-hidden="true">local_drink</mat-icon>
-                </div>
-                <div class="estandar-resultados-heading">
-                  <span role="status" class="estandar-conteo"
-                    >{{ opcionesSkuEstandar().length }}
-                    {{
-                      opcionesSkuEstandar().length === 1
-                        ? 'presentación encontrada'
-                        : 'presentaciones encontradas'
-                    }}</span
-                  >
-                </div>
+                    (input)="buscarSkuParaCostos(buscadorCostos.value)"
+                  />
+                </span>
                 @if (!opcionesSkuEstandar().length) {
-                  <p class="estandar-sin-resultados">
-                    No hay presentaciones que coincidan. Prueba otra búsqueda o limpia los filtros.
-                  </p>
+                  <small class="hint" role="status"
+                    >No hay presentaciones que coincidan. Cambia la búsqueda o limpia los
+                    filtros.</small
+                  >
                 }
-                <div class="estandar-seleccion">
-                  <label class="field"
-                    ><span class="field__label">Producto y presentación</span>
-                    <mat-select
-                      class="estandar-selector"
-                      panelClass="jucy-filter-panel"
-                      placeholder="Selecciona una presentación"
-                      aria-label="Presentación de costos estándar"
-                      [value]="skuEstandar()"
+              </label>
+              <label class="field estandar-mes"
+                ><span class="field__label">Mes de costos</span>
+                @if (periodoEstandar() === 'mes') {
+                  <input
+                    type="month"
+                    required
+                    min="0001-01"
+                    max="9999-12"
+                    aria-label="Mes de costos"
+                    [value]="mesEstandar()"
+                    [disabled]="guardando()"
+                    (change)="cambiarMesEstandar($any($event.target).value)"
+                  />
+                } @else {
+                  <span class="estandar-base-fija">Base fija · sin mes</span>
+                }
+              </label>
+            </div>
+            <div class="estandar-categorias" role="group" aria-label="Categorías de productos">
+              <button
+                type="button"
+                [class.categoria-activa]="!categoriaSkuEstandar()"
+                [attr.aria-pressed]="!categoriaSkuEstandar()"
+                [disabled]="guardando()"
+                (click)="cambiarCategoriaCostos('')"
+              >
+                Todas
+              </button>
+              @for (categoria of categoriasSkuEstandar(); track categoria) {
+                <button
+                  type="button"
+                  [class.categoria-activa]="categoriaSkuEstandar() === categoria"
+                  [attr.aria-pressed]="categoriaSkuEstandar() === categoria"
+                  [disabled]="guardando()"
+                  (click)="cambiarCategoriaCostos(categoria)"
+                >
+                  {{ categoria }}
+                </button>
+              }
+            </div>
+            @if (busquedaSkuEstandar().trim() || categoriaSkuEstandar()) {
+              <div class="estandar-resultados-vivos" aria-label="Presentaciones encontradas">
+                <span class="hint" role="status"
+                  >{{ opcionesSkuEstandar().length }} coincidencias{{
+                    opcionesSkuEstandar().length === 1 && !formEstandar.dirty
+                      ? ' · Los costos se cargan automáticamente.'
+                      : ''
+                  }}</span
+                >
+                <div class="estandar-tarjetas-resultados">
+                  @for (p of opcionesSkuEstandar(); track p.id) {
+                    <button
+                      type="button"
+                      class="estandar-resultado"
+                      [class.estandar-resultado-activo]="skuEstandar() === p.id"
+                      [attr.aria-pressed]="skuEstandar() === p.id"
                       [disabled]="guardando()"
-                      (selectionChange)="seleccionarEstandar($event.value)"
+                      (click)="seleccionarEstandar(p.id)"
                     >
-                      <mat-select-trigger>
-                        @if (presentacionEstandar(); as p) {
-                          {{ nombreProducto(p.producto_id) }} · {{ p.litros }} L ·
-                          {{ p.tecnologia }}
-                        }
-                      </mat-select-trigger>
-                      @if (seleccionFueraFiltroEstandar() && presentacionEstandar(); as actual) {
-                        <mat-option [value]="actual.id" disabled
-                          >Selección actual · {{ actual.nombre_sku }}</mat-option
-                        >
-                      }
-                      @for (p of opcionesSkuEstandar(); track p.id) {
-                        <mat-option [value]="p.id"
-                          >{{ nombreProducto(p.producto_id) }} · {{ p.litros }} L ·
-                          {{ p.tecnologia }} · {{ p.clave_sku }}</mat-option
-                        >
-                      } @empty {
-                        <mat-option disabled>No hay presentaciones para estos filtros</mat-option>
-                      }
-                    </mat-select>
-                  </label>
-                  @if (presentacionEstandar(); as p) {
-                    <div class="estandar-sku">
-                      <mat-icon class="estandar-producto-icono" aria-hidden="true"
-                        >task_alt</mat-icon
+                      <mat-icon aria-hidden="true">{{
+                        skuEstandar() === p.id ? 'check_circle' : 'local_drink'
+                      }}</mat-icon>
+                      <span
+                        ><strong>{{ p.nombre_sku || nombreProducto(p.producto_id) }}</strong
+                        ><small
+                          >{{ p.litros }} L · {{ p.tecnologia }} ·
+                          {{ productosPorId().get(p.producto_id)?.marca }}</small
+                        ></span
                       >
-                      <strong>{{ p.nombre_sku }}</strong
-                      ><span>{{ p.litros }} L · {{ p.tecnologia }} · SKU {{ p.clave_sku }}</span>
-                      @if (seleccionFueraFiltroEstandar()) {
-                        <small
-                          >Tu selección actual se conserva aunque no coincida con los
-                          filtros.</small
-                        >
-                      }
-                    </div>
-                  } @else {
-                    <div class="estandar-seleccion-pendiente">
-                      <mat-icon aria-hidden="true">inventory_2</mat-icon>
-                      <strong>Selecciona tu presentación</strong>
-                      <p>
-                        Usa la búsqueda y los filtros para encontrarla. Aquí verás sus datos antes
-                        de editar los costos.
-                      </p>
-                    </div>
+                    </button>
                   }
                 </div>
               </div>
+            }
+            <div class="estandar-seleccion-nota" role="status">
+              @if (seleccionFueraFiltroEstandar()) {
+                <span>Tu selección actual se conserva aunque no coincida con los filtros.</span>
+              } @else {
+                <span>{{
+                  skuEstandar()
+                    ? 'Edita los costos de abajo y guarda los cambios.'
+                    : 'Escribe para ver los productos. Si hay una sola coincidencia, sus costos se cargan automáticamente.'
+                }}</span>
+              }
+              <button
+                type="button"
+                class="estandar-alternar-base"
+                [attr.aria-pressed]="periodoEstandar() === 'base'"
+                [disabled]="guardando()"
+                (click)="cambiarPeriodoEstandar(periodoEstandar() === 'mes' ? 'base' : 'mes')"
+              >
+                {{ periodoEstandar() === 'mes' ? 'Editar base fija' : 'Volver a costos mensuales' }}
+              </button>
             </div>
+            @if (skuEstandar()) {
+              <p class="estandar-producto-actual">
+                <mat-icon aria-hidden="true">edit</mat-icon>Editando:
+                <strong>{{ mostrarSkuEstandar(skuEstandar()) }}</strong>
+              </p>
+            }
+            <details class="estandar-filtros-extra">
+              <summary>
+                <mat-icon aria-hidden="true">tune</mat-icon>Más filtros
+                <span>{{ opcionesSkuEstandar().length }} opciones</span>
+              </summary>
+              <div class="estandar-filtros">
+                <label class="field"
+                  ><span class="field__label">Marca</span
+                  ><mat-select
+                    class="estandar-selector"
+                    panelClass="jucy-filter-panel"
+                    aria-label="Marca de la presentación"
+                    [value]="marcaSkuEstandar()"
+                    [disabled]="guardando()"
+                    (selectionChange)="marcaSkuEstandar.set($event.value)"
+                    ><mat-option value="">Todas las marcas</mat-option>
+                    @for (marca of marcasSkuEstandar(); track marca) {
+                      <mat-option [value]="marca">{{ marca }}</mat-option>
+                    }
+                  </mat-select></label
+                >
+                <label class="field"
+                  ><span class="field__label">Tecnología</span
+                  ><mat-select
+                    class="estandar-selector"
+                    panelClass="jucy-filter-panel"
+                    aria-label="Tecnología de la presentación"
+                    [value]="tecnologiaSkuEstandar()"
+                    [disabled]="guardando()"
+                    (selectionChange)="tecnologiaSkuEstandar.set($event.value)"
+                    ><mat-option value="">Todas las tecnologías</mat-option>
+                    @for (tecnologia of tecnologiasSkuEstandar(); track tecnologia) {
+                      <mat-option [value]="tecnologia">{{ tecnologia }}</mat-option>
+                    }
+                  </mat-select></label
+                >
+                <button
+                  type="button"
+                  class="estandar-limpiar"
+                  [disabled]="guardando()"
+                  (click)="limpiarFiltrosEstandar()"
+                >
+                  <mat-icon aria-hidden="true">filter_alt_off</mat-icon>Limpiar filtros
+                </button>
+              </div>
+            </details>
           </section>
+
           @if (!guardadoDisponible()) {
             <div class="estandar-aviso" role="status">
               <mat-icon aria-hidden="true">info</mat-icon>

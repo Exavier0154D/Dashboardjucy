@@ -13,28 +13,6 @@
   align-items: flex-start;
   gap: 20px;
 }
-.estandar-periodo {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 24px;
-}
-.estandar-modos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.admin-dashboard .estandar-modo-activo {
-  background: #158a61;
-  border-color: #158a61;
-  color: #fff;
-}
-.estandar-mes {
-  flex: 0 1 240px;
-}
-.estandar-panel .estandar-periodo-hint {
-  margin: -8px 0 0;
-}
 .estandar-heading h2 {
   margin: 8px 0;
   font-size: 23px;
