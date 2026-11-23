@@ -234,6 +234,59 @@ app-materia-prima .catalog-toolbar > .filter-row[aria-label='Período de costos'
   font-weight: 600;
   box-shadow: inset 3px 0 #24a36a;
 }
+
+/* Scoped to comparison selectors; select overlays live outside component styles. */
+.jucy-comparison-month-panel.mat-mdc-select-panel {
+  max-height: 260px;
+  padding: 6px;
+}
+.jucy-comparison-month-panel .mat-mdc-option {
+  min-height: 36px;
+}
+.jucy-comparison-month-panel .comparison-month-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+}
+.jucy-comparison-month-panel .month-number {
+  order: -1;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid #dce9e0;
+  border-radius: 10px;
+  background: #f2f7f4;
+  color: #3c7158;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.jucy-comparison-month-panel .month-option-copy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.jucy-comparison-month-panel .month-option-copy strong {
+  font-size: 12px;
+  font-weight: 400;
+  text-transform: capitalize;
+}
+.jucy-comparison-month-panel .month-option-copy small {
+  font-size: 11px;
+  line-height: 1.3;
+  color: #75897e;
+}
+.jucy-comparison-month-panel .mat-mdc-option.mdc-list-item--selected .month-number {
+  background: #dcefe3;
+  border-color: #a7d3b9;
+  color: #146044;
+}
+.jucy-comparison-month-panel .mat-mdc-option[aria-disabled='true'] {
+  opacity: 0.65;
+}
 .filter-option-content {
   display: inline-flex;
   align-items: center;

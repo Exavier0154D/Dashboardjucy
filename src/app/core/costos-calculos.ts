@@ -1,6 +1,15 @@
 import { TIPOS_EMPAQUE, TIPOS_EMPAQUE_BASE, TipoEmpaque } from '../models/empaque.model';
 import { precioUnitarioCarton, precioUnitarioEnvase, unidadesPaqueteEnvase } from './precio-envase';
 
+/** Valora cantidades registradas sin inferir extracción, densidades ni porcentajes. */
+export function valorarMateriaPrimaRegistrada(kg: number, precioKg: number): number {
+  if (!Number.isFinite(kg) || kg < 0 || !Number.isFinite(precioKg) || precioKg < 0)
+    throw new Error('Cantidad o precio de materia prima inválidos.');
+  const costo = kg * precioKg;
+  if (!Number.isFinite(costo)) throw new Error('Costo de materia prima fuera de rango.');
+  return costo;
+}
+
 export interface ManoObraMensual {
   mes: string;
   costo_unitario: number;

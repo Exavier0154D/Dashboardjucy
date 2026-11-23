@@ -115,6 +115,32 @@ describe('Materia prima con ingredientes y envases', () => {
     fixture.detectChanges();
   }
 
+  it('retira las tarjetas de rendimiento sin modificar el cat?logo ni sus cantidades', async () => {
+    const botella = {
+      ...sku,
+      id: 3,
+      litros: 0.2395,
+      totalCosto: 0.3809008,
+      items: [
+        {
+          materiaPrimaId: 57,
+          ingrediente: 'Coco',
+          kg: 1.088288,
+          litros: 0.2395,
+          costo: 0.3809008,
+          costoOriginal: null,
+        },
+      ],
+    };
+    datos.productos.set([{ ...producto, presentaciones: [botella] }]);
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('app-costeo-coco')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-simulacion-coco')).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Origen del precio registrado');
+    expect(datos.productos()[0].presentaciones[0].totalCosto).toBe(0.3809008);
+    expect(botella.items[0].kg).toBe(1.088288);
+  });
+
   it('calcula variaciones solo con bases positivas y alerta aumentos activos superiores al 10 %', () => {
     const component = fixture.componentInstance;
     const base = datos.materiasPrimas()[0];

@@ -9,14 +9,16 @@
       <h1>Comparativa con el estándar</h1>
       <p>Compara la base fija del producto con hasta 4 meses registrados.</p>
     </div>
-    <button
-      type="button"
-      class="refresh"
-      (click)="actualizar()"
-      [disabled]="cargando() || actualizando() || catalogoCargando()"
-    >
-      <mat-icon>refresh</mat-icon> Actualizar costos
-    </button>
+    @if (!opcion()) {
+      <button
+        type="button"
+        class="refresh"
+        (click)="actualizar()"
+        [disabled]="cargando() || actualizando() || catalogoCargando()"
+      >
+        <mat-icon>refresh</mat-icon> Actualizar costos
+      </button>
+    }
   </header>
   @if (errorCatalogo() || error()) {
     <p class="status error" role="alert">{{ error() || errorCatalogo() }}</p>
@@ -31,7 +33,17 @@
           <h2 id="config-title">Configura la comparación</h2>
           <p>La misma presentación para todos los períodos.</p>
         </div>
-        <span class="counter">{{ mesesComparacionVisibles().length }} / 4 meses</span>
+        <div class="configuration-actions">
+          <span class="counter"> {{ mesesComparacionVisibles().length }} / 4 meses </span>
+          <button
+            type="button"
+            class="refresh"
+            (click)="actualizar()"
+            [disabled]="cargando() || actualizando() || catalogoCargando()"
+          >
+            <mat-icon>refresh</mat-icon> Actualizar costos
+          </button>
+        </div>
       </div>
       <div class="fields" [class.fields--embedded]="presentacionInicial()">
         @if (!presentacionInicial()) {
@@ -74,74 +86,111 @@
             </mat-autocomplete>
           </label>
         }
-        <label
-          >Año
-          <mat-select
-            aria-label="Año de comparación"
-            panelClass="jucy-filter-panel"
-            [value]="anioSeleccionado()"
-            (selectionChange)="cambiarAnio($event.value)"
-            [disabled]="!aniosDisponibles().length"
-          >
-            @for (anio of aniosDisponibles(); track anio) {
-              <mat-option [value]="anio">{{ anio }}</mat-option>
-            }
-          </mat-select>
-        </label>
-        <div class="month-entry">
-          <label
-            >Mes para comparar
+        <label class="year-field">
+          <span class="field-caption">Año</span>
+          <span class="select-shell">
             <mat-select
-              id="mes-comparativa-select"
-              aria-label="Mes para comparar"
-              panelClass="jucy-filter-panel"
-              placeholder="Selecciona un mes"
-              [value]="mesPendiente()"
-              (selectionChange)="mesPendiente.set($event.value)"
-              [disabled]="
-                cargando() ||
-                !mesesDisponibles().length ||
-                mesesSeleccionados().length >= limiteMeses
-              "
+              aria-label="Año de comparación"
+              panelClass="jucy-filter-panel jucy-comparison-year-panel"
+              panelWidth="180px"
+              [value]="anioSeleccionado()"
+              (selectionChange)="cambiarAnio($event.value)"
+              [disabled]="!aniosDisponibles().length"
             >
-              <mat-option value="">Selecciona un mes</mat-option>
-              @for (mes of mesesDisponibles(); track mes) {
-                <mat-option [value]="mes" [disabled]="mesesSeleccionados().includes(mes)">
-                  {{ nombreMes(mes) }}
-                </mat-option>
+              @for (anio of aniosDisponibles(); track anio) {
+                <mat-option [value]="anio">{{ anio }}</mat-option>
               }
             </mat-select>
+          </span>
+        </label>
+        <div class="month-entry">
+          <label class="month-field">
+            <span class="field-caption">Mes</span>
+            <span class="select-shell">
+              <mat-select
+                id="mes-comparativa-select"
+                aria-label="Mes para comparar"
+                panelClass="jucy-filter-panel jucy-comparison-month-panel"
+                panelWidth="min(270px, calc(100vw - 32px))"
+                placeholder="Elegir mes"
+                [value]="mesPendiente()"
+                (selectionChange)="mesPendiente.set($event.value)"
+                [disabled]="
+                  cargando() ||
+                  !mesesDisponibles().length ||
+                  mesesSeleccionados().length >= limiteMeses
+                "
+              >
+                <mat-select-trigger>{{
+                  mesPendiente() ? nombreMes(mesPendiente()) : 'Elegir mes'
+                }}</mat-select-trigger>
+                <mat-option value="">Sin selección</mat-option>
+                @for (mes of mesesDisponibles(); track mes) {
+                  <mat-option [value]="mes" [disabled]="mesesSeleccionados().includes(mes)">
+                    <span class="comparison-month-option">
+                      <span class="month-option-copy">
+                        <strong>{{ nombreMes(mes) }}</strong>
+                        @if (mesesSeleccionados().includes(mes)) {
+                          <small>Agregado</small>
+                        }
+                      </span>
+                    </span>
+                  </mat-option>
+                } @empty {
+                  <mat-option disabled>No hay meses registrados para este año</mat-option>
+                }
+              </mat-select>
+            </span>
           </label>
           <button
             type="button"
+            class="add-month"
             (click)="agregarMes()"
             [disabled]="cargando() || !mesPendiente() || mesesSeleccionados().length >= limiteMeses"
           >
-            <mat-icon aria-hidden="true">add</mat-icon>Agregar mes
+            <mat-icon aria-hidden="true">add</mat-icon>Agregar
           </button>
         </div>
       </div>
-      <div class="months" aria-label="Meses de comparación">
-        <span class="base-chip"><mat-icon>flag</mat-icon> Base fija del producto</span>
-        @for (mes of mesesSeleccionados(); track mes) {
-          <button
-            type="button"
-            class="month-chip"
-            (click)="quitarMes(mes)"
-            [attr.aria-label]="'Quitar ' + nombreMes(mes)"
+      <div class="selection-footer">
+        <div class="months" aria-label="Meses de comparación">
+          <span
+            class="base-chip"
+            title="Referencia fija: no cuenta dentro del límite de cuatro meses"
+            ><mat-icon aria-hidden="true">flag</mat-icon> Base fija</span
           >
-            {{ nombreMes(mes) }} <mat-icon>close</mat-icon>
-          </button>
+          @for (mes of mesesSeleccionados(); track mes) {
+            <button
+              type="button"
+              class="month-chip"
+              (click)="quitarMes(mes)"
+              [attr.aria-label]="'Quitar ' + nombreMes(mes)"
+            >
+              <mat-icon aria-hidden="true">event_available</mat-icon>
+              {{ nombreMes(mes) }}
+              <mat-icon aria-hidden="true" class="remove-month">close</mat-icon>
+            </button>
+          }
+        </div>
+        @if (
+          mensajeMes() ||
+          mesesSeleccionados().length === 4 ||
+          (!mesesSeleccionados().length && mesPendiente())
+        ) {
+          <p class="selection-message" aria-live="polite">
+            {{
+              mensajeMes() ||
+                (mesesSeleccionados().length === 4
+                  ? 'Has alcanzado el límite de 4 meses. Quita uno para agregar otro.'
+                  : !mesesSeleccionados().length && mesPendiente()
+                    ? 'Vista previa de ' +
+                      nombreMes(mesPendiente()) +
+                      '. Agrégalo para conservarlo en la comparación.'
+                    : '')
+            }}
+          </p>
         }
       </div>
-      <p class="selection-message" aria-live="polite">
-        {{
-          mensajeMes() ||
-            (mesesSeleccionados().length === 4
-              ? 'Has alcanzado el límite de 4 meses. Quita uno para agregar otro.'
-              : 'Puedes elegir meses registrados de distintos años. El estándar no cuenta dentro del límite.')
-        }}
-      </p>
     </section>
     @if (!cargando() && !actualizando() && (costos() || baseManual())) {
       <section class="panel report" aria-labelledby="report-title">
@@ -155,6 +204,7 @@
         @if (costos() || baseManual()) {
           <div
             class="table-scroll"
+            [class.table-scroll--base]="comparaciones().length === 0"
             tabindex="0"
             role="region"
             aria-label="Costos mensuales frente al estándar"
@@ -173,7 +223,10 @@
                   </th>
                   @for (periodo of comparaciones(); track periodo.mes) {
                     <th scope="col">
-                      {{ nombreMes(periodo.mes) }}<small>Costo / diferencia vs. estándar</small>
+                      {{ nombreMes(periodo.mes)
+                      }}<small>{{
+                        periodo.manual ? 'Costo manual guardado' : 'Costo / diferencia vs. estándar'
+                      }}</small>
                     </th>
                   }
                 </tr>
@@ -184,7 +237,7 @@
                     <th scope="row">{{ rubro.nombre }}</th>
                     <td class="base-column">
                       @if (estandar().valores[rubro.clave] !== null) {
-                        ${{ estandar().valores[rubro.clave] | number: '1.4-4' }}
+                        ${{ estandar().valores[rubro.clave] | number: '1.2-2' }}
                       } @else {
                         <span class="missing">Sin dato</span>
                       }
@@ -192,7 +245,7 @@
                     @for (periodo of comparaciones(); track periodo.mes) {
                       <td>
                         @if (periodo.valores[rubro.clave] !== null) {
-                          <strong>${{ periodo.valores[rubro.clave] | number: '1.4-4' }}</strong>
+                          <strong>${{ periodo.valores[rubro.clave] | number: '1.2-2' }}</strong>
                           @let delta =
                             diferencia(
                               periodo.valores[rubro.clave],
@@ -208,7 +261,7 @@
                               class="delta"
                               [class.increase]="delta > 0"
                               [class.decrease]="delta < 0"
-                              >{{ delta > 0 ? '+' : '' }}{{ delta | number: '1.4-4' }} USD
+                              >{{ delta > 0 ? '+' : '' }}{{ delta | number: '1.2-2' }} USD
                               @if (porcentajeCambio !== null) {
                                 · {{ porcentajeCambio > 0 ? '+' : ''
                                 }}{{ porcentajeCambio | number: '1.2-2' }}%
@@ -229,6 +282,9 @@
               </tbody>
             </table>
           </div>
+          @if (mostrarLeyendaCoco()) {
+            <p class="scope-note coco-yield-note">{{ leyendaCoco }}</p>
+          }
           <p class="legend">
             <span class="increase">+ Aumento del costo</span
             ><span class="decrease">− Reducción del costo</span><span>0 Sin variación</span>

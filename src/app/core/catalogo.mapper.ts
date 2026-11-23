@@ -11,6 +11,7 @@ import {
 } from '../models/producto.model';
 import { Empaque, EstadoEmpaque, TipoEmpaque, TIPOS_EMPAQUE, requiereCarton } from '../models/empaque.model';
 import { precioUnitarioCarton, precioUnitarioEnvase, unidadesPorCarton } from './precio-envase';
+import { valorarIngrediente, REGLAS_EXTRACCION_COCO, ReglaExtraccionCoco } from './costeo-coco';
 
 type Numero = number | string;
 export interface MateriaPrimaDb {
@@ -106,7 +107,7 @@ function agrupar<T>(filas: T[], clave: (fila: T) => number): Map<number, T[]> {
 }
 
 /** Construye todo el catálogo antes de publicar sus señales. No usa datos locales de respaldo. */
-export function mapearCatalogo(tablas: TablasCatalogo): Catalogo {
+export function mapearCatalogo(tablas: TablasCatalogo, reglas: readonly ReglaExtraccionCoco[] = REGLAS_EXTRACCION_COCO): Catalogo {
   const materiasPrimas: MateriaPrima[] = tablas.materiasPrimas.map((m) => ({
     id: id(m.id),
     nombre: m.nombre,
@@ -153,7 +154,7 @@ export function mapearCatalogo(tablas: TablasCatalogo): Catalogo {
         ingrediente: m.nombre,
         kg,
         litros: numero(i.litros, 'litros del ingrediente'),
-        costo: kg * m.costoKg,
+        costo: 0,
         costoOriginal:
           i.costo_original === null ? null : numero(i.costo_original, 'costo original'),
       };
@@ -170,6 +171,14 @@ export function mapearCatalogo(tablas: TablasCatalogo): Catalogo {
     }
     const litros = numero(p.litros, 'presentación en litros');
     if (litros === 0) throw new Error('El tamaño de la presentación debe ser mayor que cero.');
+    const contexto = { productoId: p.producto_id, id: presentacionId, litros, ingredientes, items: cantidades };
+    for (const item of cantidades) {
+      const valoracion = valorarIngrediente(contexto, item, mpPorId.get(item.materiaPrimaId)!.costoKg, reglas);
+      item.costo = valoracion.costo;
+      item.kgCosteo = valoracion.kgCosteo;
+      item.diferenciaKg = valoracion.diferenciaKg;
+      item.rendimientoAplicado = valoracion.rendimientoAplicado;
+    }
     const estado = unico<EstadoFormulacion>(
       p.estado_formulacion,
       ['copiada', 'escalada', 'por_completar'],

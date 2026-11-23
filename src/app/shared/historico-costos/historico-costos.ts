@@ -178,6 +178,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
       cantidades,
       this.materiales(),
       this.precios(),
+      this.modo() === 'producto' ? this.presentacion() : null,
     );
   });
   readonly serieFinal = computed(() => {

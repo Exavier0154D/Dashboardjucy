@@ -1,4 +1,5 @@
-﻿import { signal } from '@angular/core';
+import { valorarIngrediente, REGLAS_EXTRACCION_COCO } from '../../core/costeo-coco';
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DataService } from '../../core/data.service';
 import { SelectionService } from '../../core/selection.service';
@@ -6,6 +7,7 @@ import { CostosPresentacion, CostosProduccionService } from '../../core/costos-p
 import { Producto, Presentacion } from '../../models/producto.model';
 import { Comparativa } from './comparativa';
 import { CostosEstandarService, CostosEstandar } from '../../core/costos-estandar.service';
+import { calcularMateriaPrimaMensual } from '../../core/materia-prima-calculos';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatSelectHarness } from '@angular/material/select/testing';
 
@@ -118,6 +120,112 @@ describe('Comparativa con el estándar', () => {
     fixture = TestBed.createComponent(Comparativa);
     component = fixture.componentInstance;
     await fixture.whenStable();
+  });
+
+  it('conserva el costo real del SKU 3, su total y una sola leyenda, sin tarjetas', async () => {
+    const coco: Presentacion = {
+      ...sku,
+      id: 3,
+      productoId: REGLAS_EXTRACCION_COCO[0].productoId,
+      ingredientes: [{ materiaPrimaId: 57, nombre: 'Coco', unidad: 'Kg', porcentaje: 100 }],
+      litros: 0.2395,
+      totalCosto: 0.3809008,
+      items: [
+        {
+          materiaPrimaId: 57,
+          ingrediente: 'Coco',
+          kg: 1.088288,
+          litros: 0.2395,
+          costo: 0.3809008,
+          costoOriginal: 0.381204166667,
+        },
+      ],
+    };
+    const calculado = valorarIngrediente(coco, coco.items[0], 0.35);
+    coco.totalCosto = calculado.costo;
+    coco.items[0].costo = calculado.costo;
+    cargar.mockResolvedValue({
+      ...costos,
+      presentacionId: 3,
+      costoEmpaque: 0.16012,
+      costoCarton: 0.448 / 12,
+      manoObra: [{ mes: '2026-01-01', costo_unitario: 0.0123005718 }],
+      gastosIndirectos: [
+        { mes: '2026-01-01', concepto: 'GIF', costo_unitario: 0.0265, estimado: true },
+        { mes: '2026-02-01', concepto: 'GIF', costo_unitario: 0.0265, estimado: true },
+        { mes: '2026-03-01', concepto: 'GIF', costo_unitario: 0.0265, estimado: true },
+      ],
+    });
+    vi.spyOn(TestBed.inject(DataService), 'materiaPrimaDelMes').mockImplementation((p, mes) =>
+      calcularMateriaPrimaMensual(
+        p,
+        mes,
+        [{ id: 57, nombre: 'Coco', costo_kg: 0.35 }],
+        [
+          { materia_prima_id: 57, semana: '2026-01-01', costo_kg: 0.24 },
+          { materia_prima_id: 57, semana: '2026-01-20', costo_kg: 0.26 },
+          { materia_prima_id: 57, semana: '2026-02-15', costo_kg: 0.25 },
+          { materia_prima_id: 57, semana: '2026-03-22', costo_kg: 0.22 },
+        ],
+      ),
+    );
+    productos.set([{ ...producto, categoria: 'Agua de Coco', presentaciones: [coco] }]);
+    await fixture.whenStable();
+    agregar('2026-02');
+    agregar('2026-03');
+    await fixture.whenStable();
+    expect(component.estandar().valores.materiaPrima).toBeCloseTo(0.381022727272727, 12);
+    expect(component.estandar().valores.total).toBeCloseTo(
+      0.381022727272727 + 0.16012 + 0.448 / 12 + 0.0123005718 + 0.0265,
+      12,
+    );
+    expect(component.estandar().valores.litro).toBeCloseTo(
+      component.estandar().valores.total! / 0.2395,
+      12,
+    );
+    const tabla: HTMLElement = fixture.nativeElement.querySelector('table');
+    expect(tabla.textContent).toContain('$0.38');
+    expect(tabla.textContent).toContain('$0.62');
+    expect(tabla.textContent).toContain('$2.58');
+    expect(fixture.nativeElement.querySelectorAll('.coco-yield-note')).toHaveLength(1);
+    expect(fixture.nativeElement.querySelector('app-costeo-coco')).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Origen del precio registrado');
+    expect(coco.items[0].kg).toBe(1.088288);
+    expect(component.comparaciones()[0].valores.materiaPrima).toBeCloseTo(0.272159090909091, 12);
+    expect(component.comparaciones()[1].valores.materiaPrima).toBeCloseTo(0.2395, 12);
+    for (const periodo of component.comparaciones()) {
+      expect(periodo.valores.total).toBeCloseTo(
+        periodo.valores.materiaPrima! + 0.16012 + 0.448 / 12 + 0.0123005718 + 0.0265,
+        12,
+      );
+      expect(periodo.valores.litro).toBeCloseTo(periodo.valores.total! / 0.2395, 12);
+    }
+    mensuales.set({
+      '2026-02': { materiaPrima: 0.25, empaque: 0.3, carton: 0.1, manoObra: 0.2, gif: 0.1 },
+    });
+    await fixture.whenStable();
+    expect(component.comparaciones()[0].valores.materiaPrima).toBe(0.25);
+    expect(fixture.nativeElement.querySelectorAll('.coco-yield-note')).toHaveLength(0);
+    mensuales.set({});
+    // Un costo manual es prioritario; la leyenda no afirma el desglose de ese importe.
+    baseManual.set({ materiaPrima: 0.4, empaque: 0.3, carton: 0.1, manoObra: 0.2, gif: 0.1 });
+    await fixture.whenStable();
+    expect(component.estandar().valores.materiaPrima).toBe(0.4);
+    expect(component.estandar().avisos.join(' ')).toContain('Costo manual guardado');
+    expect(fixture.nativeElement.querySelectorAll('.coco-yield-note')).toHaveLength(0);
+    // Otra presentaci?n con la misma proporci?n no hereda la confirmaci?n.
+    baseManual.set(null);
+    productos.set([
+      {
+        ...producto,
+        categoria: 'Agua de Coco',
+        presentaciones: [{ ...coco, id: 4, productoId: 'sin-confirmar' }],
+      },
+    ]);
+    await fixture.whenStable();
+    expect(component.estandar().valores.materiaPrima).toBeCloseTo(0.381022727272727, 12);
+    expect(component.estandar().avisos.join(' ')).toContain('Base del coco pendiente');
+    expect(fixture.nativeElement.querySelectorAll('.coco-yield-note')).toHaveLength(0);
   });
 
   it('usa la base manual, recalcula los totales y conserva los costos mensuales', async () => {

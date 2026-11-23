@@ -1,4 +1,5 @@
-﻿import { Component, computed, effect, inject, signal } from '@angular/core';
+import { revisarBaseCoco, LEYENDA_RENDIMIENTO_COCO } from '../../core/costeo-coco';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
@@ -19,6 +20,7 @@ interface Periodo {
   mes: string;
   valores: Record<Rubro, number | null>;
   avisos: string[];
+  manual: boolean;
 }
 
 @Component({
@@ -137,6 +139,12 @@ export class Comparativa {
     this.mesesComparacionVisibles().map((mes) => this.calcularPeriodo(mes)),
   );
   readonly periodos = computed(() => [this.estandar(), ...this.comparaciones()]);
+  readonly leyendaCoco = LEYENDA_RENDIMIENTO_COCO;
+  readonly mostrarLeyendaCoco = computed(
+    () =>
+      revisarBaseCoco(this.opcion()?.presentacion ?? null).confirmado &&
+      this.periodos().every((periodo) => !periodo.manual),
+  );
 
   constructor() {
     effect((onCleanup) => {
@@ -216,7 +224,7 @@ export class Comparativa {
   }
 
   nombreMes(mes: string): string {
-    if (!mes) return 'Est?ndar del producto';
+    if (!mes) return 'Estándar del producto';
     if (!this.mesValido(mes)) return '';
     return new Intl.DateTimeFormat('es-EC', {
       month: 'long',
@@ -260,12 +268,21 @@ export class Comparativa {
       const volumenValido = Number.isFinite(litros) && litros > 0;
       return {
         mes,
+        manual: true,
         valores: { ...manual, total, litro: volumenValido ? total / litros : null },
-        avisos: volumenValido ? [] : ['Volumen inválido para calcular el costo por litro.'],
+        avisos: [
+          ...(volumenValido ? [] : ['Volumen inválido para calcular el costo por litro.']),
+          'Costo manual guardado: tiene prioridad sobre el cálculo dinámico de materia prima y no se sobrescribe.',
+        ],
       };
     }
     const datos = this.costos();
     const avisos: string[] = [];
+    const revision = revisarBaseCoco(p ?? null);
+    if (revision.pendientes.length)
+      avisos.push(
+        `Base del coco pendiente de revisión (materia prima ${revision.pendientes.join(', ')}). Se conservan los kg registrados por el precio vigente, sin aplicar rendimiento adicional.`,
+      );
     const materia = p
       ? mes
         ? (this.data.materiaPrimaDelMes(p, mes)?.costo ?? null)
@@ -308,6 +325,7 @@ export class Comparativa {
     if (p && !volumenValido) avisos.push('Volumen inválido para calcular el costo por litro.');
     return {
       mes,
+      manual: false,
       valores: {
         materiaPrima,
         empaque,

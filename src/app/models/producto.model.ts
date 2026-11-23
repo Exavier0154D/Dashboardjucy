@@ -23,11 +23,15 @@ export interface Ingrediente {
 export interface ItemPresentacion {
   materiaPrimaId: number;
   ingrediente: string;
+  /** Cantidad original de Supabase; referencia, no se sobrescribe por extracción. */
   kg: number;
   litros: number;
-  /** Costo vigente: kg × costo/kg de materia prima. */
+  /** Cantidad de costeo (derivada para coco confirmado) × precio vigente por kg. */
   costo: number;
   costoOriginal: number | null;
+  kgCosteo?: number;
+  diferenciaKg?: number;
+  rendimientoAplicado?: boolean;
 }
 
 export interface Presentacion {

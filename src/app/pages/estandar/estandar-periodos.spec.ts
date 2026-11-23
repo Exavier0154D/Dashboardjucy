@@ -115,7 +115,7 @@ describe('Períodos visibles y cálculo del estándar', () => {
     expect(component.costoMateriaPrima()).toBeCloseTo(1.61312 * 0.24, 8);
     expect(
       fixture.nativeElement.querySelector('.cost-lines .cost-line__value').textContent,
-    ).toContain('0.3871');
+    ).toContain('0.39');
     selects[1].value = '2026-01-20';
     selects[1].dispatchEvent(new Event('change'));
     await fixture.whenStable();
@@ -128,5 +128,27 @@ describe('Períodos visibles y cálculo del estándar', () => {
     expect(component.costoMateriaPrima()).toBeCloseTo(1.61312 * 0.24, 8);
     expect(selects[0].selectedOptions[0].textContent).not.toContain('Costo de referencia');
     expect(fixture.nativeElement.textContent).not.toContain('pendiente de actualización');
+
+    const botella239 = {
+      ...sku,
+      productoId: 'catalogo-2026-b00a0c1d9779e618e5649392',
+      litros: 0.2395,
+      items: [{ ...sku.items[0], kg: 1.088288, litros: 0.2395 }],
+    };
+    precios.push({ materia_prima_id: 57, semana: '2026-01-25', costo_kg: 0.35 });
+    TestBed.inject(SelectionService).seleccionarProducto(
+      { ...producto, id: botella239.productoId, presentaciones: [botella239] },
+      botella239,
+    );
+    await fixture.whenStable();
+    component.cambiarMes('2026-01');
+    component.cambiarSemana('2026-01-25');
+    await fixture.whenStable();
+    expect(component.costoMateriaPrima()).toBeCloseTo(0.381022727272727, 12);
+    expect(component.valoracionMateriaPrima()!.detalle[0].kg).toBeCloseTo(1.08863636363636, 12);
+    expect(component.valoracionMateriaPrima()!.detalle[0].kgRegistrados).toBe(1.088288);
+    expect(botella239.items[0].kg).toBe(1.088288);
+    expect(fixture.nativeElement.querySelector('app-costeo-coco')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('$0.38');
   });
 });

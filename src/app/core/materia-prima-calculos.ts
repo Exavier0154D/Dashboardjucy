@@ -1,4 +1,9 @@
-import { Presentacion } from '../models/producto.model';
+import {
+  ContextoCosteo,
+  REGLAS_EXTRACCION_COCO,
+  ReglaExtraccionCoco,
+  valorarIngrediente,
+} from './costeo-coco';
 import {
   calcularSerie,
   MaterialBase,
@@ -6,14 +11,20 @@ import {
   fechaHistoricaValida,
 } from '../shared/historico-costos/historico-calculos';
 
-
 export function calcularMateriaPrimaMensual(
-  presentacion: Pick<Presentacion, 'items'>,
+  presentacion: ContextoCosteo,
   mes: string,
   materiales: MaterialBase[],
   precios: PrecioSemanal[],
+  reglas: readonly ReglaExtraccionCoco[] = REGLAS_EXTRACCION_COCO,
 ) {
-  return calcularMateriaPrimaEnFecha(presentacion, fechaCierreMes(mes), materiales, precios);
+  return calcularMateriaPrimaEnFecha(
+    presentacion,
+    fechaCierreMes(mes),
+    materiales,
+    precios,
+    reglas,
+  );
 }
 
 export function fechaCierreMes(mes: string): string {
@@ -23,12 +34,13 @@ export function fechaCierreMes(mes: string): string {
   return `${mes}-${ultimoDia}`;
 }
 
-
+/** Precio vigente y consumo compartidos con catálogo e histórico; los kg originales son referencia. */
 export function calcularMateriaPrimaEnFecha(
-  presentacion: Pick<Presentacion, 'items'>,
+  presentacion: ContextoCosteo,
   fecha: string,
   materiales: MaterialBase[],
   precios: PrecioSemanal[],
+  reglas: readonly ReglaExtraccionCoco[] = REGLAS_EXTRACCION_COCO,
 ) {
   if (!fechaHistoricaValida(fecha)) throw new Error('Fecha de materia prima inválida.');
   if (!presentacion.items.length) return null;
@@ -38,11 +50,17 @@ export function calcularMateriaPrimaEnFecha(
       .filter((p) => p.materia_prima_id === item.materiaPrimaId && p.semana <= fecha)
       .sort((a, b) => b.semana.localeCompare(a.semana))[0];
     const base = materiales.find((m) => m.id === item.materiaPrimaId);
+    const precioKg = vigente?.costo_kg ?? base?.costo_kg ?? null;
+    const valoracion =
+      precioKg === null ? null : valorarIngrediente(presentacion, item, precioKg, reglas);
     return {
       materiaPrimaId: item.materiaPrimaId,
       nombre: item.ingrediente,
-      kg: item.kg,
-      precioKg: vigente?.costo_kg ?? base?.costo_kg ?? null,
+      kg: valoracion?.kgCosteo ?? item.kg,
+      kgRegistrados: item.kg,
+      diferenciaKg: valoracion?.diferenciaKg ?? 0,
+      rendimientoAplicado: valoracion?.rendimientoAplicado ?? false,
+      precioKg,
       fechaPrecio: vigente?.semana ?? null,
     };
   });
@@ -52,6 +70,8 @@ export function calcularMateriaPrimaEnFecha(
       [{ materia_prima_id: item.materiaPrimaId, kg: item.kg }],
       materiales,
       precios,
+      presentacion,
+      reglas,
     );
     porMateria.set(item.materiaPrimaId, (porMateria.get(item.materiaPrimaId) ?? 0) + punto.costo);
   }
@@ -61,7 +81,6 @@ export function calcularMateriaPrimaEnFecha(
     detalle,
   };
 }
-
 
 export function semanasDePrecios(
   mes: string,

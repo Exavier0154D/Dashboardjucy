@@ -17,6 +17,13 @@
   align-items: center;
   gap: 20px;
 }
+.configuration-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 .eyebrow {
   color: #258268;
   letter-spacing: 0.12em;
@@ -95,6 +102,9 @@ summary:focus-visible,
   background: #dceee2;
 }
 .counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   padding: 8px 12px;
   border-radius: 20px;
   background: #edf6f0;
@@ -102,11 +112,21 @@ summary:focus-visible,
   font-weight: 700;
   white-space: nowrap;
 }
+.field-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.select-shell {
+  display: block;
+  position: relative;
+}
 .fields {
   display: grid;
   grid-template-columns: minmax(220px, 1.5fr) minmax(165px, 0.8fr) minmax(300px, 1.2fr);
-  gap: 18px;
-  margin-top: 24px;
+  gap: 12px;
+  margin-top: 12px;
   align-items: end;
 }
 label {
@@ -209,7 +229,14 @@ select {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 22px;
+  margin: 0;
+}
+.selection-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 10px;
 }
 .base-chip,
 .month-chip {
@@ -237,7 +264,8 @@ select {
   width: 17px;
 }
 .selection-message {
-  margin: 12px 0 0;
+  flex: 1 1 320px;
+  margin: 0;
 }
 .currency {
   color: #64748b;
@@ -245,7 +273,7 @@ select {
 }
 .table-scroll {
   overflow-x: auto;
-  margin-top: 18px;
+  margin-top: 10px;
   border: 1px solid #dce7e2;
   border-radius: 10px;
 }
@@ -264,7 +292,7 @@ caption {
 }
 th,
 td {
-  padding: 10px 14px;
+  padding: 8px 14px;
   text-align: right;
   border-bottom: 1px solid #e2e8f0;
   min-width: 155px;
@@ -294,6 +322,15 @@ thead th:first-child {
 .base-column {
   background: #eef7f1;
   color: #12533d;
+}
+.table-scroll--base table {
+  table-layout: fixed;
+}
+.table-scroll--base th:first-child {
+  width: 55%;
+}
+.table-scroll--base .base-column {
+  text-align: left;
 }
 thead .base-column {
   background: #e0eee5;
@@ -357,7 +394,7 @@ tbody tr:last-child > * {
 }
 .scope-note {
   font-size: 12px;
-  margin: 14px 0 0;
+  margin: 8px 0 0;
 }
 .observations {
   display: grid;
@@ -446,14 +483,9 @@ li {
 }
 .page.embedded-detail {
   padding: 0;
-  gap: 20px;
+  gap: 12px;
 }
 .embedded-detail .page-header {
-  justify-content: flex-end;
-  border: 0;
-  padding: 0;
-}
-.embedded-detail .page-header > div {
   display: none;
 }
 .embedded-detail .refresh {
@@ -592,23 +624,10 @@ h1 {
   font-size: 11px;
 }
 .fields {
-  padding: 18px;
+  padding: 12px 14px;
   border: 1px solid #e5eae7;
   border-radius: 10px;
   background: #fafcf9;
-}
-.fields.fields--embedded {
-  grid-template-columns: 120px minmax(0, 540px);
-  justify-content: start;
-  gap: 16px;
-}
-@media (max-width: 760px) {
-  .fields.fields--embedded {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .fields--embedded > label {
-    max-width: 120px;
-  }
 }
 @media (max-width: 480px) {
   .month-entry {
@@ -642,6 +661,33 @@ h1 {
   border-color: #c7e7d2;
   background: #edf7ed;
   color: #21634e;
+  border: 1px solid #c7e7d2;
+  text-transform: capitalize;
+  padding: 7px 10px;
+}
+.month-chip .remove-month {
+  width: 20px;
+  height: 20px;
+  font-size: 15px;
+  line-height: 20px;
+  border-radius: 50%;
+  background: #dceee3;
+  margin-left: 3px;
+}
+.fields--embedded .month-entry {
+  grid-template-columns: minmax(0, 1fr) 150px;
+}
+@media (max-width: 480px) {
+  .fields--embedded .month-entry,
+  .month-entry {
+    grid-template-columns: 1fr;
+  }
+  .month-entry .add-month {
+    width: 100%;
+  }
+  .field-caption small {
+    font-size: 10px;
+  }
 }
 .table-scroll {
   border-color: #e5eae7;
@@ -712,5 +758,94 @@ summary {
   .page-header.jucy-compare-header {
     flex-direction: row;
     align-items: center;
+  }
+  .configuration .section-heading {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .configuration-actions {
+    justify-content: flex-start;
+  }
+}
+
+/* Compact period toolbar: fixed-width controls instead of a full-width panel. */
+.configuration .fields {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  gap: 10px;
+  margin-top: 10px;
+}
+.fields.fields--embedded {
+  width: min(100%, 490px);
+  grid-template-columns: 105px minmax(0, 1fr);
+}
+.configuration .month-entry {
+  grid-template-columns: minmax(0, 1fr) 94px;
+  gap: 8px;
+}
+.configuration label {
+  gap: 4px;
+  font-size: 11px;
+}
+.fields .select-shell mat-select {
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  box-shadow: none;
+}
+.fields .month-field mat-select-trigger {
+  font-weight: 400;
+}
+.configuration .month-entry .add-month,
+.configuration-actions .refresh {
+  min-height: 34px;
+  height: 34px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  box-shadow: none;
+}
+.configuration .month-entry .add-month:disabled {
+  background: #e5ece8;
+  color: #71857a;
+}
+.configuration button mat-icon {
+  width: 17px;
+  height: 17px;
+  font-size: 17px;
+}
+.configuration .counter {
+  padding: 5px 8px;
+  font-size: 11px;
+}
+.configuration .base-chip,
+.configuration .month-chip {
+  padding: 4px 8px;
+  border-radius: 7px;
+  font-size: 11px;
+}
+.configuration .selection-footer {
+  gap: 6px 10px;
+  margin-top: 8px;
+}
+.configuration .selection-message {
+  font-size: 11px;
+}
+@media (max-width: 480px) {
+  .fields.fields--embedded {
+    grid-template-columns: 90px minmax(0, 1fr);
+    align-items: start;
+  }
+  .configuration .month-entry {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .configuration .month-entry .add-month {
+    width: auto;
+    justify-self: start;
   }
 }

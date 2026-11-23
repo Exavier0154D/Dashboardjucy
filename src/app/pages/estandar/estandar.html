@@ -96,7 +96,7 @@
           <span class="summary-label">Costo de materia prima</span>
           <strong class="summary-value">
             @if (totalCosto() !== null) {
-              ${{ totalCosto() | number: '1.4-4' }}
+              ${{ totalCosto() | number: '1.2-2' }}
             } @else {
               —
             }
@@ -178,7 +178,7 @@
                 <span class="cost-line__label">Materia prima de la semana</span>
                 <span class="cost-line__value">
                   @if (costoMateriaPrima() !== null) {
-                    ${{ costoMateriaPrima() | number: '1.4-4' }}
+                    ${{ costoMateriaPrima() | number: '1.2-2' }}
                   } @else {
                     Sin fórmula
                   }
@@ -186,7 +186,7 @@
               </div>
               <div class="cost-line">
                 <span class="cost-line__label">Empaque: botella, tapa y etiqueta</span>
-                <span class="cost-line__value">${{ costoEmpaque() | number: '1.4-4' }}</span>
+                <span class="cost-line__value">${{ costoEmpaque() | number: '1.2-2' }}</span>
               </div>
               <div class="cost-line cost-line--carton">
                 <span class="cost-line__label">Cartón por unidad</span>
@@ -196,7 +196,7 @@
                   } @else if (detalle.cartonSinDato) {
                     Sin dato
                   } @else {
-                    ${{ costoCarton() | number: '1.4-4' }}
+                    ${{ costoCarton() | number: '1.2-2' }}
                   }
                 </span>
               </div>
@@ -204,7 +204,7 @@
                 <span class="cost-line__label">Mano de obra por unidad</span>
                 <span class="cost-line__value">
                   @if (costoManoObra() !== null) {
-                    ${{ costoManoObra() | number: '1.4-4' }}
+                    ${{ costoManoObra() | number: '1.2-2' }}
                   } @else {
                     Sin registro anterior
                   }
@@ -214,7 +214,7 @@
                 <span class="cost-line__label">Gastos indirectos de fabricación por unidad</span>
                 <span class="cost-line__value">
                   @if (costoGastosIndirectos() !== null) {
-                    ${{ costoGastosIndirectos() | number: '1.4-4' }}
+                    ${{ costoGastosIndirectos() | number: '1.2-2' }}
                   } @else {
                     Sin registro del mes
                   }
@@ -232,9 +232,9 @@
                 }}</span>
                 <span class="cost-line__value">
                   @if (costoFinal() !== null) {
-                    ${{ costoFinal() | number: '1.4-4' }}
+                    ${{ costoFinal() | number: '1.2-2' }}
                   } @else if (costoPreliminar() !== null) {
-                    ${{ costoPreliminar() | number: '1.4-4' }}
+                    ${{ costoPreliminar() | number: '1.2-2' }}
                   } @else {
                     —
                   }
@@ -256,7 +256,7 @@
               @for (ingrediente of valoracionMateriaPrima()?.detalle ?? []; track $index) {
                 <p class="cost-note">
                   {{ ingrediente.nombre }}: {{ ingrediente.kg | number: '1.3-6' }} kg × ${{
-                    ingrediente.precioKg | number: '1.4-6'
+                    ingrediente.precioKg | number: '1.2-2'
                   }}/kg
                   @if (ingrediente.fechaPrecio) {
                     (precio del {{ ingrediente.fechaPrecio | date: 'dd/MM/yyyy' : 'UTC' }})

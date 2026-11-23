@@ -1,5 +1,6 @@
 import type { ManoObraMensual } from '../../core/costos-calculos';
 import { resolverManoObra, sumarCostoFinal } from '../../core/costos-calculos';
+import { ContextoCosteo, REGLAS_EXTRACCION_COCO, ReglaExtraccionCoco, valorarIngrediente } from '../../core/costeo-coco';
 import {
   GastoIndirectoMensual,
   resolverGastosIndirectos,
@@ -36,6 +37,8 @@ export function calcularSerie(
   cantidades: CantidadMaterial[],
   materiales: MaterialBase[],
   precios: PrecioSemanal[],
+  contexto: ContextoCosteo | null = null,
+  reglas: readonly ReglaExtraccionCoco[] = REGLAS_EXTRACCION_COCO,
 ): PuntoHistorico[] {
   const ids = new Set<number>();
   for (const m of materiales) {
@@ -84,7 +87,6 @@ export function calcularSerie(
       conBase = 0,
       conAnterior = 0;
     for (const [id, kg] of cantidadesPorId) {
-      if (kg === 0) continue;
       const lista = porMateria.get(id) ?? [];
 
 
@@ -99,9 +101,14 @@ export function calcularSerie(
         } else fin = centro - 1;
       }
       const vigente = indice >= 0 ? lista[indice] : undefined;
+      const original = contexto?.items.find(i => i.materiaPrimaId === id);
+      const valoracion = valorarIngrediente(contexto,
+        { materiaPrimaId: id, ingrediente: original?.ingrediente ?? '', kg },
+        vigente?.costo_kg ?? bases.get(id)!, reglas);
+      if (valoracion.kgCosteo === 0) continue;
       if (!vigente) conBase++;
       else if (vigente.semana < semana) conAnterior++;
-      costo += kg * (vigente?.costo_kg ?? bases.get(id)!);
+      costo += valoracion.costo;
     }
     return { semana, costo, conBase, conAnterior };
   });
