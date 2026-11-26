@@ -3,11 +3,17 @@ import { TestBed } from '@angular/core/testing';
 import { CostosPresentacion, CostosProduccionService } from '../../core/costos-produccion.service';
 import { SelectionService } from '../../core/selection.service';
 import { Presentacion } from '../../models/producto.model';
-import { Estandar } from './estandar';
+import { Estandar, mostrarPorcentajeFormula } from './estandar';
 import { DataService } from '../../core/data.service';
 
 describe('Costo final del estándar', () => {
   let component: Estandar;
+  it('muestra los porcentajes de la fórmula de coco sin perder el tercer decimal', () => {
+    expect([68.703, 25.001, 0.015, 0.011].map(mostrarPorcentajeFormula)).toEqual([
+      '68.703', '25.001', '0.015', '0.011',
+    ]);
+    expect(mostrarPorcentajeFormula(68.7)).toBe('68.70');
+  });
   const costos: CostosPresentacion = {
     presentacionId: 1,
     costoEmpaque: 0.3,

@@ -51,13 +51,83 @@
 }
 .products-page .catalog-toolbar {
   border-top: 3px solid #29a679;
+  background:
+    radial-gradient(circle at 100% 0%, #dff5e680, transparent 38%),
+    linear-gradient(145deg, #ffffff, #f8fcf9);
+  box-shadow:
+    0 12px 30px #214d3912,
+    0 2px 7px #214d3908;
 }
 .products-page .product-toolbar-heading .eyebrow {
   color: #25875f;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.products-page .product-toolbar-heading h2 {
+  color: #174935;
 }
 .products-page .catalog-period {
-  background: #ddf4e8;
-  color: #267a55;
+  border: 1px solid #c5ead5;
+  background: linear-gradient(135deg, #e4f8eb, #d3f0e0);
+  color: #176a48;
+  box-shadow: 0 3px 10px #158a6115;
+}
+.products-page .catalog-toolbar .search-box {
+  border-color: #d7e9de;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff, #f8fcf9);
+  box-shadow: 0 3px 10px #214d390a;
+}
+.products-page .catalog-toolbar .search-box mat-icon {
+  color: #318e68;
+}
+.products-page .catalog-toolbar .search-box:hover {
+  border-color: #95c7a9;
+}
+.products-page .catalog-toolbar .search-box:focus-within {
+  border-color: #2d946b;
+  background: #fff;
+  box-shadow:
+    0 0 0 4px #2d946b1a,
+    0 6px 18px #214d3914;
+}
+.products-page .catalog-toolbar .filter-row label > span {
+  color: #4d7762;
+}
+.products-page .catalog-toolbar .filter-row mat-select {
+  border-color: #dbe9df;
+  background: linear-gradient(180deg, #ffffff, #fbfefc);
+  box-shadow: 0 2px 8px #214d3909;
+}
+.products-page .catalog-toolbar .filter-row mat-select:hover {
+  border-color: #86bd9c;
+  box-shadow: 0 5px 14px #214d3914;
+}
+.products-page .catalog-toolbar .filter-row mat-select[aria-expanded='true'],
+.products-page .catalog-toolbar .filter-row mat-select:focus-visible {
+  border-color: #287c64;
+  background: #fafffc;
+  box-shadow: 0 0 0 3px #287c6420;
+}
+.products-page .catalog-toolbar > .filter-row[aria-label='Período de costos'] {
+  padding: 14px 16px;
+  border: 1px solid #e0ede4;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f3faf5, #fbfdfb);
+  box-shadow: inset 0 1px #fff;
+}
+.products-page .catalog-toolbar .text-button {
+  padding: 0 14px;
+  border: 1px solid #d4e9db;
+  border-radius: 12px;
+  background: #f0faf3;
+  color: #19734d;
+  text-decoration: none;
+}
+.products-page .catalog-toolbar .text-button:hover {
+  border-color: #9bcdae;
+  background: #e3f5e9;
+  text-decoration: none;
 }
 .products-page .primary-button {
   background: linear-gradient(125deg, #14a373, #197c56);

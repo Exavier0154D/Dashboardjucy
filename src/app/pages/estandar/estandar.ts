@@ -23,6 +23,16 @@ import { Ingrediente, Presentacion } from '../../models/producto.model';
 import { HistoricoCostos } from '../../shared/historico-costos/historico-costos';
 import { Comparativa } from '../comparativa/comparativa';
 
+const formatoPorcentaje = new Intl.NumberFormat('en-US', {
+  useGrouping: false,
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 6,
+});
+
+export function mostrarPorcentajeFormula(porcentaje: number): string {
+  return formatoPorcentaje.format(porcentaje);
+}
+
 @Component({
   selector: 'app-estandar',
   imports: [
@@ -42,6 +52,7 @@ import { Comparativa } from '../comparativa/comparativa';
   styleUrls: ['./estandar.css', './estandar-dashboard.css'],
 })
 export class Estandar {
+  readonly mostrarPorcentajeFormula = mostrarPorcentajeFormula;
   // SERVICIOS
 
   private readonly selectionService = inject(SelectionService);
@@ -154,7 +165,7 @@ export class Estandar {
         borderWidth: 1,
         padding: 14,
         cornerRadius: 10,
-        callbacks: { label: (ctx) => ` ${ctx.label}: ${Number(ctx.parsed).toFixed(2)} %` },
+        callbacks: { label: (ctx) => ` ${ctx.label}: ${mostrarPorcentajeFormula(Number(ctx.parsed))} %` },
       },
     },
   };

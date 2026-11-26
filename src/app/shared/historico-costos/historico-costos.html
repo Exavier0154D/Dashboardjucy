@@ -88,48 +88,138 @@
             }
           </mat-autocomplete>
         </mat-form-field>
+        <p class="filter-help">
+          <mat-icon aria-hidden="true">keyboard</mat-icon>Escribe para buscar y selecciona una
+          sugerencia con clic o con las flechas y Enter.
+        </p>
       </div>
     }
-    <div class="date-filter">
-      <span class="filter-label">Desde</span>
-      <mat-form-field appearance="outline" class="history-date" subscriptSizing="dynamic">
-        <input
-          matInput
-          aria-label="Fecha desde"
-          readonly
-          [matDatepicker]="calendarioDesde"
-          [value]="fechaCalendario(desde())"
-          (click)="calendarioDesde.open()"
-          (keydown.enter)="calendarioDesde.open()"
-          (dateChange)="seleccionarFecha('desde', $event.value)"
-        />
-        <mat-datepicker-toggle matIconSuffix [for]="calendarioDesde"></mat-datepicker-toggle>
-        <mat-datepicker #calendarioDesde panelClass="jucy-history-calendar"></mat-datepicker>
-      </mat-form-field>
-    </div>
-    <div class="date-filter">
-      <span class="filter-label">Hasta</span>
-      <mat-form-field appearance="outline" class="history-date" subscriptSizing="dynamic">
-        <input
-          matInput
-          aria-label="Fecha hasta"
-          readonly
-          [matDatepicker]="calendarioHasta"
-          [value]="fechaCalendario(hasta())"
-          (click)="calendarioHasta.open()"
-          (keydown.enter)="calendarioHasta.open()"
-          (dateChange)="seleccionarFecha('hasta', $event.value)"
-        />
-        <mat-datepicker-toggle matIconSuffix [for]="calendarioHasta"></mat-datepicker-toggle>
-        <mat-datepicker #calendarioHasta panelClass="jucy-history-calendar"></mat-datepicker>
-      </mat-form-field>
-    </div>
     @if (modo() === 'materia') {
-      <p class="filter-help">
-        <mat-icon aria-hidden="true">keyboard</mat-icon>Escribe para buscar y selecciona una
-        sugerencia con clic o con las flechas y Enter.
-      </p>
+      <div class="date-filter year-filter">
+        <span class="filter-label" id="historico-anio-label">Año</span>
+        <mat-select
+          id="historico-anio"
+          class="history-period-select"
+          panelClass="jucy-filter-panel"
+          aria-labelledby="historico-anio-label"
+          [value]="anio()"
+          [disabled]="cargando()"
+          (selectionChange)="seleccionarAnio($event.value)"
+        >
+          @for (opcion of aniosDisponibles(); track opcion) {
+            <mat-option [value]="opcion">{{ opcion }}</mat-option>
+          }
+        </mat-select>
+      </div>
     }
+    <div class="date-filter" [class.range-filter]="modo() === 'materia'">
+      <span class="filter-label">Desde</span>
+      @if (modo() === 'materia') {
+        <div class="period-steps">
+          <div class="period-step">
+            <span class="period-step-label">Mes</span>
+            <mat-select
+              id="historico-mes-desde"
+              class="history-period-select"
+              panelClass="jucy-filter-panel"
+              aria-label="Mes desde"
+              [value]="mesDesde()"
+              [disabled]="materiaId() === null || cargando()"
+              (selectionChange)="seleccionarMes('desde', $event.value)"
+            >
+              @for (mes of mesesDesde(); track mes) {
+                <mat-option [value]="mes">{{ nombreMes(mes) }}</mat-option>
+              }
+            </mat-select>
+          </div>
+          <div class="period-step">
+            <span class="period-step-label">Semana</span>
+            <mat-select
+              id="historico-desde"
+              class="history-period-select"
+              panelClass="jucy-filter-panel"
+              aria-label="Semana desde"
+              [value]="desde()"
+              [disabled]="!mesDesde() || cargando()"
+              (selectionChange)="seleccionarCorte('desde', $event.value)"
+            >
+              @for (fecha of semanasDesde(); track fecha) {
+                <mat-option [value]="fecha">{{ etiquetaSemana(fecha) }}</mat-option>
+              }
+            </mat-select>
+          </div>
+        </div>
+      } @else {
+        <mat-form-field appearance="outline" class="history-date" subscriptSizing="dynamic">
+          <input
+            matInput
+            aria-label="Fecha desde"
+            readonly
+            [matDatepicker]="calendarioDesde"
+            [value]="fechaCalendario(desde())"
+            (click)="calendarioDesde.open()"
+            (keydown.enter)="calendarioDesde.open()"
+            (dateChange)="seleccionarFecha('desde', $event.value)"
+          />
+          <mat-datepicker-toggle matIconSuffix [for]="calendarioDesde"></mat-datepicker-toggle>
+          <mat-datepicker #calendarioDesde panelClass="jucy-history-calendar"></mat-datepicker>
+        </mat-form-field>
+      }
+    </div>
+    <div class="date-filter" [class.range-filter]="modo() === 'materia'">
+      <span class="filter-label">Hasta</span>
+      @if (modo() === 'materia') {
+        <div class="period-steps">
+          <div class="period-step">
+            <span class="period-step-label">Mes</span>
+            <mat-select
+              id="historico-mes-hasta"
+              class="history-period-select"
+              panelClass="jucy-filter-panel"
+              aria-label="Mes hasta"
+              [value]="mesHasta()"
+              [disabled]="!desde() || cargando()"
+              (selectionChange)="seleccionarMes('hasta', $event.value)"
+            >
+              @for (mes of mesesHasta(); track mes) {
+                <mat-option [value]="mes">{{ nombreMes(mes) }}</mat-option>
+              }
+            </mat-select>
+          </div>
+          <div class="period-step">
+            <span class="period-step-label">Semana</span>
+            <mat-select
+              id="historico-hasta"
+              class="history-period-select"
+              panelClass="jucy-filter-panel"
+              aria-label="Semana hasta"
+              [value]="hasta()"
+              [disabled]="!mesHasta() || cargando()"
+              (selectionChange)="seleccionarCorte('hasta', $event.value)"
+            >
+              @for (fecha of semanasHasta(); track fecha) {
+                <mat-option [value]="fecha">{{ etiquetaSemana(fecha) }}</mat-option>
+              }
+            </mat-select>
+          </div>
+        </div>
+      } @else {
+        <mat-form-field appearance="outline" class="history-date" subscriptSizing="dynamic">
+          <input
+            matInput
+            aria-label="Fecha hasta"
+            readonly
+            [matDatepicker]="calendarioHasta"
+            [value]="fechaCalendario(hasta())"
+            (click)="calendarioHasta.open()"
+            (keydown.enter)="calendarioHasta.open()"
+            (dateChange)="seleccionarFecha('hasta', $event.value)"
+          />
+          <mat-datepicker-toggle matIconSuffix [for]="calendarioHasta"></mat-datepicker-toggle>
+          <mat-datepicker #calendarioHasta panelClass="jucy-history-calendar"></mat-datepicker>
+        </mat-form-field>
+      }
+    </div>
   </div>
   @if (fechaLimitePrecios()) {
     <p class="note availability-note">
@@ -199,12 +289,14 @@
       anterior todavía deben importarse; los precios actuales no se convierten en registros
       históricos.
     </p>
+  } @else if (modo() === 'materia' && !materiaActual()) {
+    <p role="status">Busca una materia prima y selecciona una sugerencia para ver su histórico.</p>
+  } @else if (modo() === 'materia' && (!desde() || !hasta())) {
+    <p role="status">Elige el mes y la semana de Desde y Hasta para consultar el histórico.</p>
   } @else if (rangoInvalido()) {
     <p role="alert" class="error">
       Selecciona ambas fechas. Desde debe ser anterior o igual a Hasta.
     </p>
-  } @else if (modo() === 'materia' && !materiaActual()) {
-    <p role="status">Busca una materia prima y selecciona una sugerencia para ver su histórico.</p>
   } @else if (serie().length === 0) {
     <p role="status">
       No hay semanas disponibles en este rango o falta seleccionar una presentación.

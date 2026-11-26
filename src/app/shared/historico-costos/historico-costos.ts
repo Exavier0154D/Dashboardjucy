@@ -9,6 +9,7 @@ import {
   inject,
   input,
   signal,
+  untracked,
 } from '@angular/core';
 import { DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -17,9 +18,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatSelectModule } from '@angular/material/select';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { coincideBusqueda } from '../../core/busqueda-texto';
 import { DESPLEGABLES_SCROLL_PROVIDERS } from '../../core/desplegables-scroll';
+import { mesActualEcuador } from '../../core/costos-calculos';
 
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData } from 'chart.js';
@@ -49,6 +52,7 @@ import {
     MatIconModule,
     MatButtonModule,
     MatDatepickerModule,
+    MatSelectModule,
   ],
   providers: [
     ...DESPLEGABLES_SCROLL_PROVIDERS,
@@ -60,6 +64,8 @@ import {
 })
 export class HistoricoCostos implements OnInit, OnDestroy {
   readonly modo = input<'materia' | 'producto'>('materia');
+  private readonly anioActual = mesActualEcuador().slice(0, 4);
+  readonly anio = signal(this.anioActual);
   readonly producto = input<Producto | null>(null);
   readonly presentacion = input<Presentacion | null>(null);
   private readonly costosService = inject(CostosProduccionService);
@@ -88,6 +94,9 @@ export class HistoricoCostos implements OnInit, OnDestroy {
   readonly fechaLimitePrecios = computed(
     () =>
       this.precios()
+        .filter(
+          (precio) => this.modo() !== 'materia' || precio.materia_prima_id === this.materiaId(),
+        )
         .map((precio) => precio.semana)
         .sort()
         .at(-1) ?? '',
@@ -104,6 +113,119 @@ export class HistoricoCostos implements OnInit, OnDestroy {
     typeof valor === 'string' ? valor : (valor?.nombre ?? '');
   readonly desde = signal('');
   readonly hasta = signal('');
+  readonly mesDesde = signal('');
+  readonly mesHasta = signal('');
+  readonly aniosDisponibles = computed(() =>
+    [...new Set([this.anioActual, ...this.precios().map((precio) => precio.semana.slice(0, 4))])]
+      .sort()
+      .reverse(),
+  );
+  readonly fechasDisponibles = computed(() =>
+    [
+      ...new Set([
+        ...Array.from({ length: 12 }, (_, indice) => indice + 1).flatMap((mes) =>
+          [1, 8, 15, 22, 29]
+            .filter((dia) => dia <= new Date(Number(this.anio()), mes, 0).getDate())
+            .map(
+              (dia) =>
+                `${this.anio()}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`,
+            ),
+        ),
+        ...this.precios()
+          .filter(
+            (precio) =>
+              precio.materia_prima_id === this.materiaId() &&
+              precio.semana.startsWith(`${this.anio()}-`),
+          )
+          .map((precio) => precio.semana),
+      ]),
+    ].sort(),
+  );
+  readonly fechasHasta = computed(() =>
+    this.fechasDisponibles().filter((fecha) => fecha >= this.desde()),
+  );
+  readonly mesesDesde = computed(() => [
+    ...new Set(this.fechasDisponibles().map((fecha) => fecha.slice(0, 7))),
+  ]);
+  readonly mesesHasta = computed(() =>
+    this.desde() ? this.mesesDesde().filter((mes) => mes >= this.desde().slice(0, 7)) : [],
+  );
+  readonly semanasDesde = computed(() =>
+    this.fechasDisponibles().filter((fecha) => fecha.slice(0, 7) === this.mesDesde()),
+  );
+  readonly semanasHasta = computed(() =>
+    this.fechasHasta().filter((fecha) => fecha.slice(0, 7) === this.mesHasta()),
+  );
+  private claveRangoMateria = '';
+  seleccionarAnio(anio: string): void {
+    if (this.aniosDisponibles().includes(anio)) this.anio.set(anio);
+  }
+  seleccionarMes(campo: 'desde' | 'hasta', mes: string): void {
+    const meses = campo === 'desde' ? this.mesesDesde() : this.mesesHasta();
+    if (!meses.includes(mes)) return;
+    if (campo === 'desde') {
+      this.mesDesde.set(mes);
+      this.desde.set('');
+      this.mesHasta.set('');
+      this.hasta.set('');
+    } else {
+      this.mesHasta.set(mes);
+      this.hasta.set('');
+    }
+  }
+  nombreMes(mes: string): string {
+    const nombres = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
+    ];
+    return nombres[Number(mes.slice(5, 7)) - 1];
+  }
+  etiquetaSemana(fecha: string): string {
+    const [anio, mes, dia] = fecha.split('-');
+    return `${dia}/${mes}/${anio}`;
+  }
+  private sincronizarRangoMateria(): void {
+    const clave = `${this.materiaId() ?? ''}:${this.anio()}`;
+    const fechas = this.fechasDisponibles();
+    const cambio = clave !== this.claveRangoMateria;
+    this.claveRangoMateria = clave;
+    if (cambio) {
+      this.mesDesde.set('');
+      this.mesHasta.set('');
+      this.desde.set('');
+      this.hasta.set('');
+    } else {
+      if (this.desde() && !fechas.includes(this.desde())) this.desde.set('');
+      if (this.hasta() && !fechas.includes(this.hasta())) this.hasta.set('');
+      if (!this.desde()) {
+        this.mesHasta.set('');
+        this.hasta.set('');
+      }
+    }
+  }
+  seleccionarCorte(campo: 'desde' | 'hasta', fecha: string): void {
+    if (!this.fechasDisponibles().includes(fecha)) return;
+    if (campo === 'desde') {
+      if (fecha.slice(0, 7) !== this.mesDesde()) return;
+      this.desde.set(fecha);
+      if (this.hasta() && this.hasta() < fecha) {
+        this.mesHasta.set('');
+        this.hasta.set('');
+      }
+    } else if (this.desde() && fecha >= this.desde() && fecha.slice(0, 7) === this.mesHasta()) {
+      this.hasta.set(fecha);
+    }
+  }
   fechaCalendario(fecha: string): Date | null {
     if (!fecha) return null;
     const [anio, mes, dia] = fecha.split('-').map(Number);
@@ -142,7 +264,10 @@ export class HistoricoCostos implements OnInit, OnDestroy {
     () =>
       !fechaHistoricaValida(this.desde()) ||
       !fechaHistoricaValida(this.hasta()) ||
-      this.desde() > this.hasta(),
+      this.desde() > this.hasta() ||
+      (this.modo() === 'materia' &&
+        (!this.fechasDisponibles().includes(this.desde()) ||
+          !this.fechasDisponibles().includes(this.hasta()))),
   );
   readonly materiaActual = computed(
     () => this.materiales().find((m) => m.id === this.materiaId()) ?? null,
@@ -172,7 +297,8 @@ export class HistoricoCostos implements OnInit, OnDestroy {
       this.modo() === 'materia'
         ? [{ materia_prima_id: this.materiaId()!, kg: 1 }]
         : this.cantidades();
-    const fechas = [...new Set([...this.semanas(), this.desde(), this.hasta()])].sort();
+    const cortes = this.modo() === 'materia' ? this.fechasDisponibles() : this.semanas();
+    const fechas = [...new Set([...cortes, this.desde(), this.hasta()])].sort();
     return calcularSerie(
       fechas.filter((s) => s >= this.desde() && s <= this.hasta()),
       cantidades,
@@ -325,6 +451,11 @@ export class HistoricoCostos implements OnInit, OnDestroy {
   });
 
   constructor() {
+    effect(() => {
+      if (this.modo() !== 'materia') return;
+      this.anio();
+      untracked(() => this.sincronizarRangoMateria());
+    });
     effect((onCleanup) => {
       const modo = this.modo(),
         producto = this.producto(),
@@ -450,9 +581,14 @@ export class HistoricoCostos implements OnInit, OnDestroy {
         await this.cargarCantidades(presentacion.id, solicitud);
       }
       const semanas = this.semanas();
-      if (!this.desde() || this.desde() === semanasAnteriores[0]) this.desde.set(semanas[0] ?? '');
-      if (!this.hasta() || this.hasta() === hastaAnterior)
-        this.hasta.set(semanas[semanas.length - 1] ?? '');
+      if (this.modo() === 'producto') {
+        if (!this.desde() || this.desde() === semanasAnteriores[0])
+          this.desde.set(semanas[0] ?? '');
+        if (!this.hasta() || this.hasta() === hastaAnterior)
+          this.hasta.set(semanas[semanas.length - 1] ?? '');
+      } else {
+        this.sincronizarRangoMateria();
+      }
     } catch (e) {
       if (!this.destruido && solicitud === this.solicitud) this.error.set(this.mensajeError(e));
     } finally {
@@ -517,6 +653,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
     this.filtroMateria.set(valor);
 
     this.materiaId.set(null);
+    if (this.modo() === 'materia') this.sincronizarRangoMateria();
   }
 
   seleccionarMateria(materia: MaterialBase): void {
@@ -524,6 +661,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
     this.textoMateria.set(materia.nombre);
     this.filtroMateria.set(materia.nombre);
     if (this.modo() === 'materia') this.selection.materiaPrimaHistoricoId.set(materia.id);
+    if (this.modo() === 'materia') this.sincronizarRangoMateria();
   }
 
   restaurarSeleccionMateria(): void {
@@ -539,6 +677,7 @@ export class HistoricoCostos implements OnInit, OnDestroy {
     this.materiaId.set(null);
     this.textoMateria.set('');
     this.filtroMateria.set('');
+    if (this.modo() === 'materia') this.sincronizarRangoMateria();
   }
   private mensajeError(e: unknown): string {
     return e && typeof e === 'object' && 'message' in e
