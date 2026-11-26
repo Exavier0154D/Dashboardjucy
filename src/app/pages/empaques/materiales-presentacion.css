@@ -7,9 +7,14 @@
   gap: 14px;
   margin: 24px 0;
   padding: 22px;
-  border: 1px solid #d4e8dc;
+  border: 1px solid #c9e6d6;
   border-radius: 18px;
-  background: linear-gradient(115deg, #fff, #e9f7ef);
+  background:
+    radial-gradient(circle at 94% 10%, #cff1df, transparent 38%),
+    linear-gradient(115deg, #fff, #f0faf4);
+  box-shadow:
+    0 8px 24px #214d3910,
+    inset 0 1px #fff;
 }
 .intro-icon {
   display: grid;
@@ -20,7 +25,7 @@
   border-radius: 15px;
   background: linear-gradient(145deg, #37b58c, #1a7f5c);
   color: #fff;
-  box-shadow: 0 6px 14px #158a6120;
+  box-shadow: 0 8px 18px #158a6129;
 }
 .eyebrow {
   color: #25875f;
@@ -46,16 +51,19 @@ h2 {
   gap: 10px;
   padding: 16px 20px;
   margin-bottom: 20px;
-  border: 1px solid #cfe9da;
+  border: 1px solid #c9e8d7;
+  border-left: 3px solid #3aab7b;
   border-radius: 14px;
-  background: #e5f4eb;
+  background: linear-gradient(100deg, #e4f6eb, #f0faf4);
   color: #547360;
+  box-shadow: 0 3px 12px #214d390a;
 }
 .nota mat-icon {
   flex-shrink: 0;
   font-size: 19px;
   width: 19px;
   height: 19px;
+  color: #23835f;
 }
 .nota p {
   margin: 0;
@@ -64,14 +72,15 @@ h2 {
 }
 .catalogo {
   overflow: hidden;
-  border: 1px solid #edf1ef;
+  border: 1px solid #dcebe2;
   border-top: 3px solid #29a679;
   border-radius: 20px;
   background: #fff;
-  box-shadow: 0 5px 18px #244a3a0a;
+  box-shadow: 0 10px 28px #244a3a12;
 }
 .catalogo .controles {
-  background: linear-gradient(110deg, #f3faf6, #fff);
+  border-bottom: 1px solid #e0ede5;
+  background: linear-gradient(110deg, #ecf8f1, #fbfefc);
 }
 .catalogo tbody tr:hover {
   background: #f1f9f4;
@@ -91,12 +100,19 @@ h2 {
   gap: 8px;
   flex: 1;
   padding: 0 14px;
-  border: 1px solid #e3ece6;
+  border: 1px solid #d6e8dc;
   border-radius: 24px;
-  background: #f6f8f7;
+  background: #fff;
+  box-shadow: 0 3px 10px #214d390b;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+.buscador:hover {
+  border-color: #96c8aa;
 }
 .buscador mat-icon {
-  color: #7aa28d;
+  color: #308c68;
   font-size: 19px;
   width: 19px;
   height: 19px;
@@ -116,21 +132,39 @@ input {
   min-width: 0;
 }
 .buscador:focus-within {
-  outline: 3px solid #87b6a34d;
-  border-color: #87b6a3;
+  outline: 0;
+  border-color: #2b9167;
+  box-shadow:
+    0 0 0 4px #2b91671c,
+    0 6px 18px #214d3914;
 }
 .selector {
   display: grid;
   gap: 7px;
-  color: #647e70;
+  color: #4d7760;
   font-size: 11px;
+  font-weight: 600;
   min-width: 200px;
 }
 select {
-  padding: 10px 12px;
-  border: 1px solid #dce9e2;
+  min-height: 44px;
+  padding: 10px 34px 10px 12px;
+  border: 1px solid #d6e8dc;
   border-radius: 12px;
-  background: white;
+  appearance: none;
+  background:
+    linear-gradient(45deg, transparent 50%, #387a5d 50%) calc(100% - 18px) 19px / 5px 5px no-repeat,
+    linear-gradient(135deg, #387a5d 50%, transparent 50%) calc(100% - 13px) 19px / 5px 5px no-repeat,
+    linear-gradient(180deg, #fff, #f9fdfb);
+  box-shadow: 0 2px 8px #214d390a;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+select:hover {
+  border-color: #87bd9b;
+  box-shadow: 0 5px 14px #214d3914;
 }
 .tabla {
   overflow: auto;
@@ -159,8 +193,8 @@ th {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: #eaf5ee;
-  color: #547360;
+  background: linear-gradient(180deg, #e5f4ea, #f0f9f3);
+  color: #456f56;
   font-size: 10px;
   white-space: nowrap;
 }

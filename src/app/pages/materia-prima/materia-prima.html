@@ -374,7 +374,10 @@
               </div>
             </aside>
           </section>
-          <div class="surface material-catalog">
+          <div
+            class="surface material-catalog"
+            [class.material-catalog--envases]="tipoMaterial() === 'envases'"
+          >
             <div class="catalog-heading">
               <div>
                 <span class="eyebrow">TU CATÁLOGO</span>

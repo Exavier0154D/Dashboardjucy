@@ -1,0 +1,90 @@
+/* Envases y cartones dentro del catálogo de materiales. */
+.material-page .material-catalog--envases {
+  border-color: #d5e8df;
+  border-top: 3px solid #3ca990;
+  background: #fff;
+  box-shadow: 0 12px 30px #214d3912;
+}
+.material-catalog--envases .catalog-heading {
+  background: radial-gradient(circle at 100% 0%, #e2f7ed, transparent 42%), #fff;
+}
+.material-catalog--envases .catalog-heading .eyebrow {
+  color: #238366;
+}
+.material-catalog--envases .catalog-heading h2 {
+  color: #194b3b;
+}
+.material-catalog--envases .material-tabs {
+  background: #fbfefc;
+}
+.material-catalog--envases .material-tabs button.active {
+  background: linear-gradient(135deg, #def5e8, #d4f1e9);
+  color: #13795e;
+  box-shadow: 0 3px 10px #197c5617;
+}
+.material-catalog--envases .material-controls {
+  border-bottom: 1px solid #e2eee7;
+  background: linear-gradient(145deg, #f8fcf9, #f1f8f4);
+}
+.material-catalog--envases .search-box {
+  border-color: #d7e9de;
+  background: #fff;
+  box-shadow: 0 3px 10px #214d390a;
+}
+.material-catalog--envases .search-box mat-icon {
+  color: #318e68;
+}
+.material-catalog--envases .search-box:hover {
+  border-color: #96c9ac;
+}
+.material-catalog--envases .filter-row mat-select {
+  border-color: #dbe9df;
+  background: linear-gradient(180deg, #fff, #fbfefc);
+  box-shadow: 0 2px 8px #214d390a;
+}
+.material-catalog--envases .filter-row mat-select:hover {
+  border-color: #86bd9c;
+  box-shadow: 0 5px 14px #214d3914;
+}
+.material-catalog--envases .filter-row .text-button {
+  padding: 0 14px;
+  border: 1px solid #cce6d7;
+  border-radius: 12px;
+  background: #eaf8ef;
+  color: #16744f;
+  text-decoration: none;
+}
+.material-catalog--envases .filter-row .text-button:hover {
+  border-color: #96cbab;
+  background: #ddf3e5;
+}
+.material-catalog--envases .table-description {
+  color: #628574;
+}
+.material-catalog--envases .envases-table th {
+  border-color: #dcece3;
+  background: linear-gradient(180deg, #e8f5ed, #f3faf6);
+  color: #426c56;
+}
+.material-catalog--envases .envases-table tbody tr:not(.group-detail):hover {
+  background: #f0faf4;
+}
+.material-catalog--envases .group-toggle,
+.material-catalog--envases .row-action {
+  border-color: #d3e8da;
+  background: #f5fbf7;
+  color: #21805c;
+}
+.material-catalog--envases .group-toggle:hover,
+.material-catalog--envases .row-action:hover {
+  border-color: #9cccaa;
+  background: #e3f5e9;
+}
+.material-catalog--envases .group-detail > td {
+  background: #f2f9f5;
+}
+.material-catalog--envases .group-detail-list {
+  border-color: #dcece3;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px #214d390b;
+}

@@ -38,7 +38,12 @@ type Vista = 'productos' | 'materias';
     HistoricoCostos,
   ],
   templateUrl: './materia-prima.html',
-  styleUrls: ['./materia-prima.css', './materia-prima-dashboard.css', './productos-dashboard.css'],
+  styleUrls: [
+    './materia-prima.css',
+    './materia-prima-dashboard.css',
+    './productos-dashboard.css',
+    './envases-dashboard.css',
+  ],
 })
 export class MateriaPrima {
   private readonly elemento = inject<ElementRef<HTMLElement>>(ElementRef);
