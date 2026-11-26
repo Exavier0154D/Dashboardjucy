@@ -117,8 +117,7 @@ h2 {
   width: 19px;
   height: 19px;
 }
-input,
-select {
+input {
   font: inherit;
   color: #21463b;
   font-size: 12px;
@@ -146,25 +145,36 @@ input {
   font-weight: 600;
   min-width: 200px;
 }
-select {
+.selector mat-select {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
   min-height: 44px;
-  padding: 10px 34px 10px 12px;
+  width: 100%;
+  padding: 0 14px;
   border: 1px solid #d6e8dc;
   border-radius: 12px;
-  appearance: none;
-  background:
-    linear-gradient(45deg, transparent 50%, #387a5d 50%) calc(100% - 18px) 19px / 5px 5px no-repeat,
-    linear-gradient(135deg, #387a5d 50%, transparent 50%) calc(100% - 13px) 19px / 5px 5px no-repeat,
-    linear-gradient(180deg, #fff, #f9fdfb);
+  background: linear-gradient(180deg, #fff, #f9fdfb);
+  color: #21463b;
+  font-size: 12px;
   box-shadow: 0 2px 8px #214d390a;
   cursor: pointer;
   transition:
     border-color 180ms ease,
     box-shadow 180ms ease;
 }
-select:hover {
+.selector mat-select:hover {
   border-color: #87bd9b;
   box-shadow: 0 5px 14px #214d3914;
+}
+.selector mat-select:focus-visible,
+.selector mat-select[aria-expanded='true'] {
+  outline: 0;
+  border-color: #2b9167;
+  background: #f9fffb;
+  box-shadow:
+    0 0 0 4px #2b91671c,
+    0 6px 18px #214d3914;
 }
 .tabla {
   overflow: auto;
@@ -247,7 +257,6 @@ tr:hover td {
 .error {
   color: #a34636;
 }
-select:focus-visible,
 [tabindex]:focus-visible {
   outline: 3px solid #87b6a3;
   outline-offset: 3px;

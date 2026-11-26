@@ -1,12 +1,13 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
 import { DataService } from '../../core/data.service';
 import { coincideBusqueda } from '../../core/busqueda-texto';
 import { MATERIALES_POR_LITROS } from '../../models/materiales-presentacion';
 
 @Component({
   selector: 'app-materiales-presentacion',
-  imports: [MatIconModule],
+  imports: [MatIconModule, MatSelectModule],
   templateUrl: './materiales-presentacion.html',
   styleUrl: './materiales-presentacion.css',
 })

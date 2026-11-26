@@ -235,6 +235,16 @@ app-materia-prima .catalog-toolbar > .filter-row[aria-label='Período de costos'
   box-shadow: inset 3px 0 #24a36a;
 }
 
+.materiales-capacidad-panel.mat-mdc-select-panel {
+  max-height: 320px;
+  border-color: #cfe7d7;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fff, #f9fdfa);
+}
+.materiales-capacidad-panel .mat-mdc-option:hover {
+  border-radius: 9px;
+}
+
 /* Scoped to comparison selectors; select overlays live outside component styles. */
 .jucy-comparison-month-panel.mat-mdc-select-panel {
   max-height: 260px;

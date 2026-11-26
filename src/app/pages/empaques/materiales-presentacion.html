@@ -33,17 +33,21 @@
             [value]="busqueda()"
             (input)="busqueda.set($any($event.target).value)"
         /></label>
-        <label class="selector"
-          >Presentación<select
+        <div class="selector">
+          <span id="capacidad-materiales-label">Presentación</span>
+          <mat-select
+            id="capacidad-materiales-select"
+            aria-labelledby="capacidad-materiales-label"
+            panelClass="jucy-filter-panel materiales-capacidad-panel"
             [value]="capacidad()"
-            (change)="capacidad.set($any($event.target).value)"
+            (selectionChange)="capacidad.set($event.value)"
           >
-            <option value="">Todas las presentaciones</option>
+            <mat-option value="">Todas las presentaciones</mat-option>
             @for (litros of capacidades(); track litros) {
-              <option [value]="litros">{{ presentacion(litros) }}</option>
+              <mat-option [value]="litros.toString()">{{ presentacion(litros) }}</mat-option>
             }
-          </select></label
-        >
+          </mat-select>
+        </div>
       </div>
       <div
         class="tabla"
